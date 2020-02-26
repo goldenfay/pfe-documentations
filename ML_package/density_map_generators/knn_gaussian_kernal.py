@@ -1,5 +1,7 @@
 import numpy as np
 import scipy
+import scipy.spatial
+from scipy.spatial import *
 import scipy.io as io
 from scipy.ndimage.filters import gaussian_filter
 import os
@@ -56,3 +58,31 @@ class KNN_Gaussian_Kernal_DMGenerator(DensityMapGenerator):
             density_map += scipy.ndimage.filters.gaussian_filter(pt2d, sigma, mode='constant')
         print ('done.')
         return density_map
+
+
+if __name__=="__main__":
+    root = 'C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech'
+    
+    # now generate the ShanghaiA's ground truth
+    part_A_train = os.path.join(root,'part_A\\train_data','images')
+    part_A_test = os.path.join(root,'part_A\\test_data','images')
+    # part_B_train = os.path.join(root,'part_B_final/train_data','images')
+    # part_B_test = os.path.join(root,'part_B_final/test_data','images')
+    path_sets = [part_A_train,part_A_test]
+    
+    img_paths = []
+    for path in path_sets:
+        for img_path in glob.glob(os.path.join(path, '*.jpg')):
+            img_paths.append(img_path)
+    
+    for img_path in img_paths:
+        print(img_path)
+        mat = io.loadmat(img_path.replace('.jpg','.mat').replace('images','ground-truth').replace('IMG_','GT_IMG_'))
+        img= plt.imread(img_path)#768行*1024列
+        k = np.zeros((img.shape[0],img.shape[1]))
+        points = mat["image_info"][0,0][0,0][0] #1546person*2(col,row)
+        mdGen=KNN_Gaussian_Kernal_DMGenerator()
+        k = mdGen.generate_densitymap(img,points)
+        # plt.imshow(k,cmap=CM.jet)
+        # save density_map to disk
+        np.save(img_path.replace('.jpg','.npy').replace('images','ground-truth'), k)        
