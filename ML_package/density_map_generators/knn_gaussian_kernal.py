@@ -63,7 +63,7 @@ class KNN_Gaussian_Kernal_DMGenerator(DensityMapGenerator):
 if __name__=="__main__":
     root = 'C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech'
     
-    # now generate the ShanghaiA's ground truth
+    # generate the ShanghaiA's ground truth
     part_A_train = os.path.join(root,'part_A\\train_data','images')
     part_A_test = os.path.join(root,'part_A\\test_data','images')
     # part_B_train = os.path.join(root,'part_B_final/train_data','images')

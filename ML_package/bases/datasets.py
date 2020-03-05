@@ -5,12 +5,25 @@ import numpy as np
 import torch
 import cv2
 
+class BasicDataSet(Dataset):
+    def __init__(self,instances):
+        self.instances=instances
+        self.n_instances=len(self.instances)
+
+    def __len__(self):
+        return self.n_instances
+
+    def __getitem__(self,index):
+        assert index <= len(self), 'index range error'
+        return self.instances[index]
+            
 
 class CrowdDataset(Dataset):
+    
     '''
     crowdDataset
     '''
-    def __init__(self,img_rootPath,gt_dmap_rootPath,pooling_downsample=1):
+    def __init__(self,img_rootPath,gt_dmap_rootPath):
         '''
         img_rootPath: the root path of img.
         gt_dmap_rootPath: the root path of ground-truth density-map.
@@ -19,8 +32,7 @@ class CrowdDataset(Dataset):
         
         self.img_rootPath=img_rootPath
         self.gt_dmap_rootPath=gt_dmap_rootPath
-        self.gt_downsample=pooling_downsample
-
+        
         self.img_names=[filename for filename in os.listdir(img_rootPath) if os.path.isfile(os.path.join(img_rootPath,filename))]
         self.n_samples=len(self.img_names)
 
@@ -52,8 +64,8 @@ class CrowdDataset(Dataset):
 
 # test code
 if __name__=="__main__":
-    img_rootPath="D:\\workspaceMaZhenwei\\Shanghai_part_A\\train_data\\images"
-    gt_dmap_rootPath="D:\\workspaceMaZhenwei\\Shanghai_part_A\\train_data\\ground_truth"
+    img_rootPath="C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech\\part_A\\train_data\\images"
+    gt_dmap_rootPath="C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech\\part_A\\train_data\\ground-truth"
     dataset=CrowdDataset(img_rootPath,gt_dmap_rootPath,gt_downsample=4)
     for i,(img,gt_dmap) in enumerate(dataset):
         # plt.imshow(img)
