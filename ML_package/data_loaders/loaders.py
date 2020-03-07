@@ -28,7 +28,7 @@ class Loader:
         if shuffleFlag:
             np.random.shuffle(train_set)
             np.random.shuffle(test_set)
-
+        print(train_set[0])
         train_dataset=BasicDataSet(train_set)    
         test_dataset=BasicDataSet(test_set)   
         return train_dataset,test_dataset
