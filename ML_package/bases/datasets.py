@@ -23,13 +23,13 @@ class CrowdDataset(Dataset):
     '''
     crowdDataset
     '''
-    def __init__(self,img_rootPath,gt_dmap_rootPath):
+    def __init__(self,img_rootPath,gt_dmap_rootPath,gt_downsample):
         '''
         img_rootPath: the root path of img.
         gt_dmap_rootPath: the root path of ground-truth density-map.
         gt_downsample: default is 0, denote that the output of deep-model is the same size as input image.
         '''
-        
+        self.gt_downsample=gt_downsample
         self.img_rootPath=img_rootPath
         self.gt_dmap_rootPath=gt_dmap_rootPath
         
