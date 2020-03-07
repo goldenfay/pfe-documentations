@@ -98,15 +98,15 @@ class MCNN(Model):
         test_error_list=[]
             # Start Train
         for epoch in range(1,train_params.maxEpochs):
-
+            print(len(train_dataloader))
             self.train()
             epoch_loss=0
             for i,(img,gt_dmap) in enumerate(train_dataloader):
                 img=img.to(device)
                 gt_dmap=gt_dmap.to(device)
-                # forward propagation
+                    # forward propagation
                 et_dmap=self(img)
-                # calculate loss
+                    # calculate loss
                 loss=train_params.criterion(et_dmap,gt_dmap)
                 epoch_loss+=loss.item()
                 train_params.optimizer.zero_grad()
@@ -122,7 +122,7 @@ class MCNN(Model):
             for i,(img,gt_dmap) in enumerate(test_dataloader):
                 img=img.to(device)
                 gt_dmap=gt_dmap.to(device)
-                # forward propagation
+                    # forward propagation
                 et_dmap=self(img)
                 MAE+=abs(et_dmap.data.sum()-gt_dmap.data.sum()).item()
                 del img,gt_dmap,et_dmap
