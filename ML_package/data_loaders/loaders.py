@@ -89,6 +89,6 @@ class GenericLoader(Loader):
             test_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
                                                     sampler=test_sampler)
             
-            all_datasets.append((train_loader,test_loader))                                        
+            all_datasets.append(train_loader,test_loader)                                        
 
         return all_datasets                                                

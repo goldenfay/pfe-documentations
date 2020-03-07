@@ -114,7 +114,10 @@ def getModel(model_type,weightsFlag=False):
         return MCNN(weightsFlag)
 
 if __name__=="__main__":
-    root = 'C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech'
+    if len(sys.argv)>1:
+        root = os.path.join(sys.argv[1],'ShanghaiTech')
+    else :
+        root = 'C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech'
     dm_generator_type="knn_gaussian_kernal"
     dataset_names=["ShanghaiTech_partA","ShanghaiTech_partB"]
     dm_generator=None

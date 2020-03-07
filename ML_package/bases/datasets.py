@@ -23,7 +23,7 @@ class CrowdDataset(Dataset):
     '''
     crowdDataset
     '''
-    def __init__(self,img_rootPath,gt_dmap_rootPath,gt_downsample):
+    def __init__(self,img_rootPath,gt_dmap_rootPath,gt_downsample=4):
         '''
         img_rootPath: the root path of img.
         gt_dmap_rootPath: the root path of ground-truth density-map.
