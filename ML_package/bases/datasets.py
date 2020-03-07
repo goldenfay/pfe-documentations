@@ -8,13 +8,13 @@ import cv2
 class BasicDataSet(Dataset):
     def __init__(self,instances):
         self.instances=instances
-        self.n_instances=len(self.instances)
+        self.n_instances=len(instances)
 
     def __len__(self):
         return self.n_instances
 
     def __getitem__(self,index):
-        assert index < len(self), 'index range error'
+        assert index < len(self.n_instances), 'index range error'
         return self.instances[index]
             
 
