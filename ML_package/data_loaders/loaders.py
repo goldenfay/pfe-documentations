@@ -12,7 +12,7 @@ from datasets import *
 
 
 class Loader:
-    def load(self,train_size=80,test_size=20,shuffle_flag=True,batch_size=10):pass
+    def load(self,train_size=80,test_size=20,shuffle_flag=True,batch_size=1):pass
 
     @staticmethod
     def merge_datasets(loaders_list:list,shuffleFlag=True):
@@ -40,7 +40,7 @@ class SimpleLoader(Loader):
         self.gt_dmap_rootPath=gt_dmap_rootPath
 
 
-    def load(self,train_size=80,test_size=20,shuffle_flag=True,batch_size=10):
+    def load(self,train_size=80,test_size=20,shuffle_flag=True,batch_size=1):
         dataset=CrowdDataset(self.img_rootPath,self.gt_dmap_rootPath) 
         self.dataSet_size=len(dataset)
         indices = list(range(self.dataSet_size))
@@ -68,7 +68,7 @@ class GenericLoader(Loader):
         
 
 
-    def load(self,train_size=80,test_size=20,shuffle_flag=True,batch_size=10):
+    def load(self,train_size=80,test_size=20,shuffle_flag=True,batch_size=1):
         all_datasets=[]
         for img_root_path,dm_root_path in self.img_gt_dmap_list:
             dataset=CrowdDataset(img_root_path,dm_root_path) 

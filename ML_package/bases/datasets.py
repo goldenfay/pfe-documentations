@@ -14,7 +14,7 @@ class BasicDataSet(Dataset):
         return self.n_instances
 
     def __getitem__(self,index):
-        assert index <= len(self), 'index range error'
+        assert index < len(self), 'index range error'
         return self.instances[index]
             
 
@@ -40,7 +40,7 @@ class CrowdDataset(Dataset):
         return self.n_samples
 
     def __getitem__(self,index):
-        assert index <= len(self), 'index range error'
+        assert index < len(self), 'index range error'
         img_name=self.img_names[index]
         img=plt.imread(os.path.join(self.img_rootPath,img_name))
         if len(img.shape)==2: # expand grayscale image to three channel.
