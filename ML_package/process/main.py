@@ -1,17 +1,29 @@
+import os,sys,inspect,glob,io,subprocess,re
+def import_or_install(package,pipname):
+    try:
+        __import__(package) 
+    except ImportError:
+        #pip.main(['install', pipname])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pipname])
+
+import_or_install("matplotlib","matplotlib")
+import_or_install("visdom","visdom")
+import_or_install("numpy","numpy")
+import_or_install("matplotlib","matplotlib")
+
 import torch
 from torch import nn
 import matplotlib as plt
 import visdom as vis
 import numpy as np
-import os,sys,inspect,glob,io
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
     # User's modules from another directory
-sys.path.append(parentdir + "\\bases")
-sys.path.append(parentdir + "\\models")
-sys.path.append(parentdir + "\\data_loaers")
-sys.path.append(parentdir + "\\density_map_generators")
+sys.path.append(os.path.join(parentdir , "bases"))
+sys.path.append(os.path.join(parentdir , "models"))
+sys.path.append(os.path.join(parentdir , "data_loaders"))
+sys.path.append(os.path.join(parentdir , "density_map_generators"))
 
 from datasets import *
 from params import *
@@ -23,61 +35,81 @@ from mcnn import *
 
 
 def prepare_datasets(baseRootPath,datasets_list:list,dm_generator,resetFlag=False):
+    print("####### Preparing Data...")
     paths_list=[]
     for dataset_name in datasets_list:
         if 'ShanghaiTech_partA'==dataset_name:
             paths_list.append(prepare_ShanghaiTech_dataset(baseRootPath,'A',dm_generator,resetFlag))
         elif 'ShanghaiTech_partB'==dataset_name:
-            paths_list.append(prepare_ShanghaiTech_dataset(baseRootPath,'B',dm_generator,resetFlag))    
+            paths_list.append(prepare_ShanghaiTech_dataset(baseRootPath,'B',dm_generator,resetFlag))   
+        else:
+            print("nop")
+
+    print(paths_list[0])
+    return paths_list         
     
 
 def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
     root=os.path.join(root,"ShanghaiTech")
     paths_dict=dict()
-    # generate the ShanghaiA's ground truth
+        # generate the ShanghaiA's ground truth
     if not part=="A" and not part=="B": raise Exception("Invalide parts passed for shanghai ")
 
-    train_path=os.path.join(root,'part_'+part+'\\train_data')
-    test_path=os.path.join(root,'part_'+part+'\\test_data')
-    part_A_train = os.path.join(root,'part_A\\train_data','images')
-    part_A_test = os.path.join(root,'part_A\\test_data','images')
+    train_path=os.path.join(root,'part_'+part,'train_data')
+    test_path=os.path.join(root,'part_'+part,'test_data')
+    # part_A_train = os.path.join(root,'part_A\\train_data','images')
+    # part_A_test = os.path.join(root,'part_A\\test_data','images')
     # part_A_train = os.path.join(root,'part_A\\train_data','images')
     # part_A_test = os.path.join(root,'part_A\\test_data','images')
     # part_B_train = os.path.join(root,'part_B_final/train_data','images')
     # part_B_test = os.path.join(root,'part_B_final/test_data','images')
-    path_sets = [part_A_train,part_A_test]
+    # path_sets = [part_A_train,part_A_test]
+    
+
+        # save both train and test paths
     paths_dict["images"]=os.path.join(train_path,'images')
     paths_dict["ground-truth"]=os.path.join(train_path,'ground-truth')
 
+    path_sets = [paths_dict["images"],paths_dict["ground-truth"]]
     
     img_paths = []
         # Grab all .jpg images paths
     for path in path_sets:
         for img_path in glob.glob(os.path.join(path, '*.jpg')):
             img_paths.append(img_path)
-        # Generate density map for each image
+
+            # Generate density map for each image
     for img_path in img_paths:
-        print('Generating Density map for : '+img_path)
+        if os.path.exists(img_path.replace('.jpg','.npy').replace('images','ground-truth')) and not resetFlag:
+            print("\t Already exists.")
+            continue
+        print('Generating Density map for : ',img_path[list(re.finditer("[\\\/]",img_path))[-1].start(0):]," :")
+
+            # load matrix containing ground truth infos
         mat = io.loadmat(img_path.replace('.jpg','.mat').replace('images','ground-truth').replace('IMG_','GT_IMG_'))
         img= plt.imread(img_path)#768行*1024列
         density_map = np.zeros((img.shape[0],img.shape[1]))
         points = mat["image_info"][0,0][0,0][0] #1546person*2(col,row)
-        
+
+            # Generate the density map
         density_map = dm_generator.generate_densitymap(img,points)
         # plt.imshow(k,cmap=CM.jet)
-        # save density_map to disk
-        if not os.path.exists(img_path.replace('.jpg','.npy').replace('images','ground-truth')) or resetFlag:
-            np.save(img_path.replace('.jpg','.npy').replace('images','ground-truth'), density_map)
+
+            # save density_map on disk
+        np.save(img_path.replace('.jpg','.npy').replace('images','ground-truth'), density_map)
 
     return paths_dict        
 
 
 def getloader(loader_type,img_gtdm_paths):
+    print("####### Getting DataLoader...")
     if loader_type=="Generic_Loader":
         return GenericLoader(img_gtdm_paths)
 
 
+
 def getModel(model_type,weightsFlag=False):
+    print("####### Getting Model : ",model_type,"...")
     if model_type=="MCNN":
         return MCNN(weightsFlag)
 
@@ -99,7 +131,7 @@ if __name__=="__main__":
 
     if dm_generator_type=="knn_gaussian_kernal":
         dm_generator=KNN_Gaussian_Kernal_DMGenerator()
-    
+
     datasets_paths=prepare_datasets(root,dataset_names,dm_generator)
     img_gtdm_paths=[(el["images"],el["ground-truth"]) for el in datasets_paths]
 

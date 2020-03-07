@@ -32,7 +32,7 @@ class KNN_Gaussian_Kernal_DMGenerator(DensityMapGenerator):
         image_shape: (768,1024) 768 is row and 1024 is column.
         '''
         image_shape=[image.shape[0],image.shape[1]]
-        print("Shape of current image: ",image_shape,". Totally need generate ",len(pointsList),"gaussian kernels.")
+        print("\t Shape of current image: ",image_shape,". Totally need generate ",len(pointsList),"gaussian kernels.")
         density_map = np.zeros(image_shape, dtype=np.float32)
         ground_truth_count = len(pointsList)
         if ground_truth_count == 0:
@@ -44,7 +44,7 @@ class KNN_Gaussian_Kernal_DMGenerator(DensityMapGenerator):
         # query kdtree
         distances, locations = tree.query(pointsList, k=4)
 
-        print ('generate density...')
+        print ('\t generate density...')
         for i, pt in enumerate(pointsList):
             pt2d = np.zeros(image_shape, dtype=np.float32)
             if int(pt[1])<image_shape[0] and int(pt[0])<image_shape[1]:
@@ -56,7 +56,7 @@ class KNN_Gaussian_Kernal_DMGenerator(DensityMapGenerator):
             else:
                 sigma = np.average(np.array(gt.shape))/2./2. #case: 1 point
             density_map += scipy.ndimage.filters.gaussian_filter(pt2d, sigma, mode='constant')
-        print ('done.')
+        print ('\t done.')
         return density_map
 
 

@@ -17,6 +17,7 @@ class MCNN(Model):
 
 
     def build(self,weightsFlag):
+        print("####### Building Net architecture...")
         
         self.branch1=nn.Sequential(
             nn.Conv2d(3,16,9,padding=4),
@@ -86,6 +87,7 @@ class MCNN(Model):
                 nn.init.constant_(module.bias, 0) 
 
     def train_model(self,train_dataloader,test_dataloader,train_params:TrainParams):
+        print("####### Training The model...")
         device=train_params.device
         if not os.path.exists('./checkpoints'):
             os.mkdir('./checkpoints')
