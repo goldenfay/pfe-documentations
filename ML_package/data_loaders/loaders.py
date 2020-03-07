@@ -65,6 +65,7 @@ class GenericLoader(Loader):
 
     def __init__(self,img_gt_dmap_list):
         self.img_gt_dmap_list=img_gt_dmap_list
+        print('length of paths  :', len(img_gt_dmap_list))
         
 
 
