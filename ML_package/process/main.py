@@ -81,7 +81,7 @@ def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
             # Generate density map for each image
     for img_path in img_paths:
         if os.path.exists(img_path.replace('.jpg','.npy').replace('images','ground-truth')) and not resetFlag:
-            print("\t Already exists.")
+            #print("\t Already exists.")
             continue
         print('Generating Density map for : ',img_path[list(re.finditer("[\\\/]",img_path))[-1].start(0):]," :")
 
@@ -150,7 +150,8 @@ if __name__=="__main__":
     #     model.train_model(train_loader,test_loader,train_params)
 
     merged_train_dataset,merged_test_dataset=data_loader.merge_datasets(dataloaders)
-
+    train_dataloader=torch.utils.data.DataLoader(merged_train_dataset)
+    test_dataloader=torch.utils.data.DataLoader(merged_test_dataset)
 
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
     model.train_model(train_dataloader,test_dataloader,train_params)
