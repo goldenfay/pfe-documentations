@@ -66,7 +66,7 @@ class MCNN(Model):
 
     def forward(self,img_tensor):
         if len(img_tensor.shape)==3: 
-            print("hola")
+            
             img_tensor=torch.tensor(img_tensor[np.newaxis,:,:,:],dtype=torch.float)
               
         branch1=self.branch1(img_tensor)
