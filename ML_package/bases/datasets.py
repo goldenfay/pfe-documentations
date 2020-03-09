@@ -14,7 +14,7 @@ class BasicDataSet(Dataset):
         return self.n_instances
 
     def __getitem__(self,index):
-        assert index < len(self.n_instances), 'index range error'
+        assert index < len(self), 'index range error'
         return self.instances[index]
             
 

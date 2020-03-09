@@ -124,7 +124,8 @@ if __name__=="__main__":
     loader_type="Generic_Loader"
     model_type="MCNN"
     model=None
-    device=device=torch.device("cuda")
+   # device=torch.device("cuda")
+    device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     params={"lr":1e-6,
             "momentum":0.95,
             "maxEpochs":1000,

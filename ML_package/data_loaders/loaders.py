@@ -24,11 +24,11 @@ class Loader:
                 train_set.append(features)
             for index,features in enumerate(test_loader):
                 test_set.append(features)  
-
+        print(train_set[0])
         if shuffleFlag:
             np.random.shuffle(train_set)
             np.random.shuffle(test_set)
-        print(train_set[0])
+        
         train_dataset=BasicDataSet(train_set)    
         test_dataset=BasicDataSet(test_set)   
         return train_dataset,test_dataset
@@ -44,7 +44,7 @@ class SimpleLoader(Loader):
         dataset=CrowdDataset(self.img_rootPath,self.gt_dmap_rootPath) 
         self.dataSet_size=len(dataset)
         indices = list(range(self.dataSet_size))
-        split = int(np.floor(test_size * self.dataSet_size))
+        split = int(np.floor(test_size * self.dataSet_size/100))
 
         random_seed=30
         if shuffle_flag:
@@ -73,9 +73,10 @@ class GenericLoader(Loader):
         all_datasets=[]
         for img_root_path,dm_root_path in self.img_gt_dmap_list:
             dataset=CrowdDataset(img_root_path,dm_root_path) 
-            self.dataSet_size=len(dataset)
-            indices = list(range(self.dataSet_size))
-            split = int(np.floor(test_size * self.dataSet_size))
+            dataSet_size=len(dataset)
+            print(dataSet_size)
+            indices = list(range(dataSet_size))
+            split = int(np.floor(test_size * dataSet_size/100))
 
             random_seed=30
             if shuffle_flag:
