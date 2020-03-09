@@ -89,6 +89,7 @@ class MCNN(Model):
     def train_model(self,train_dataloader,test_dataloader,train_params:TrainParams):
         print("####### Training The model...")
         device=train_params.device
+        self.to(device)
         if not os.path.exists('./checkpoints'):
             os.mkdir('./checkpoints')
         min_MAE=10000
