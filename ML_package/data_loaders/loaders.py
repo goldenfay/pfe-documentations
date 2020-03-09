@@ -24,7 +24,7 @@ class Loader:
                 train_set.append(features)
             for index,features in enumerate(test_loader):
                 test_set.append(features)  
-        print(train_set[0])
+        
         if shuffleFlag:
             np.random.shuffle(train_set)
             np.random.shuffle(test_set)
@@ -74,7 +74,7 @@ class GenericLoader(Loader):
         for img_root_path,dm_root_path in self.img_gt_dmap_list:
             dataset=CrowdDataset(img_root_path,dm_root_path) 
             dataSet_size=len(dataset)
-            print(dataSet_size)
+            
             indices = list(range(dataSet_size))
             split = int(np.floor(test_size * dataSet_size/100))
 

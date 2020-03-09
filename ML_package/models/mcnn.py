@@ -88,20 +88,28 @@ class MCNN(Model):
 
     def train_model(self,train_dataloader,test_dataloader,train_params:TrainParams):
         print("####### Training The model...")
+
+            # Get the device (GPU/CPU) and migrate the model to it
         device=train_params.device
+        print("\t Setting up model on ",device.type,"...")    
         self.to(device)
         if not os.path.exists('./checkpoints'):
             os.mkdir('./checkpoints')
+
+            # Initialize training variables
+        print("\t Initializing ","...")    
         min_MAE=10000
         min_epoch=0
         epochs_list=[]
         train_loss_list=[]
         test_error_list=[]
+
             # Start Train
         for epoch in range(1,train_params.maxEpochs):
-            print(len(train_dataloader))
+                # Set the Model on training mode
             self.train()
             epoch_loss=0
+                # Run training pass (feedforward,backpropagation,...)
             for i,(img,gt_dmap) in enumerate(train_dataloader):
                 img=img.to(device)
                 gt_dmap=gt_dmap.to(device)
@@ -110,14 +118,17 @@ class MCNN(Model):
                     # calculate loss
                 loss=train_params.criterion(et_dmap,gt_dmap)
                 epoch_loss+=loss.item()
+                    # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
                 train_params.optimizer.zero_grad()
+                    # Backpropagation
                 loss.backward()
                 train_params.optimizer.step()
             #print("epoch:",epoch,"loss:",epoch_loss/len(dataloader))
+                # Log results in checkpoints directory
             epochs_list.append(epoch)
             train_loss_list.append(epoch_loss/len(train_dataloader))
             torch.save(self.state_dict(),'./checkpoints/epoch_'+str(epoch)+".param")
-
+                # Set the Model on validation mode
             self.eval()
             MAE=0
             for i,(img,gt_dmap) in enumerate(test_dataloader):
@@ -131,9 +142,9 @@ class MCNN(Model):
                 min_MAE=MAE/len(test_dataloader)
                 min_epoch=epoch
             test_error_list.append(MAE/len(test_dataloader))
-            print("epoch:"+str(epoch)+" error:"+str(MAE/len(test_dataloader))+" min_MAE:"+str(min_MAE)+" min_epoch:"+str(min_epoch))
-            vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
-            vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
+            print("\t epoch:"+str(epoch)+"\n\t error:"+str(MAE/len(test_dataloader))+" min_MAE:"+str(min_MAE)+" min_epoch:"+str(min_epoch))
+            # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
+            # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
             # show an image
             # index=random.randint(0,len(test_dataloader)-1)
             # img,gt_dmap=test_dataset[index]
