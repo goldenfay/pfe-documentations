@@ -18,7 +18,7 @@ class Model(NN.Module):
         
         
 
-    def train_model(self,train_dataloader,test_dataloader,train_params:TrainParams):
+    def train_model(self,train_dataloader,test_dataloader,train_params:TrainParams,resume=False):
         pass
 
     def retrain_model(self,params=None):

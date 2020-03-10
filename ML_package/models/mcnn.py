@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import visdom as vis
 import numpy as np
-import os,sys,random
+import os,sys,glob,random,re
     # User's modules
 import model
 from model import *
@@ -86,16 +86,17 @@ class MCNN(Model):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0) 
 
-    def train_model(self,train_dataloader,test_dataloader,train_params:TrainParams):
+    def train_model(self,train_dataloader,test_dataloader,train_params:TrainParams,resume=False):
         print("####### Training The model...")
-
+        self.optimizer=train_params.optimizer.step()
             # Get the device (GPU/CPU) and migrate the model to it
         device=train_params.device
         print("\t Setting up model on ",device.type,"...")    
         self.to(device)
         if not os.path.exists('./checkpoints'):
             os.mkdir('./checkpoints')
-
+           
+        
             # Initialize training variables
         print("\t Initializing ","...")    
         min_MAE=10000
@@ -103,9 +104,18 @@ class MCNN(Model):
         epochs_list=[]
         train_loss_list=[]
         test_error_list=[]
-
+        start_epoch=1
+         # If resume option is specified, restore state of model and resume training
+            
+        if resume:
+            params_hist=glob.glob(os.path.join('checkpoints','*.param'))
+            if len(params_hist)>0:
+                print("\t Restore Checkpoints found! Resuming training...")
+                self.load_state_dict(torch.load(params_hist[-1]))
+                start_epoch=int(re.sub("^[0-9]+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
+                print(self.state_dict())
             # Start Train
-        for epoch in range(1,train_params.maxEpochs):
+        for epoch in range(start_epoch,train_params.maxEpochs):
                 # Set the Model on training mode
             self.train()
             epoch_loss=0
@@ -122,7 +132,7 @@ class MCNN(Model):
                 train_params.optimizer.zero_grad()
                     # Backpropagation
                 loss.backward()
-                train_params.optimizer.step()
+                self.optimizer.step()
             #print("epoch:",epoch,"loss:",epoch_loss/len(dataloader))
                 # Log results in checkpoints directory
             epochs_list.append(epoch)
