@@ -88,7 +88,7 @@ class MCNN(Model):
 
     def train_model(self,train_dataloader,test_dataloader,train_params:TrainParams,resume=False):
         print("####### Training The model...")
-        self.optimizer=train_params.optimizer.step()
+        self.optimizer=train_params.optimizer
             # Get the device (GPU/CPU) and migrate the model to it
         device=train_params.device
         print("\t Setting up model on ",device.type,"...")    
