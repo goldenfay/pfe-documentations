@@ -112,7 +112,7 @@ class MCNN(Model):
             if len(params_hist)>0:
                 print("\t Restore Checkpoints found! Resuming training...")
                 self.load_state_dict(torch.load(params_hist[-1]))
-                start_epoch=int(re.sub("D+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
+                start_epoch=int(re.match("d+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
                 print(self.state_dict())
             # Start Train
         for epoch in range(start_epoch,train_params.maxEpochs):
