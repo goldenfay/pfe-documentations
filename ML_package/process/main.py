@@ -155,7 +155,7 @@ if __name__=="__main__":
     test_dataloader=torch.utils.data.DataLoader(merged_test_dataset)
     
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
-    model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
+    model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=False)
     
     
     

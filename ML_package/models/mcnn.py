@@ -129,7 +129,7 @@ class MCNN(Model):
                 loss=train_params.criterion(et_dmap,gt_dmap)
                 epoch_loss+=loss.item()
                     # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
-                train_params.optimizer.zero_grad()
+                self.optimizer.zero_grad()
                     # Backpropagation
                 loss.backward()
                 self.optimizer.step()
@@ -138,6 +138,7 @@ class MCNN(Model):
             epochs_list.append(epoch)
             train_loss_list.append(epoch_loss/len(train_dataloader))
             torch.save(self.state_dict(),'./checkpoints/epoch_'+str(epoch)+".param")
+            torch.save(self,'./checkpoints/epoch_'+str(epoch)+".pkl")
                 # Set the Model on validation mode
             self.eval()
             MAE=0
