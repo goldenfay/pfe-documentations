@@ -84,7 +84,7 @@ class SimpleLoader(Loader):
 
 class GenericLoader(Loader):
 
-    def __init__(self,img_gt_dmap_list,reset_samplers):
+    def __init__(self,img_gt_dmap_list,reset_samplers=True):
         super(SimpleLoader,self).__init__(reset_samplers)
         self.img_gt_dmap_list=img_gt_dmap_list
         
