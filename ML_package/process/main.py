@@ -113,6 +113,15 @@ def getModel(model_type,weightsFlag=False):
     if model_type=="MCNN":
         return MCNN(weightsFlag)
 
+def get_best_model(min_epoch):
+    
+    if not os.path.exists(os.path.join(parentdir , 'checkpoints')):
+        raise Exception("Cannot load model. Checkpoint directory not found!")
+    if not os.path.exists(os.path.join(parentdir , 'checkpoints','epoch_'+str(min_epoch)+'.pkl')):
+        raise Exception("Cannot load model.Best epoch checkpoint does not exists!")
+
+    return torch.load(os.path.join(parentdir , 'checkpoints','epoch_'+str(min_epoch)+'.pkl'))
+
 if __name__=="__main__":
     if len(sys.argv)>1:
         root = os.path.join(sys.argv[1],'ShanghaiTech')
@@ -155,7 +164,10 @@ if __name__=="__main__":
     test_dataloader=torch.utils.data.DataLoader(merged_test_dataset)
     
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
-    model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=False)
+    epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
+    model=get_best_model(min_epoch)
+
+    model.eval_model()
     
     
     

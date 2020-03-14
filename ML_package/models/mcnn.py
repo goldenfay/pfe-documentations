@@ -7,6 +7,12 @@ import os,sys,glob,random,re
 import model
 from model import *
 
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+    # User's module from another directory
+sys.path.append(os.path.join(parentdir, "bases"))
+from utils import BASE_PATH
+
 
 
 class MCNN(Model):
@@ -105,8 +111,8 @@ class MCNN(Model):
         train_loss_list=[]
         test_error_list=[]
         start_epoch=1
+
          # If resume option is specified, restore state of model and resume training
-            
         if resume:
             params_hist=glob.glob(os.path.join('checkpoints','*.param'))
             if len(params_hist)>0:
@@ -114,6 +120,7 @@ class MCNN(Model):
                 self.load_state_dict(torch.load(params_hist[-1]))
                 start_epoch=int(re.sub("[^0-9]+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
                 print(self.state_dict())
+
             # Start Train
         for epoch in range(start_epoch,train_params.maxEpochs):
                 # Set the Model on training mode
@@ -134,11 +141,13 @@ class MCNN(Model):
                 loss.backward()
                 self.optimizer.step()
             #print("epoch:",epoch,"loss:",epoch_loss/len(dataloader))
+
                 # Log results in checkpoints directory
             epochs_list.append(epoch)
             train_loss_list.append(epoch_loss/len(train_dataloader))
             torch.save(self.state_dict(),'./checkpoints/epoch_'+str(epoch)+".param")
             torch.save(self,'./checkpoints/epoch_'+str(epoch)+".pkl")
+
                 # Set the Model on validation mode
             self.eval()
             MAE=0
@@ -149,11 +158,12 @@ class MCNN(Model):
                 et_dmap=self(img)
                 MAE+=abs(et_dmap.data.sum()-gt_dmap.data.sum()).item()
                 del img,gt_dmap,et_dmap
-            if MAE/len(test_dataloader)<min_MAE:
-                min_MAE=MAE/len(test_dataloader)
+            MAE=MAE/len(test_dataloader)    
+            if MAE<min_MAE:
+                min_MAE=MAE
                 min_epoch=epoch
-            test_error_list.append(MAE/len(test_dataloader))
-            print("\t epoch:"+str(epoch)+"\n\t error:"+str(MAE/len(test_dataloader))+" min_MAE:"+str(min_MAE)+" min_epoch:"+str(min_epoch))
+            test_error_list.append(MAE)
+            print("\t epoch:"+str(epoch)+"\n\t error:"+str(MAE)+" min_MAE:"+str(min_MAE)+" min_epoch:"+str(min_epoch))
             # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
             # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
             # show an image
@@ -166,7 +176,10 @@ class MCNN(Model):
             # et_dmap=self(img)
             # et_dmap=et_dmap.squeeze(0).detach().cpu().numpy()
             # vis.image(win=5,img=et_dmap/(et_dmap.max())*255,opts=dict(title='et_dmap('+str(et_dmap.sum())+')'))
-                             
+        return (epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE) 
+
+    def save(self):
+        torch.save(self,os.path.join(BASE_PATH,'obj','models','MCNN'))                        
 
 if __name__=="__main__":
     import matplotlib.pyplot as plt
