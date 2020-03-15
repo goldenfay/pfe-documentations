@@ -114,7 +114,10 @@ class MCNN(Model):
 
          # If resume option is specified, restore state of model and resume training
         if resume:
-            params_hist=glob.glob(os.path.join('checkpoints','*.param'))
+            params_hist=[int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join('./checkpoints','*.param'))]
+            print(sorted(params_hist))
+            sys.exit(0)
+
             if len(params_hist)>0:
                 print("\t Restore Checkpoints found! Resuming training...")
                 self.load_state_dict(torch.load(params_hist[-1]))
