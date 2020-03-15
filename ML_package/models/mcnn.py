@@ -127,7 +127,7 @@ class MCNN(Model):
                 self.optimizer=torch.load(last_epoch.replace('.param','.pkl')).optimizer
 
                 print(self.optimizer.state_dict()==None)
-                exit(0)
+                sys.exit(0)
 
             # Start Train
         for epoch in range(start_epoch,train_params.maxEpochs):
