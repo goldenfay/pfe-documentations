@@ -115,14 +115,19 @@ class MCNN(Model):
          # If resume option is specified, restore state of model and resume training
         if resume:
             params_hist=[int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join('./checkpoints','*.param'))]
-            print(sorted(params_hist))
-            sys.exit(0)
+            
+            
 
             if len(params_hist)>0:
                 print("\t Restore Checkpoints found! Resuming training...")
-                self.load_state_dict(torch.load(params_hist[-1]))
-                start_epoch=int(re.sub("[^0-9]+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
-                print(self.state_dict())
+                # start_epoch=int(re.sub("[^0-9]+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
+                start_epoch=max(sorted(params_hist))
+                last_epoch=glob.glob(os.path.join('./checkpoints','epoch_'+str(start_epoch)+'.param'))[0]
+                self.load_state_dict(torch.load(last_epoch))
+                self.optimizer=torch.load(last_epoch.replace('.param','.pkl')).optimizer
+
+                print(self.optimizer.state_dict()==None)
+                exit(0)
 
             # Start Train
         for epoch in range(start_epoch,train_params.maxEpochs):
