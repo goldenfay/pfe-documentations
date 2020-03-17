@@ -9,7 +9,6 @@ def import_or_install(package,pipname):
 import_or_install("matplotlib","matplotlib")
 import_or_install("visdom","visdom")
 import_or_install("numpy","numpy")
-import_or_install("matplotlib","matplotlib")
 
 import torch
 from torch import nn
@@ -31,6 +30,8 @@ from dm_generator import *
 from knn_gaussian_kernal import *
 from loaders import *
 from mcnn import *
+import utils
+import plots
 
 
 
@@ -108,10 +109,13 @@ def getloader(loader_type,img_gtdm_paths):
 
 
 
-def getModel(model_type,weightsFlag=False):
+def getModel(model_type,load_saved=False,weightsFlag=False):
     print("####### Getting Model : ",model_type,"...")
     if model_type=="MCNN":
-        return MCNN(weightsFlag)
+        if load_saved and  os.path.exists(os.path.join(utils.BASE_PATH,'obj','models','MCNN')):
+            return torch.load(os.path.join(utils.BASE_PATH,'obj','models','MCNN'))
+        else:
+            return MCNN(weightsFlag)
 
 def get_best_model(min_epoch):
     
@@ -153,7 +157,7 @@ if __name__=="__main__":
 
     dataloaders=data_loader.load()
 
-    model=getModel(model_type)
+    
 
         # This loop is basically used in experimentations
     # for train_loader,test_loader in dataloaders:
@@ -163,9 +167,11 @@ if __name__=="__main__":
     train_dataloader=torch.utils.data.DataLoader(merged_train_dataset)
     test_dataloader=torch.utils.data.DataLoader(merged_test_dataset)
     
+    model=getModel(model_type,load_saved=True)
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
     epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
     model=get_best_model(min_epoch)
+    model.save()
 
     model.eval_model()
     
