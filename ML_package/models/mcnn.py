@@ -19,7 +19,7 @@ class MCNN(Model):
     
     def __init__(self,weightsFlag=False):
         super(MCNN,self).__init__()
-        self.build(weightsFlag)
+        # self.build(weightsFlag)
 
 
     def build(self,weightsFlag):
@@ -130,7 +130,8 @@ class MCNN(Model):
                 if hasattr(last_model,'min_MAE'):self.min_MAE=last_model.min_MAE
                 if hasattr(last_model,'min_epoch'):self.min_epoch=last_model.min_epoch
 
-                
+           
+
                 
 
             # Start Train
