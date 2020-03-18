@@ -19,7 +19,7 @@ class MCNN(Model):
     
     def __init__(self,weightsFlag=False):
         super(MCNN,self).__init__()
-        # self.build(weightsFlag)
+        self.build(weightsFlag)
 
 
     def build(self,weightsFlag):
