@@ -171,10 +171,10 @@ class MCNN(Model):
                     # forward propagation
                 est_dmap=self(img)
                 MAE+=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
-                MSE+=numpy.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(),2).item()
+                MSE+=np.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(),2).item()
                 del img,gt_dmap,est_dmap
             MAE=MAE/len(test_dataloader)  
-            MSE=numpy.math.sqrt(MSE/len(test_dataloader))
+            MSE=np.math.sqrt(MSE/len(test_dataloader))
 
             if MAE<self.min_MAE:
                 self.min_MAE=MAE
