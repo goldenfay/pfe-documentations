@@ -143,9 +143,9 @@ class MCNN(Model):
                 img=img.to(device)
                 gt_dmap=gt_dmap.to(device)
                     # forward propagation
-                et_dmap=self(img)
+                est_dmap=self(img)
                     # calculate loss
-                loss=train_params.criterion(et_dmap,gt_dmap)
+                loss=train_params.criterion(est_dmap,gt_dmap)
                 epoch_loss+=loss.item()
                     # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
                 self.optimizer.zero_grad()
@@ -163,18 +163,23 @@ class MCNN(Model):
                 # Set the Model on validation mode
             self.eval()
             MAE=0
+            MSE=0
             for i,(img,gt_dmap) in enumerate(test_dataloader):
                 img=img.to(device)
                 gt_dmap=gt_dmap.to(device)
                     # forward propagation
-                et_dmap=self(img)
-                MAE+=abs(et_dmap.data.sum()-gt_dmap.data.sum()).item()
-                del img,gt_dmap,et_dmap
-            MAE=MAE/len(test_dataloader)    
+                est_dmap=self(img)
+                MAE+=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
+                MSE+=numpy.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(),2).item()
+                del img,gt_dmap,est_dmap
+            MAE=MAE/len(test_dataloader)  
+            MSE=numpy.math.sqrt(MSE/len(test_dataloader))
+
             if MAE<self.min_MAE:
                 self.min_MAE=MAE
                 self.min_epoch=epoch
             test_error_list.append(MAE)
+            print("Params",list(self.parameters())[0])
             print("\t epoch:"+str(epoch)+"\n\t error:"+str(MAE)+" min_MAE:"+str(self.min_MAE)+" min_epoch:"+str(self.min_epoch))
             # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
             # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
@@ -185,9 +190,9 @@ class MCNN(Model):
             # vis.image(win=4,img=gt_dmap/(gt_dmap.max())*255,opts=dict(title='gt_dmap('+str(gt_dmap.sum())+')'))
             # img=img.unsqueeze(0).to(device)
             # gt_dmap=gt_dmap.unsqueeze(0)
-            # et_dmap=self(img)
-            # et_dmap=et_dmap.squeeze(0).detach().cpu().numpy()
-            # vis.image(win=5,img=et_dmap/(et_dmap.max())*255,opts=dict(title='et_dmap('+str(et_dmap.sum())+')'))
+            # est_dmap=self(img)
+            # est_dmap=est_dmap.squeeze(0).detach().cpu().numpy()
+            # vis.image(win=5,img=est_dmap/(est_dmap.max())*255,opts=dict(title='est_dmap('+str(est_dmap.sum())+')'))
         return (epochs_list,train_loss_list,test_error_list,self.min_epoch,self.min_MAE) 
 
     def save(self):
@@ -209,5 +214,5 @@ if __name__=="__main__":
     x=vis.Visdom()
     # x.images(img,1,10)
     x.image(win=5,img=img,opts=dict(title='img'))
-    x.image(win=5,img=out_dmap/(out_dmap.max())*255,opts=dict(title='et_dmap('))
+    x.image(win=5,img=out_dmap/(out_dmap.max())*255,opts=dict(title='est_dmap('))
     

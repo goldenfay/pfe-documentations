@@ -173,7 +173,7 @@ if __name__=="__main__":
     model=get_best_model(min_epoch)
     model.save()
 
-    model.eval_model()
+    model.eval_model(test_dataloader)
     
     
     
