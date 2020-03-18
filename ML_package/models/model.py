@@ -45,7 +45,7 @@ class Model(NN.Module):
                 est_dmap=self(img).detach()
                 
                 MAE+=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
-                MSE+=numpy.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(),2).item()
+                MSE+=numpy.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(),2)
 
                     # Show the estimated density map via matplotlib
                 if cpt%10==0: 
