@@ -125,9 +125,10 @@ class MCNN(Model):
                 start_epoch=435
                 last_epoch=glob.glob(os.path.join('./checkpoints','epoch_'+str(start_epoch)+'.param'))[0]
                 self.load_state_dict(torch.load(last_epoch))
-                print(list(self.parameters())[0])
+                
                 last_model=torch.load(last_epoch.replace('.param','.pkl'))
                 self.optimizer=last_model.optimizer
+                print(self.optimizer.state_dict())
                 if hasattr(last_model,'min_MAE'):self.min_MAE=last_model.min_MAE
                 if hasattr(last_model,'min_epoch'):self.min_epoch=last_model.min_epoch
 
