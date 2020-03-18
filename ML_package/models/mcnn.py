@@ -124,6 +124,7 @@ class MCNN(Model):
                 # start_epoch=max(sorted(params_hist))
                 start_epoch=435
                 last_epoch=glob.glob(os.path.join('./checkpoints','epoch_'+str(start_epoch)+'.param'))[0]
+                print(torch.load(last_epoch))
                 self.load_state_dict(torch.load(last_epoch))
                 last_model=torch.load(last_epoch.replace('.param','.pkl'))
                 self.optimizer=last_model.optimizer
