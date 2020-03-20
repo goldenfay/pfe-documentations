@@ -128,7 +128,6 @@ class MCNN(Model):
                 
                 last_model=torch.load(last_epoch.replace('.param','.pkl'))
                 self.optimizer=last_model.optimizer
-                print(self.optimizer.state_dict())
                 if hasattr(last_model,'min_MAE'):self.min_MAE=last_model.min_MAE
                 if hasattr(last_model,'min_epoch'):self.min_epoch=last_model.min_epoch
 
@@ -182,7 +181,6 @@ class MCNN(Model):
                 self.min_MAE=MAE
                 self.min_epoch=epoch
             test_error_list.append(MAE)
-            print("Params",list(self.parameters())[0]).grad
             print("\t epoch:"+str(epoch)+"\n\t error:"+str(MAE)+" min_MAE:"+str(self.min_MAE)+" min_epoch:"+str(self.min_epoch))
             # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
             # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
