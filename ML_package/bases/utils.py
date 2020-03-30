@@ -1,6 +1,6 @@
 import os, glob,sys,inspect
 
-    # Root path of the project
+    # Root path of the ML Package
 BASE_PATH=os.path.dirname(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
 
 

@@ -7,11 +7,11 @@ import os,sys,glob,random,re
 import model
 from model import *
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-    # User's module from another directory
-sys.path.append(os.path.join(parentdir, "bases"))
-from utils import BASE_PATH
+# currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# parentdir = os.path.dirname(currentdir)
+#     # User's module from another directory
+# sys.path.append(os.path.join(parentdir, "bases"))
+# from utils import BASE_PATH
 
 
 
@@ -92,112 +92,8 @@ class MCNN(Model):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0) 
 
-    def train_model(self,train_dataloader,test_dataloader,train_params:TrainParams,resume=False):
-        print("####### Training The model...")
-        self.optimizer=train_params.optimizer
-            # Get the device (GPU/CPU) and migrate the model to it
-        device=train_params.device
-        print("\t Setting up model on ",device.type,"...")    
-        self.to(device)
-        if not os.path.exists('./checkpoints'):
-            os.mkdir('./checkpoints')
-           
-        
-            # Initialize training variables
-        print("\t Initializing ","...")    
-        self.min_MAE=10000
-        self.min_epoch=0
-        epochs_list=[]
-        train_loss_list=[]
-        test_error_list=[]
-        start_epoch=1
-
-         # If resume option is specified, restore state of model and resume training
-        if resume:
-            params_hist=[int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join('./checkpoints','*.param'))]
-            
-            
-
-            if len(params_hist)>0:
-                print("\t Restore Checkpoints found! Resuming training...")
-                # start_epoch=int(re.sub("[^0-9]+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
-                # start_epoch=max(sorted(params_hist))
-                start_epoch=435
-                last_epoch=glob.glob(os.path.join('./checkpoints','epoch_'+str(start_epoch)+'.param'))[0]
-                self.load_state_dict(torch.load(last_epoch))
-                
-                last_model=torch.load(last_epoch.replace('.param','.pkl'))
-                self.optimizer=last_model.optimizer
-                if hasattr(last_model,'min_MAE'):self.min_MAE=last_model.min_MAE
-                if hasattr(last_model,'min_epoch'):self.min_epoch=last_model.min_epoch
-
-           
-
-                
-
-            # Start Train
-        for epoch in range(start_epoch,train_params.maxEpochs):
-                # Set the Model on training mode
-            self.train()
-            epoch_loss=0
-                # Run training pass (feedforward,backpropagation,...)
-            for i,(img,gt_dmap) in enumerate(train_dataloader):
-                img=img.to(device)
-                gt_dmap=gt_dmap.to(device)
-                    # forward propagation
-                est_dmap=self(img)
-                    # calculate loss
-                loss=train_params.criterion(est_dmap,gt_dmap)
-                epoch_loss+=loss.item()
-                    # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
-                self.optimizer.zero_grad()
-                    # Backpropagation
-                loss.backward()
-                self.optimizer.step()
-            #print("epoch:",epoch,"loss:",epoch_loss/len(dataloader))
-
-                # Log results in checkpoints directory
-            epochs_list.append(epoch)
-            train_loss_list.append(epoch_loss/len(train_dataloader))
-            torch.save(self.state_dict(),'./checkpoints/epoch_'+str(epoch)+".param")
-            torch.save(self,'./checkpoints/epoch_'+str(epoch)+".pkl")
-
-                # Set the Model on validation mode
-            self.eval()
-            MAE=0
-            MSE=0
-            for i,(img,gt_dmap) in enumerate(test_dataloader):
-                img=img.to(device)
-                gt_dmap=gt_dmap.to(device)
-                    # forward propagation
-                est_dmap=self(img)
-                MAE+=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
-                MSE+=np.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(),2)
-                del img,gt_dmap,est_dmap
-            MAE=MAE/len(test_dataloader)  
-            MSE=np.math.sqrt(MSE/len(test_dataloader))
-
-            if MAE<self.min_MAE:
-                self.min_MAE=MAE
-                self.min_epoch=epoch
-            test_error_list.append(MAE)
-            print("\t epoch:"+str(epoch)+"\n\t error:"+str(MAE)+" min_MAE:"+str(self.min_MAE)+" min_epoch:"+str(self.min_epoch))
-            # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
-            # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
-            # show an image
-            # index=random.randint(0,len(test_dataloader)-1)
-            # img,gt_dmap=test_dataset[index]
-            # vis.image(win=3,img=img,opts=dict(title='img'))
-            # vis.image(win=4,img=gt_dmap/(gt_dmap.max())*255,opts=dict(title='gt_dmap('+str(gt_dmap.sum())+')'))
-            # img=img.unsqueeze(0).to(device)
-            # gt_dmap=gt_dmap.unsqueeze(0)
-            # est_dmap=self(img)
-            # est_dmap=est_dmap.squeeze(0).detach().cpu().numpy()
-            # vis.image(win=5,img=est_dmap/(est_dmap.max())*255,opts=dict(title='est_dmap('+str(est_dmap.sum())+')'))
-        return (epochs_list,train_loss_list,test_error_list,self.min_epoch,self.min_MAE) 
-
-    def save(self):
-        torch.save(self,os.path.join(BASE_PATH,'obj','models','MCNN'))                        
+     
+                        
 
 if __name__=="__main__":
     import matplotlib.pyplot as plt

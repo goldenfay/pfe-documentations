@@ -26,7 +26,17 @@ class CSRNet(Model):
             self._initialize_weights()
             for i in xrange(len(self.frontEnd.state_dict().items())):
                 self.frontEnd.state_dict().items()[i][1].data[:] = mod.state_dict().items()[i][1].data[:]
-                
+    
+    
+    def __init__(self, weightsFlag=False):
+        super(CSRNet, self).__init__() 
+        self.frontEnd ,self.backEnd ,self.output_layer=self.default_architecture()
+        if not weightsFlag:
+            mod = models.vgg16(pretrained = True)
+            self._initialize_weights()
+            for i in xrange(len(self.frontEnd.state_dict().items())):
+                self.frontEnd.state_dict().items()[i][1].data[:] = mod.state_dict().items()[i][1].data[:]
+
     def forward(self,x):
         x = self.frontEnd(x)
         x = self.backEnd(x)

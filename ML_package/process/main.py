@@ -169,7 +169,7 @@ if __name__=="__main__":
     
     model=getModel(model_type,load_saved=True)
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
-    epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
+    epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE,train_time=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
     model=get_best_model(min_epoch)
     model.save()
 
