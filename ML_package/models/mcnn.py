@@ -1,8 +1,7 @@
 import torch
 from torch import nn
 import visdom as vis
-import numpy as np
-import os,sys,glob,random,re
+import os
     # User's modules
 import model
 from model import *

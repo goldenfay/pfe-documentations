@@ -43,7 +43,7 @@ class Model(NN.Module):
         test_error_list=[]
         start_epoch=1
 
-         # If resume option is specified, restore state of model and resume training
+            # If resume option is specified, restore state of model and resume training
         if resume:
             params_hist=[int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join(os.path.join(BASE_PATH,'checkpoints'),'*.param'))]
             
@@ -144,11 +144,11 @@ class Model(NN.Module):
                 img=img.to(device)
                 gt_dmap=gt_dmap.to(device)
 
-                # Forward propagation
+                    # Forward propagation
                 est_dmap=self(img).detach()
                 
                 MAE+=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
-                MSE+=numpy.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(),2)
+                MSE+=np.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(),2)
 
                     # Show the estimated density map via matplotlib
                 if cpt%10==0: 
@@ -156,7 +156,7 @@ class Model(NN.Module):
                     plt.imshow(est_dmap,cmap=CM.jet)
                 del img,gt_dmap,est_dmap
             MAE=MAE/len(test_dataloader)  
-            MSE=numpy.math.sqrt(MSE/len(test_dataloader))
+            MSE=np.math.sqrt(MSE/len(test_dataloader))
         print("\t Test MAE : ",MAE,"\t test MSE : ",MSE)    
         return (MAE,MSE)         
                 
