@@ -52,8 +52,8 @@ class Model(NN.Module):
             if len(params_hist)>0:
                 print("\t Restore Checkpoints found! Resuming training...")
                 # start_epoch=int(re.sub("[^0-9]+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
-                # start_epoch=max(sorted(params_hist))
-                start_epoch=435
+                start_epoch=max(sorted(params_hist))
+                #start_epoch=435
                 last_epoch=glob.glob(os.path.join(os.path.join(BASE_PATH,'checkpoints','epoch_'+str(start_epoch)+'.param')))[0]
                 self.load_state_dict(torch.load(last_epoch))
                 
