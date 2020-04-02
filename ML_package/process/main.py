@@ -102,7 +102,7 @@ def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
     return paths_dict        
 
 
-def getloader(loader_type,img_gtdm_paths):
+def getloader(loader_type,img_gtdm_paths,restore_flag=True):
     print("####### Getting DataLoader...")
     if loader_type=="Generic_Loader":
         return GenericLoader(img_gtdm_paths)

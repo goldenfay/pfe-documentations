@@ -41,7 +41,7 @@ class Model(NN.Module):
         epochs_list=[]
         train_loss_list=[]
         test_error_list=[]
-        start_epoch=1
+        start_epoch=0
 
             # If resume option is specified, restore state of model and resume training
         if resume:
@@ -62,7 +62,7 @@ class Model(NN.Module):
                 if hasattr(last_model,'min_MAE'):self.min_MAE=last_model.min_MAE
                 if hasattr(last_model,'min_epoch'):self.min_epoch=last_model.min_epoch
 
-           
+        start_epoch+=1   
 
         start=time.time()        
 
@@ -86,7 +86,7 @@ class Model(NN.Module):
                 loss.backward()
                 self.optimizer.step()
             #print("epoch:",epoch,"loss:",epoch_loss/len(dataloader))
-
+            print(epoch_loss/len(train_dataloader))
                 # Log results in checkpoints directory
             epochs_list.append(epoch)
             train_loss_list.append(epoch_loss/len(train_dataloader))
