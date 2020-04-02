@@ -86,7 +86,7 @@ class Model(NN.Module):
                 loss.backward()
                 self.optimizer.step()
             #print("epoch:",epoch,"loss:",epoch_loss/len(dataloader))
-            print(self[0].weight)
+            print(self.layer[0].weight)
                 # Log results in checkpoints directory
             epochs_list.append(epoch)
             train_loss_list.append(epoch_loss/len(train_dataloader))
