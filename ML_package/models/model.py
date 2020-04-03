@@ -10,7 +10,7 @@ currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentfram
 parentdir = os.path.dirname(currentdir)
     # User's module from another directory
 sys.path.append(os.path.join(parentdir, "bases"))   
-from utils import BASE_PATH
+import utils 
 from params import *
 
 class Model(NN.Module):
@@ -30,8 +30,8 @@ class Model(NN.Module):
         device=train_params.device
         print("\t Setting up model on ",device.type,"...")    
         self.to(device)
-        if not os.path.exists(os.path.join(BASE_PATH,'checkpoints2')):
-            os.mkdir(os.path.join(BASE_PATH,'checkpoints2'))
+        if not os.path.exists(os.path.join(utils.BASE_PATH,'checkpoints2')):
+            os.mkdir(os.path.join(utils.BASE_PATH,'checkpoints2'))
            
         
             # Initialize training variables
@@ -45,7 +45,7 @@ class Model(NN.Module):
 
             # If resume option is specified, restore state of model and resume training
         if resume:
-            params_hist=[int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join(os.path.join(BASE_PATH,'checkpoints2'),'*.pth'))]
+            params_hist=[int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join(os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__),'*.pth'))]
             
             
 
@@ -54,7 +54,7 @@ class Model(NN.Module):
                 # start_epoch=int(re.sub("[^0-9]+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
                 start_epoch=max(sorted(params_hist))
                 #start_epoch=435
-                last_epoch=glob.glob(os.path.join(os.path.join(BASE_PATH,'checkpoints2','epoch_'+str(start_epoch)+'.pth')))[0]
+                last_epoch=glob.glob(os.path.join(os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__,'epoch_'+str(start_epoch)+'.pth')))[0]
                 # self.load_state_dict(torch.load(last_epoch))
                 
                 # last_model=torch.load(last_epoch.replace('.pth','.pkl'))
@@ -93,8 +93,8 @@ class Model(NN.Module):
             epochs_list.append(epoch)
             train_loss_list.append(epoch_loss/len(train_dataloader))
             
-            # torch.save(self.state_dict(),os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+'.pth'))
-            # torch.save(self,os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+".pkl"))
+            # torch.save(self.state_dict(),os.path.join(utils.BASE_PATH,'checkpoints2/epoch_'+str(epoch)+'.pth'))
+            # torch.save(self,os.path.join(utils.BASE_PATH,'checkpoints2/epoch_'+str(epoch)+".pkl"))
 
                 # Set the Model on validation mode
             self.eval()
@@ -123,7 +123,7 @@ class Model(NN.Module):
                 'min_MAE': self.min_MAE,
                 'min_epoch': self.min_epoch
             }
-            self.save_checkpoint(check_point,os.path.join(BASE_PATH,'checkpoints2','MODELTYPE','epoch_'+str(epoch)+'.pth'))
+            self.save_checkpoint(check_point,os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__,'epoch_'+str(epoch)+'.pth'))
             # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
             # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
             # show an image
@@ -173,7 +173,8 @@ class Model(NN.Module):
                 
 
     def save_checkpoint(self,chkpt,path):
-        pass
+        utils.make_path(os.path.split(path)[0])
+        torch.save(chkpt, path) 
 
     def load_chekpoint(self,path):
         chkpt=torch.load(path)
@@ -183,7 +184,7 @@ class Model(NN.Module):
         return chkpt['loss'],chkpt['min_MAE'],chkpt['min_epoch']
 
     def save(self):
-        torch.save(self,os.path.join(BASE_PATH,'obj','models',self.__class__.__name__))    
+        torch.save(self,os.path.join(utils.BASE_PATH,'obj','models',self.__class__.__name__))    
 
 
 

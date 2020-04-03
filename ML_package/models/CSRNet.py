@@ -231,6 +231,5 @@ class CSRNet(Model):
 
         return frontEnd_shape,backEnd_shape,output_layer         
 
-    def save_checkpoint(self,chkpt,path):
-        torch.save(chkpt, path.replace('MODELTYPE','CSRNet'))        
+          
                 
