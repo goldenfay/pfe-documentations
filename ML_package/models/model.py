@@ -85,8 +85,8 @@ class Model(NN.Module):
                     # Backpropagation
                 loss.backward()
                 self.optimizer.step()
-            #print("epoch:",epoch,"loss:",epoch_loss/len(dataloader))
-            print(self.parameters().__str__()[:40])
+                print("epoch:",epoch,"loss:",epoch_loss/len(train_dataloader))
+            
                 # Log results in checkpoints directory
             epochs_list.append(epoch)
             train_loss_list.append(epoch_loss/len(train_dataloader))
