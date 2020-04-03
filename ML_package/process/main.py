@@ -107,7 +107,10 @@ def getloader(loader_type,img_gtdm_paths,restore_flag=True):
     restore_dir=os.path.join(utils.BASE_PATH,'obj','loaders')
     if loader_type=="Generic_Loader":
         if restore_flag:
-            return torch.load(glob.glob(os.path.join(restore_dir,'Generic_loader'))[0])
+            try:
+                return torch.load(glob.glob(os.path.join(restore_dir,'Generic_loader'))[0])
+            except Exception:
+                return GenericLoader(img_gtdm_paths)    
         else: return GenericLoader(img_gtdm_paths)
 
 
