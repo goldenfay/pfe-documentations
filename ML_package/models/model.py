@@ -180,7 +180,7 @@ class Model(NN.Module):
         self.load_state_dict(chkpt['model_state_dict'])
         self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
 
-        return chkpt['epoch'],chkpt['min_MAE'],chkpt['min_epoch']
+        return chkpt['loss'],chkpt['min_MAE'],chkpt['min_epoch']
 
     def save(self):
         torch.save(self,os.path.join(BASE_PATH,'obj','models',self.__class__.__name__))    
