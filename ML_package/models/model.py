@@ -30,8 +30,8 @@ class Model(NN.Module):
         device=train_params.device
         print("\t Setting up model on ",device.type,"...")    
         self.to(device)
-        if not os.path.exists(os.path.join(BASE_PATH,'checkpoints')):
-            os.mkdir(os.path.join(BASE_PATH,'checkpoints'))
+        if not os.path.exists(os.path.join(BASE_PATH,'checkpoints2')):
+            os.mkdir(os.path.join(BASE_PATH,'checkpoints2'))
            
         
             # Initialize training variables
@@ -45,19 +45,19 @@ class Model(NN.Module):
 
             # If resume option is specified, restore state of model and resume training
         if resume:
-            params_hist=[int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join(os.path.join(BASE_PATH,'checkpoints'),'*.param'))]
+            params_hist=[int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join(os.path.join(BASE_PATH,'checkpoints2'),'*.pth'))]
             
             
 
             if len(params_hist)>0:
-                print("\t Restore Checkpoints found! Resuming training...")
+                print("\t Restore Checkpoints2 found! Resuming training...")
                 # start_epoch=int(re.sub("[^0-9]+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
                 start_epoch=max(sorted(params_hist))
                 #start_epoch=435
-                last_epoch=glob.glob(os.path.join(os.path.join(BASE_PATH,'checkpoints','epoch_'+str(start_epoch)+'.param')))[0]
+                last_epoch=glob.glob(os.path.join(os.path.join(BASE_PATH,'checkpoints2','epoch_'+str(start_epoch)+'.pth')))[0]
                 self.load_state_dict(torch.load(last_epoch))
                 
-                last_model=torch.load(last_epoch.replace('.param','.pkl'))
+                last_model=torch.load(last_epoch.replace('.pth','.pkl'))
                 self.optimizer=last_model.optimizer
                 if hasattr(last_model,'min_MAE'):self.min_MAE=last_model.min_MAE
                 if hasattr(last_model,'min_epoch'):self.min_epoch=last_model.min_epoch
@@ -85,13 +85,16 @@ class Model(NN.Module):
                     # Backpropagation
                 loss.backward()
                 self.optimizer.step()
-                print("epoch:",epoch,"loss:",epoch_loss/len(train_dataloader))
+            print("epoch:",epoch,"loss:",epoch_loss/len(train_dataloader))
             
-                # Log results in checkpoints directory
+                # Log results in checkpoints2 directory
             epochs_list.append(epoch)
             train_loss_list.append(epoch_loss/len(train_dataloader))
-            torch.save(self.state_dict(),os.path.join(BASE_PATH,'checkpoints/epoch_'+str(epoch)+".param"))
-            torch.save(self,os.path.join(BASE_PATH,'checkpoints/epoch_'+str(epoch)+".pkl"))
+            check_point={
+                
+            }
+            torch.save(self.state_dict(),os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+".param"))
+            torch.save(self,os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+".pkl"))
 
                 # Set the Model on validation mode
             self.eval()
