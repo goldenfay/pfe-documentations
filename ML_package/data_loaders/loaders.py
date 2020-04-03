@@ -89,6 +89,7 @@ class GenericLoader(Loader):
         self.img_gt_dmap_list = img_gt_dmap_list
 
     def load(self, train_size=80, test_size=20,batch_size=1,shuffle_flag=True,save=False):
+        print('\t Loading DataSets ...')
         all_datasets = []
         load_flag = False
         if not self.reset_samplers_flag and utils.path_exists('./obj/loaders/generic_samplers.pkl'):

@@ -55,12 +55,14 @@ class Model(NN.Module):
                 start_epoch=max(sorted(params_hist))
                 #start_epoch=435
                 last_epoch=glob.glob(os.path.join(os.path.join(BASE_PATH,'checkpoints2','epoch_'+str(start_epoch)+'.pth')))[0]
-                self.load_state_dict(torch.load(last_epoch))
+                # self.load_state_dict(torch.load(last_epoch))
                 
-                last_model=torch.load(last_epoch.replace('.pth','.pkl'))
-                self.optimizer=last_model.optimizer
-                if hasattr(last_model,'min_MAE'):self.min_MAE=last_model.min_MAE
-                if hasattr(last_model,'min_epoch'):self.min_epoch=last_model.min_epoch
+                # last_model=torch.load(last_epoch.replace('.pth','.pkl'))
+                # #self.optimizer=last_model.optimizer
+                # if hasattr(last_model,'min_MAE'):self.min_MAE=last_model.min_MAE
+                # if hasattr(last_model,'min_epoch'):self.min_epoch=last_model.min_epoch
+                    #//////////
+                _,self.min_MAE,self.min_epoch=self.load_chekpoint(last_epoch)    
 
         start_epoch+=1   
 
@@ -90,11 +92,9 @@ class Model(NN.Module):
                 # Log results in checkpoints2 directory
             epochs_list.append(epoch)
             train_loss_list.append(epoch_loss/len(train_dataloader))
-            check_point={
-                
-            }
-            torch.save(self.state_dict(),os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+'.pth'))
-            torch.save(self,os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+".pkl"))
+            
+            # torch.save(self.state_dict(),os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+'.pth'))
+            # torch.save(self,os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+".pkl"))
 
                 # Set the Model on validation mode
             self.eval()
@@ -116,6 +116,14 @@ class Model(NN.Module):
                 self.min_epoch=epoch
             test_error_list.append(MAE)
             print("\t epoch:"+str(epoch)+"\n\t error:"+str(MAE)+" min_MAE:"+str(self.min_MAE)+" min_epoch:"+str(self.min_epoch))
+            check_point={
+                'model_state_dict':self.state_dict(),
+                'optimizer_state_dict':self.optimizer.stae_dict(),
+                'loss': epoch_loss,
+                'min_MAE': self.min_MAE,
+                'min_epoch': self.min_epoch
+            }
+            self.save_checkpoint(check_point,os.path.join(BASE_PATH,'checkpoints2','epoch_'+str(epoch)+'.pth'))
             # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
             # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
             # show an image
@@ -163,8 +171,21 @@ class Model(NN.Module):
         print("\t Test MAE : ",MAE,"\t test MSE : ",MSE)    
         return (MAE,MSE)         
                 
+
+    def save_checkpoint(self,chkpt,path):
+        torch.save(chkpt, path)
+
+    def load_chekpoint(self,path):
+        chkpt=torch.load(path)
+        self.load_state_dict(chkpt['model_state_dict'])
+        self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
+
+        return chkpt['epoch'],chkpt['min_MAE'],chkpt['min_epoch']
+
     def save(self):
-        torch.save(self,os.path.join(BASE_PATH,'obj','models',self.__class__.__name__))
+        torch.save(self,os.path.join(BASE_PATH,'obj','models',self.__class__.__name__))    
+
+
 
     
         

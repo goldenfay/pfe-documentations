@@ -104,8 +104,11 @@ def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
 
 def getloader(loader_type,img_gtdm_paths,restore_flag=True):
     print("####### Getting DataLoader...")
+    restore_dir=os.path.join(utils.BASE_PATH,'obj','loaders')
     if loader_type=="Generic_Loader":
-        return GenericLoader(img_gtdm_paths)
+        if restore_flag:
+            return torch.load(glob.glob(os.path.join(restore_dir,'Generic_loader'))[0])
+        else: return GenericLoader(img_gtdm_paths)
 
 
 
@@ -154,7 +157,7 @@ if __name__=="__main__":
 
 
     data_loader=getloader(loader_type,img_gtdm_paths)
-
+    
     dataloaders=data_loader.load()
 
     
