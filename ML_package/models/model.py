@@ -87,7 +87,7 @@ class Model(NN.Module):
                     # Backpropagation
                 loss.backward()
                 self.optimizer.step()
-            print("epoch:",epoch,"loss:",epoch_loss/len(train_dataloader))
+            print("\t epoch:"+str(epoch)+"\n","\t loss:",epoch_loss/len(train_dataloader))
             
                 # Log results in checkpoints2 directory
             epochs_list.append(epoch)
@@ -115,7 +115,7 @@ class Model(NN.Module):
                 self.min_MAE=MAE
                 self.min_epoch=epoch
             test_error_list.append(MAE)
-            print("\t epoch:"+str(epoch)+"\n\t error:"+str(MAE)+" min_MAE:"+str(self.min_MAE)+" min_epoch:"+str(self.min_epoch))
+            print("\t error:"+str(MAE)+" min_MAE:"+str(self.min_MAE)+" min_epoch:"+str(self.min_epoch))
             check_point={
                 'model_state_dict':self.state_dict(),
                 'optimizer_state_dict':self.optimizer.state_dict(),
@@ -123,7 +123,7 @@ class Model(NN.Module):
                 'min_MAE': self.min_MAE,
                 'min_epoch': self.min_epoch
             }
-            self.save_checkpoint(check_point,os.path.join(BASE_PATH,'checkpoints2','epoch_'+str(epoch)+'.pth'))
+            self.save_checkpoint(check_point,os.path.join(BASE_PATH,'checkpoints2','MODELTYPE','epoch_'+str(epoch)+'.pth'))
             # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
             # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
             # show an image
@@ -173,7 +173,7 @@ class Model(NN.Module):
                 
 
     def save_checkpoint(self,chkpt,path):
-        torch.save(chkpt, path)
+        pass
 
     def load_chekpoint(self,path):
         chkpt=torch.load(path)

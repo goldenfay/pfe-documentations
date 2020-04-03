@@ -230,5 +230,7 @@ class CSRNet(Model):
         output_layer=nn.Conv2d(64, 1, kernel_size=1)
 
         return frontEnd_shape,backEnd_shape,output_layer         
-            
+
+    def save_checkpoint(self,chkpt,path):
+        torch.save(chkpt, path.replace('MODELTYPE','CSRNet'))        
                 

@@ -91,7 +91,8 @@ class MCNN(Model):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0) 
 
-     
+    def save_checkpoint(self,chkpt,path):
+        torch.save(chkpt, path.replace('MODELTYPE','MCNN')) 
                         
 
 if __name__=="__main__":
