@@ -118,7 +118,7 @@ class Model(NN.Module):
             print("\t epoch:"+str(epoch)+"\n\t error:"+str(MAE)+" min_MAE:"+str(self.min_MAE)+" min_epoch:"+str(self.min_epoch))
             check_point={
                 'model_state_dict':self.state_dict(),
-                'optimizer_state_dict':self.optimizer.stae_dict(),
+                'optimizer_state_dict':self.optimizer.state_dict(),
                 'loss': epoch_loss,
                 'min_MAE': self.min_MAE,
                 'min_epoch': self.min_epoch
