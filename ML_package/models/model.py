@@ -93,7 +93,7 @@ class Model(NN.Module):
             check_point={
                 
             }
-            torch.save(self.state_dict(),os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+".param"))
+            torch.save(self.state_dict(),os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+'.pth'))
             torch.save(self,os.path.join(BASE_PATH,'checkpoints2/epoch_'+str(epoch)+".pkl"))
 
                 # Set the Model on validation mode
