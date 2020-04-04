@@ -1,4 +1,3 @@
-%matplotlib inline
 import torch
 import torch.nn as NN
 import pickle
