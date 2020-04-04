@@ -187,7 +187,9 @@ class Model(NN.Module):
         return chkpt['loss'],chkpt['min_MAE'],chkpt['min_epoch']
 
     def save(self):
-        torch.save(self,os.path.join(utils.BASE_PATH,'obj','models',self.__class__.__name__+'.pkl'))    
+        path=os.path.join(utils.BASE_PATH,'obj','models',self.__class__.__name__+'.pkl')
+        utils.make_path(os.path.split(path)[0])
+        torch.save(self,path)    
 
 
 
