@@ -145,6 +145,7 @@ class Model(NN.Module):
         pass
 
     def eval_model(self,test_dataloader,eval_metrics='all'):
+        print("####### Validating The model...")
         device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.to(device)
         self.eval()
@@ -186,7 +187,7 @@ class Model(NN.Module):
         return chkpt['loss'],chkpt['min_MAE'],chkpt['min_epoch']
 
     def save(self):
-        torch.save(self,os.path.join(utils.BASE_PATH,'obj','models',self.__class__.__name__))    
+        torch.save(self,os.path.join(utils.BASE_PATH,'obj','models',self.__class__.__name__+'.pkl'))    
 
 
 

@@ -123,14 +123,14 @@ def getModel(model_type,load_saved=False,weightsFlag=False):
         else:
             return MCNN(weightsFlag)
 
-def get_best_model(min_epoch):
+def get_best_model(min_epoch,className):
     
-    if not os.path.exists(os.path.join(parentdir , 'checkpoints')):
+    if not os.path.exists(os.path.join(utils.BASE_PATH , 'checkpoints2',className)):
         raise Exception("Cannot load model. Checkpoint directory not found!")
-    if not os.path.exists(os.path.join(parentdir , 'checkpoints','epoch_'+str(min_epoch)+'.pkl')):
+    if not os.path.exists(os.path.join(utils.BASE_PATH , 'checkpoints2',className,'epoch_'+str(min_epoch)+'.pth')):
         raise Exception("Cannot load model.Best epoch checkpoint does not exists!")
 
-    return torch.load(os.path.join(parentdir , 'checkpoints','epoch_'+str(min_epoch)+'.pkl'))
+    return torch.load(os.path.join(utils.BASE_PATH , 'checkpoints2',className,'epoch_'+str(min_epoch)+'.pth'))
 
 if __name__=="__main__":
     if len(sys.argv)>1:
@@ -176,10 +176,11 @@ if __name__=="__main__":
     model=getModel(model_type,load_saved=True)
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
     epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE,train_time=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
-    model=get_best_model(min_epoch)
+    print(epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE,train_time)
+    _,model.min_MAE,model.min_epoch=model.load_chekpoint(min_epoch)
     model.save()
 
-    model.eval_model(test_dataloader)
+    print(model.eval_model(test_dataloader))
     
     
     
