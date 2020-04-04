@@ -177,7 +177,7 @@ if __name__=="__main__":
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
     epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE,train_time=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
     print(epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE,train_time)
-    _,model.min_MAE,model.min_epoch=model.load_chekpoint(min_epoch)
+    _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(utils.BASE_PATH , 'checkpoints2',model.__class__.__name__,'epoch_'+str(min_epoch)+'.pth'))
     model.save()
 
     print(model.eval_model(test_dataloader))
