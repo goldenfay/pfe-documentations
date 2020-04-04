@@ -159,7 +159,7 @@ class Model(NN.Module):
                 gt_dmap=gt_dmap.to(device)
 
                     # Forward propagation
-                est_dmap=self(img)
+                est_dmap=self(img.squeeze(0))
                 
                 MAE+=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
                 MSE+=np.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(),2)
