@@ -1,7 +1,7 @@
 import torch
 import torch.nn as NN
 import pickle
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import matplotlib.cm as CM
 import os,sys,inspect,glob,random,re,time,datetime
 import numpy as np
