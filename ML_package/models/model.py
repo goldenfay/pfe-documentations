@@ -87,6 +87,7 @@ class Model(NN.Module):
                     # Backpropagation
                 loss.backward()
                 self.optimizer.step()
+                del img,gt_dmap,est_dmap
             print("\t epoch:"+str(epoch)+"\n","\t loss:",epoch_loss/len(train_dataloader))
             
                 # Log results in checkpoints2 directory
@@ -119,7 +120,8 @@ class Model(NN.Module):
             check_point={
                 'model_state_dict':self.state_dict(),
                 'optimizer_state_dict':self.optimizer.state_dict(),
-                'loss': epoch_loss,
+                'loss': epoch_loss/len(train_dataloader),
+                'mae': MAE,
                 'min_MAE': self.min_MAE,
                 'min_epoch': self.min_epoch
             }
