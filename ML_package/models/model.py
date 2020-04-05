@@ -19,12 +19,19 @@ class Model(NN.Module):
         super(Model,self).__init__()
         self.params=TrainParams.defaultTrainParams()
         
-    def build(self):
+    def build(self,weightsFlag):
+        '''
+            Build Net Architecture
+        '''
         pass    
         
 
     def train_model(self,train_dataloader,test_dataloader,train_params:TrainParams,resume=False):
+        '''
+            Start training the model with specified parameters.
+        '''
         print("####### Training The model...")
+        self.params=train_params
         self.optimizer=train_params.optimizer
             # Get the device (GPU/CPU) and migrate the model to it
         device=train_params.device
@@ -139,12 +146,16 @@ class Model(NN.Module):
             # est_dmap=est_dmap.squeeze(0).detach().cpu().numpy()
             # vis.image(win=5,img=est_dmap/(est_dmap.max())*255,opts=dict(title='est_dmap('+str(est_dmap.sum())+')'))
         end=time.time()
+        self.make_summary(finished=True)
         return (epochs_list,train_loss_list,test_error_list,self.min_epoch,self.min_MAE,str(datetime.timedelta(seconds=end-start)))
 
     def retrain_model(self,params=None):
         pass
 
     def eval_model(self,test_dataloader,eval_metrics='all'):
+        '''
+            Evaluate/Test the model after train is completed and output performence metrics used for test purpose.
+        '''
         print("####### Validating The model...")
         device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.to(device)
@@ -176,10 +187,17 @@ class Model(NN.Module):
                 
 
     def save_checkpoint(self,chkpt,path):
+        '''
+            Save a checkpoint in the specified path.
+        '''
+            # If the directory doesn't exist, create it.
         utils.make_path(os.path.split(path)[0])
         torch.save(chkpt, path) 
 
     def load_chekpoint(self,path):
+        '''
+            Load a checkpoint from the specified path in order to resume training.
+        '''
         chkpt=torch.load(path)
         self.load_state_dict(chkpt['model_state_dict'])
         self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
@@ -187,9 +205,32 @@ class Model(NN.Module):
         return chkpt['loss'],chkpt['min_MAE'],chkpt['min_epoch']
 
     def save(self):
+        '''
+            Save the whole model. This method is called once training is finished in order to keep the best model.
+
+        '''
         path=os.path.join(utils.BASE_PATH,'obj','models',self.__class__.__name__+'.pkl')
         utils.make_path(os.path.split(path)[0])
-        torch.save(self,path)    
+        torch.save(self,path) 
+
+    def make_summary(self,finished=False):
+        path=os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__,'summary.json')
+        summary={
+            'status': finished,
+            'min_epoch':self.min_epoch,
+            'min_loss':0,
+            'min_MAE':self.min_MAE,
+            'train_params':{
+                'lr':self.params.lr,
+                'momentum':self.params.momentum,
+                'maxEpochs':self.params.maxEpochs,
+                'criterionMethode':self.params.criterion.__class__.__name__,
+                'optimizationMethod':self.params.optimizer.__class__.__name__
+            }
+            
+        }
+        utils.make_path(os.path.split(path)[0])
+        utils.save_json(summary,path)
 
 
 

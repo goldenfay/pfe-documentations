@@ -82,6 +82,9 @@ class MCNN(Model):
         return x
 
     def _initialize_weights(self):
+        '''
+            Initialize the Net weights if those laters are not set on Net définition.
+        '''
         for module in self.modules():
             if isinstance(module, nn.Conv2d):
                 nn.init.normal_(module.weight, std=0.01)
@@ -90,25 +93,29 @@ class MCNN(Model):
             elif isinstance(module, nn.BatchNorm2d):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0) 
-
-        
-                        
+                  
 
 if __name__=="__main__":
-    import matplotlib.pyplot as plt
-    # img=torch.rand((3,800,1200),dtype=torch.float)
-    img_rootPath="C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech\\part_A\\train_data\\images"
+    # import matplotlib.pyplot as plt
+    # # img=torch.rand((3,800,1200),dtype=torch.float)
+    # img_rootPath="C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech\\part_A\\train_data\\images"
 
-    img=plt.imread(os.path.join(img_rootPath,"IMG_10.jpg"))
-    img=torch.from_numpy(img.transpose(2,0,1))
-    mcnn=MCNN()
-    out_dmap=mcnn(img)
-    # print(out_dmap.shape)
-    # plt.imshow(  img  )
-    # plt.imshow(  out_dmap.permute()  )
-    # plt.show()
-    x=vis.Visdom()
-    # x.images(img,1,10)
-    x.image(win=5,img=img,opts=dict(title='img'))
-    x.image(win=5,img=out_dmap/(out_dmap.max())*255,opts=dict(title='est_dmap('))
+    # img=plt.imread(os.path.join(img_rootPath,"IMG_10.jpg"))
+    # img=torch.from_numpy(img.transpose(2,0,1))
+    # mcnn=MCNN()
+    # out_dmap=mcnn(img)
+    # # print(out_dmap.shape)
+    # # plt.imshow(  img  )
+    # # plt.imshow(  out_dmap.permute()  )
+    # # plt.show()
+    # x=vis.Visdom()
+    # # x.images(img,1,10)
+    # x.image(win=5,img=img,opts=dict(title='img'))
+    # x.image(win=5,img=out_dmap/(out_dmap.max())*255,opts=dict(title='est_dmap('))
+
+        #    code for getting all methods of a class and then get the doc of every method
+    import inspect
+
+    l=dict((k,v) for k,v in MCNN.__dict__.items() if not (k.startswith('__') and k.endswith('__')))
+    print(l['build'].__doc__)
     
