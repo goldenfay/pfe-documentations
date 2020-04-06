@@ -255,7 +255,7 @@ class CSRNet(Model):
                     'inplace':True
                 }  
         }
-        output_layer=nn.Conv2d(64, 1, kernel_size=1,padding=2)
+        output_layer=nn.Conv2d(64, 1, kernel_size=1)
 
         return frontEnd_shape,backEnd_shape,output_layer         
 
