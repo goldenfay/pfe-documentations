@@ -12,6 +12,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.append(os.path.join(parentdir, "bases"))   
 import utils 
 from params import *
+from torch import Tensor
 
 class Model(NN.Module):
 
@@ -86,7 +87,7 @@ class Model(NN.Module):
                 gt_dmap=gt_dmap.to(device)
                     # forward propagation
                 est_dmap=self(img)
-                est_dmap.view(-1)
+                est_dmap.reshape(img.shape)
                     # calculate loss
                 loss=train_params.criterion(est_dmap,gt_dmap)
                 epoch_loss+=loss.item()
