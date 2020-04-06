@@ -34,7 +34,7 @@ class CSRNet(Model):
     def __init__(self, weightsFlag=False):
         super(CSRNet, self).__init__() 
         self.frontEnd ,self.backEnd ,self.output_layer=self.default_architecture()
-        self.frontEnd ,self.backEnd ,self.output_layer=layers.construct_net(self.frontEnd),layers.construct_net(self.backEnd),layers.construct_net(self.output_layer)
+        self.frontEnd ,self.backEnd =layers.construct_net(self.frontEnd),layers.construct_net(self.backEnd)
         if not weightsFlag:
             mod = models.vgg16(pretrained = True)
             self._initialize_weights()
