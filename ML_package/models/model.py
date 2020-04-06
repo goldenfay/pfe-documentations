@@ -83,9 +83,10 @@ class Model(NN.Module):
                 # Run training pass (feedforward,backpropagation,...) for each batch
             for i,(img,gt_dmap) in enumerate(train_dataloader):
                 img=img.to(device)
-                gt_dmap=gt_dmap.view(img.shape).to(device)
+                gt_dmap=gt_dmap.to(device)
                     # forward propagation
                 est_dmap=self(img)
+                est_dmap.view(-1)
                     # calculate loss
                 loss=train_params.criterion(est_dmap,gt_dmap)
                 epoch_loss+=loss.item()
