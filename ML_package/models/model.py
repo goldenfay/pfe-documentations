@@ -89,7 +89,7 @@ class Model(NN.Module):
                 est_dmap=self(img)
                 
                     # calculate loss
-                loss=train_params.criterion(est_dmap.view(1,-1),gt_dmap.view(1,-1))
+                loss=train_params.criterion(est_dmap.view(1,1,gt_dmap.shape[2],gt_dmap.shape[3]),gt_dmap)
                 epoch_loss+=loss.item()
                     # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
                 self.optimizer.zero_grad()
