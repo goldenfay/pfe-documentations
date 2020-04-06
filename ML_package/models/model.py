@@ -87,9 +87,9 @@ class Model(NN.Module):
                 gt_dmap=gt_dmap.to(device)
                     # forward propagation
                 est_dmap=self(img)
-                est_dmap.reshape(gt_dmap.shape)
+                
                     # calculate loss
-                loss=train_params.criterion(est_dmap,gt_dmap)
+                loss=train_params.criterion(est_dmap,gt_dmap.view(1,-1))
                 epoch_loss+=loss.item()
                     # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
                 self.optimizer.zero_grad()
