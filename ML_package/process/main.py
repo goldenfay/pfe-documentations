@@ -110,7 +110,7 @@ def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
     else:
         test_size=params['test_size']
         batch_size=params['batch_size']
-    restore_path=os.path.join(utils.BASEPATH,'obj','loaders',loader_type)    
+    restore_path=os.path.join(utils.BASE_PATH,'obj','loaders',loader_type)    
     if not os.path.exists(restore_path) :
         return None
     if len( glob.glob(restore_path) )==0:
