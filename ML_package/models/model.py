@@ -12,6 +12,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.append(os.path.join(parentdir, "bases"))   
 import utils 
 from params import *
+from torch.autograd import Variable
 
 class Model(NN.Module):
 
@@ -82,10 +83,10 @@ class Model(NN.Module):
             epoch_loss=0
                 # Run training pass (feedforward,backpropagation,...) for each batch
             for i,(img,gt_dmap) in enumerate(train_dataloader):
-                img=img.to(device)
+                img=Variable(img.to(device))
                 gt_dmap=gt_dmap.to(device)
                     # forward propagation
-                est_dmap=self(img).to(device)
+                est_dmap=Variable(self(img).to(device))
                     # calculate loss
                 loss=train_params.criterion(est_dmap,gt_dmap)
                 epoch_loss+=loss.item()
