@@ -85,7 +85,7 @@ class Model(NN.Module):
                 img=img.to(device)
                 gt_dmap=gt_dmap.to(device)
                     # forward propagation
-                est_dmap=self(img)
+                est_dmap=self(img).to(device)
                     # calculate loss
                 loss=train_params.criterion(est_dmap,gt_dmap)
                 epoch_loss+=loss.item()
