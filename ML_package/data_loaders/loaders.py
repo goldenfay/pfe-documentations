@@ -17,7 +17,7 @@ class Loader:
     def __init__(self, reset_samplers=True):
         self.reset_samplers_flag = reset_samplers
 
-    def load(self, train_size=80, test_size=20,batch_size=1,shuffle_flag=True,save=False): pass
+    def load(self,test_size=20,batch_size=1,shuffle_flag=True,save=False): pass
 
     @staticmethod
     def merge_datasets(loaders_list: list, shuffleFlag=True):
@@ -45,7 +45,8 @@ class SimpleLoader(Loader):
         super(SimpleLoader, self).__init__(reset_samplers)
         self.img_rootPath = img_rootPath
         self.gt_dmap_rootPath = gt_dmap_rootPath
-    def load(self, train_size=80, test_size=20, batch_size=1, shuffle_flag=True,save=False):
+
+    def load(self,test_size=20, batch_size=1, shuffle_flag=True,save=False):
         dataset = CrowdDataset(self.img_rootPath, self.gt_dmap_rootPath)
         self.dataSet_size = len(dataset)
         indices = list(range(self.dataSet_size))
@@ -88,10 +89,12 @@ class GenericLoader(Loader):
         super(GenericLoader, self).__init__(reset_samplers)
         self.img_gt_dmap_list = img_gt_dmap_list
 
-    def load(self, train_size=80, test_size=20,batch_size=1,shuffle_flag=True,save=False):
+    def load(self,test_size=20,batch_size=1,shuffle_flag=True,save=False):
         print('\t Loading DataSets ...')
         all_datasets = []
         load_flag = False
+        if save:samplers_list=[]
+
         if not self.reset_samplers_flag and utils.path_exists('./obj/loaders/generic_samplers.pkl'):
             print("\t Found a sampler restore point...")
             samplers_recov = torch.load('../../obj/loaders/samplers.pkl')
@@ -122,6 +125,7 @@ class GenericLoader(Loader):
             print("\t Done. Dataset restored.")
 
         else:
+            
             for img_root_path, dm_root_path in self.img_gt_dmap_list:
                 dataset = CrowdDataset(img_root_path, dm_root_path)
                 dataSet_size = len(dataset)
@@ -144,7 +148,37 @@ class GenericLoader(Loader):
 
                 all_datasets.append((train_loader, test_loader))
 
+                if save:
+                    samplers_list.append((train_sampler,test_sampler))
+
+
         if save:
-            torch.save({'paths':(self.img_gt_dmap_list,self.gt_dmap_rootPath),'loaders':all_datasets},
-            os.path.join(utils.BASE_PATH,'obj','loaders','generic_samplers.pkl'))
+            utils.save_obj({
+                'paths': self.img_gt_dmap_list,
+                'samplers': samplers_list,
+                'test_size':test_size,
+                'batch_size':batch_size
+            },
+            os.path.join(utils.BASEPATH,'obj','loaders',self.__class__.__name__,'saved.pkl')
+            )
         return all_datasets
+
+    def load_from_samplers(self,samplers, params:dict={'test_size':20,'batch_size':1}):
+        
+        print('\t Loading DataSets ...')
+        all_datasets=[]
+        for i in range(len(self.img_gt_dmap_list)):
+            img_root_path, dm_root_path=self.img_gt_dmap_list[i]
+            dataset = CrowdDataset(img_root_path, dm_root_path)
+
+            train_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
+                                                           sampler=samplers[i][0])
+            test_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
+                                                          sampler=samplers[i][1])
+
+            all_datasets.append((train_loader, test_loader))
+
+
+        return all_datasets    
+
+

@@ -1,4 +1,4 @@
-import os,sys,inspect,glob,io,subprocess,re
+import os,sys,inspect,glob,io,subprocess,re,gc
 def import_or_install(package,pipname):
     try:
         __import__(package) 
@@ -30,6 +30,7 @@ from dm_generator import *
 from knn_gaussian_kernal import *
 from loaders import *
 from mcnn import *
+from CSRNet import *
 import utils
 import plots
 
@@ -101,27 +102,55 @@ def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
 
     return paths_dict        
 
+def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
+    print("\t Checking for previous loader ...")
+    if params is None:
+        test_size=20
+        batch_size=1
+    else:
+        test_size=params['test_size']
+        batch_size=params['batch_size']
+    restore_path=os.path.join(utils.BASEPATH,'obj','loaders',loader_type)    
+    if not os.path.exists(restore_path) :
+        return None
+    if len( glob.glob(restore_path) )==0:
+        return None
+
+    saved_infos=utils.load_obj(os.path.join(restore_path,'saved.pkl'))
+    if saved_infos['paths']!=img_gtdm_paths: return None
+    if saved_infos['test_size']!=test_size: return None
+    if saved_infos['batch_size']!=batch_size: return None
+
+    return saved_infos['samplers']
+
+
+
+
 
 def getloader(loader_type,img_gtdm_paths,restore_flag=True):
     print("####### Getting DataLoader...")
-    restore_dir=os.path.join(utils.BASE_PATH,'obj','loaders')
-    if loader_type=="Generic_Loader":
-        if restore_flag:
-            try:
-                return torch.load(glob.glob(os.path.join(restore_dir,'Generic_loader'))[0])
-            except Exception:
-                return GenericLoader(img_gtdm_paths)    
-        else: return GenericLoader(img_gtdm_paths)
+    # restore_dir=os.path.join(utils.BASE_PATH,'obj','loaders')
+    # if loader_type=="Generic_Loader":
+    #     if restore_flag:
+    #         try:
+    #             return torch.load(glob.glob(os.path.join(restore_dir,'Generic_loader'))[0])
+    #         except Exception:
+    #             return GenericLoader(img_gtdm_paths)    
+    #     else: return GenericLoader(img_gtdm_paths)
+    if loader_type=="GenericLoader":
+        return GenericLoader(img_gtdm_paths)
+
 
 
 
 def getModel(model_type,load_saved=False,weightsFlag=False):
     print("####### Getting Model : ",model_type,"...")
+    if load_saved and  os.path.exists(os.path.join(utils.BASE_PATH,'obj','models',model_type)):
+        return torch.load(os.path.join(utils.BASE_PATH,'obj','models',model_type))
     if model_type=="MCNN":
-        if load_saved and  os.path.exists(os.path.join(utils.BASE_PATH,'obj','models','MCNN')):
-            return torch.load(os.path.join(utils.BASE_PATH,'obj','models','MCNN'))
-        else:
-            return MCNN(weightsFlag)
+        return MCNN(weightsFlag)
+    elif model_type=="CSRNet":
+        return CSRNet(weightsFlag)        
 
 def get_best_model(min_epoch,className):
     
@@ -140,8 +169,8 @@ if __name__=="__main__":
     dm_generator_type="knn_gaussian_kernal"
     dataset_names=["ShanghaiTech_partA","ShanghaiTech_partB"]
     dm_generator=None
-    loader_type="Generic_Loader"
-    model_type="MCNN"
+    loader_type="GenericLoader"
+    model_type="CSRNet"
     model=None
    # device=torch.device("cuda")
     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -158,10 +187,16 @@ if __name__=="__main__":
     datasets_paths=prepare_datasets(root,dataset_names,dm_generator)
     img_gtdm_paths=[(el["images"],el["ground-truth"]) for el in datasets_paths]
 
-
-    data_loader=getloader(loader_type,img_gtdm_paths)
     
-    dataloaders=data_loader.load()
+    data_loader=getloader(loader_type,img_gtdm_paths)
+    samplers=check_previous_loaders(loader_type,img_gtdm_paths)
+    if samplers is None:
+        dataloaders=data_loader.load()
+        gc.collect()
+    else:
+        print('\t A previous version of the loader was found! Restoring samplers ...')
+        dataloaders=data_loader.load_from_samplers(samplers)    
+        
 
     
 
