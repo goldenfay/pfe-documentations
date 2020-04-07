@@ -40,10 +40,8 @@ class CSRNet(Model):
         self.frontEnd ,self.backEnd =layers.construct_net(self.frontEnd),layers.construct_net(self.backEnd)
         if not weightsFlag:
             mod = models.vgg16(pretrained = True)
-            copy=[module for module in self.frontEnd.modules() if type(module) != nn.Sequential]
-            print(copy)
             self._initialize_weights()
-            self.frontEnd.load_state_dict(mod.features[0:len(list(self.frontEnd.modules()))].state_dict())
+            self.frontEnd.load_state_dict(mod.features[0:23].state_dict())
 
     def forward(self,x):
         x = self.frontEnd(x)
@@ -51,7 +49,7 @@ class CSRNet(Model):
         x = self.backEnd(x)
         print('After back end',x.size())
         x = self.output_layer(x)
-        x = F.interpolate(x,scale_factor=8, mode='bilinear')
+        # x = F.interpolate(x,scale_factor=8, mode='bilinear')
         return x
 
     def _initialize_weights(self):

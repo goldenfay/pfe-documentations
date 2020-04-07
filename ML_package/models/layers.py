@@ -38,7 +38,6 @@ def construct_net(schema:list,weight_flag=False):
         elif layer_key=='FC':
             arch+=[fc_layer(params)]    
 
-    print(arch)
     return nn.Sequential(*arch)        
 
 
