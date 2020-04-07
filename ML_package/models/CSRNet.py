@@ -41,8 +41,7 @@ class CSRNet(Model):
         if not weightsFlag:
             mod = models.vgg16(pretrained = True)
             copy=[module for module in self.frontEnd.modules() if type(module) != nn.Sequential]
-            for i in range(23):
-                print(mod.features[i],'\t',copy[i])
+            print(copy)
             self._initialize_weights()
             self.frontEnd.load_state_dict(mod.features[0:len(list(self.frontEnd.modules()))].state_dict())
 
