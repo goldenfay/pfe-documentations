@@ -26,16 +26,16 @@ def construct_net(schema:dict,weight_flag=False):
     arch=[]
     for layer_key in schema:
         if layer_key=='M':
-            arch.append(maxpool_layer(schema[layer_key]))
+            arch+=[maxpool_layer(schema[layer_key])]
         elif layer_key=='C2D':
-            arch.append(conv2D_layer(schema[layer_key]))
+            arch+=[conv2D_layer(schema[layer_key])]
         elif layer_key=='R':
-            arch.append(relu_layer(schema[layer_key]))
+            arch+=[relu_layer(schema[layer_key])]
         elif layer_key=='BR':
-            arch.append(nn.BatchNorm2d(schema[layer_key]['out_channels']))    
-            arch.append(relu_layer(schema[layer_key]))    
+            arch+=[nn.BatchNorm2d(schema[layer_key]['out_channels'])]    
+            arch+=[relu_layer(schema[layer_key])]    
         elif layer_key=='FC':
-            arch.append(fc_layer(schema[layer_key]))    
+            arch+=[fc_layer(schema[layer_key])]    
 
     print(arch)
     return nn.Sequential(*arch)        
