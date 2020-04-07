@@ -29,7 +29,8 @@ class CSRNet(Model):
         if not weightsFlag:
             mod = models.vgg16(pretrained = True)
             self._initialize_weights()
-            self.frontEnd.load_state_dict(mod.features[0:23].state_dict())
+            for i in range(len(self.frontEnd.state_dict().items())):
+                self.frontEnd.state_dict().items()[i][1].data[:] = mod.state_dict().items()[i][1].data[:]
         
     
     
@@ -40,7 +41,8 @@ class CSRNet(Model):
         if not weightsFlag:
             mod = models.vgg16(pretrained = True)
             self._initialize_weights()
-            self.frontEnd.load_state_dict(mod.features[0:23].state_dict())
+            for i in range(len(self.frontEnd.state_dict().items())):
+                self.frontEnd.state_dict().items()[i][1].data[:] = mod.state_dict().items()[i][1].data[:]
 
     def forward(self,x):
         x = self.frontEnd(x)
