@@ -43,7 +43,8 @@ class CSRNet(Model):
             
             self._initialize_weights()
             for i in self.frontEnd.state_dict().items():
-                self.frontEnd.state_dict().items()[i][1].data[:] = mod.state_dict().items()[i][1].data[:]
+                self.frontEnd.state_dict().items()[i][1].data[:] = \
+                mod.state_dict().items()[i][1].data[:]
 
     def forward(self,x):
         x = self.frontEnd(x)
