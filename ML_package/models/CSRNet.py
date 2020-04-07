@@ -196,7 +196,7 @@ class CSRNet(Model):
 
             
         ]
-        backEnd_shape={
+        backEnd_shape=[
                 ('C2D',{
                         'in_channels':512,
                         'out_channels': 512,
@@ -263,7 +263,7 @@ class CSRNet(Model):
                 ('R',{
                     'inplace':True
                 })  
-        }
+        ]
         output_layer=nn.Conv2d(64, 1, kernel_size=1)
 
         return frontEnd_shape,backEnd_shape,output_layer         

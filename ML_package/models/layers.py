@@ -23,7 +23,7 @@ def fc_layer(params:dict):
     
 
 
-def construct_net(schema:dict,weight_flag=False):
+def construct_net(schema:list,weight_flag=False):
     arch=[]
     for layer_key,params in schema:
         if layer_key=='M':
