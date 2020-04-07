@@ -191,7 +191,7 @@ if __name__=="__main__":
     data_loader=getloader(loader_type,img_gtdm_paths)
     samplers=check_previous_loaders(loader_type,img_gtdm_paths)
     if samplers is None:
-        dataloaders=data_loader.load()
+        dataloaders=data_loader.load(save=True)
         gc.collect()
     else:
         print('\t A previous version of the loader was found! Restoring samplers ...')
