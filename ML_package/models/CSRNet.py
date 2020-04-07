@@ -41,7 +41,7 @@ class CSRNet(Model):
         if not weightsFlag:
             mod = models.vgg16(pretrained = True)
             for i in range(23):
-                print(mod.features[i],'\t',list(self.frontEnd.modules)[i])
+                print(mod.features[i],'\t',list(self.frontEnd.modules())[i])
             self._initialize_weights()
             self.frontEnd.load_state_dict(mod.features[0:len(list(self.frontEnd.modules()))].state_dict())
 
