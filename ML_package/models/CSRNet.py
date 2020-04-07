@@ -77,7 +77,7 @@ class CSRNet(Model):
                     'inplace':True
                 },
                 'C2D':{
-                    'in_channels':3,
+                    'in_channels':64,
                     'out_channels': 64,
                     'ks': 3,
                     'stride': 1,
@@ -93,7 +93,7 @@ class CSRNet(Model):
                    
                 },
                 'C2D':{
-                    'in_channels':3,
+                    'in_channels':64,
                     'out_channels': 128,
                     'ks': 3,
                     'stride': 1,
@@ -104,7 +104,7 @@ class CSRNet(Model):
                     'inplace':True
                 },
                 'C2D':{
-                    'in_channels':3,
+                    'in_channels':128,
                     'out_channels': 128,
                     'ks': 3,
                     'stride': 1,
@@ -120,7 +120,7 @@ class CSRNet(Model):
                    
                 },
                 'C2D':{
-                    'in_channels':3,
+                    'in_channels':128,
                     'out_channels': 256,
                     'ks': 3,
                     'stride': 1,
@@ -131,7 +131,7 @@ class CSRNet(Model):
                     'inplace':True
                 },
                 'C2D':{
-                    'in_channels':3,
+                    'in_channels':256,
                     'out_channels': 256,
                     'ks': 3,
                     'stride': 1,
@@ -142,7 +142,7 @@ class CSRNet(Model):
                     'inplace':True
                 },
                 'C2D':{
-                    'in_channels':3,
+                    'in_channels':256,
                     'out_channels': 256,
                     'ks': 3,
                     'stride': 1,
@@ -158,7 +158,7 @@ class CSRNet(Model):
                    
                 },
                 'C2D':{
-                    'in_channels':3,
+                    'in_channels':256,
                     'out_channels': 512,
                     'ks': 3,
                     'stride': 1,
@@ -169,7 +169,7 @@ class CSRNet(Model):
                     'inplace':True
                 },
                 'C2D':{
-                    'in_channels':3,
+                    'in_channels':512,
                     'out_channels': 512,
                     'ks': 3,
                     'stride': 1,
@@ -180,7 +180,7 @@ class CSRNet(Model):
                     'inplace':True
                 },
                 'C2D':{
-                    'in_channels':3,
+                    'in_channels':512,
                     'out_channels': 512,
                     'ks': 3,
                     'stride': 1,
@@ -239,7 +239,7 @@ class CSRNet(Model):
                     'inplace':True
                 },
                 'C2D':{
-                        'in_channels':512,
+                        'in_channels':256,
                         'out_channels': 128,
                         'ks': 3,
                         'stride': 1,
@@ -250,7 +250,7 @@ class CSRNet(Model):
                     'inplace':True
                 },
                 'C2D':{
-                        'in_channels':512,
+                        'in_channels':128,
                         'out_channels': 64,
                         'ks': 3,
                         'stride': 1,
