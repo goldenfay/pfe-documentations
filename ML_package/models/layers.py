@@ -20,22 +20,23 @@ def maxpool_layer(params:dict):
 
 def fc_layer(params:dict):
     return nn.Linear(params['in_size'],params['out_size'])
+    
 
 
 def construct_net(schema:dict,weight_flag=False):
     arch=[]
-    for layer_key in schema:
+    for layer_key,params in schema:
         if layer_key=='M':
-            arch+=[maxpool_layer(schema[layer_key])]
+            arch+=[maxpool_layer(params)]
         elif layer_key=='C2D':
-            arch+=[conv2D_layer(schema[layer_key])]
+            arch+=[conv2D_layer(params)]
         elif layer_key=='R':
-            arch+=[relu_layer(schema[layer_key])]
+            arch+=[relu_layer(params)]
         elif layer_key=='BR':
-            arch+=[nn.BatchNorm2d(schema[layer_key]['out_channels'])]    
-            arch+=[relu_layer(schema[layer_key])]    
+            arch+=[nn.BatchNorm2d(params['out_channels'])]    
+            arch+=[relu_layer(params)]    
         elif layer_key=='FC':
-            arch+=[fc_layer(schema[layer_key])]    
+            arch+=[fc_layer(params)]    
 
     print(arch)
     return nn.Sequential(*arch)        

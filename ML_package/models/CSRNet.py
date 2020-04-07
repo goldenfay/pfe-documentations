@@ -66,203 +66,203 @@ class CSRNet(Model):
 
     @staticmethod
     def default_architecture():
-        frontEnd_shape={
+        frontEnd_shape=[
             
-                'C2D':{
+                ('C2D',{
                     'in_channels':3,
                     'out_channels': 64,
                     'ks': 3,
                     'stride': 1,
                     'padding': 1,
                     'dilation': 1
-                },
-                'R':{
+                }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                     'in_channels':64,
                     'out_channels': 64,
                     'ks': 3,
                     'stride': 1,
                     'padding': 1,
                     'dilation': 1
-                },
-                'R':{
+                }),
+                ('R',{
                     'inplace':True
-                },
-                'M':{
+                }),
+                ('M',{
                     'ks': 2,
                     'stride': 2,
                    
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                     'in_channels':64,
                     'out_channels': 128,
                     'ks': 3,
                     'stride': 1,
                     'padding': 1,
                     'dilation': 1
-                },
-                'R':{
+                }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                     'in_channels':128,
                     'out_channels': 128,
                     'ks': 3,
                     'stride': 1,
                     'padding': 1,
                     'dilation': 1
-                },
-                'R':{
+                }),
+                ('R',{
                     'inplace':True
-                },
-                'M':{
+                }),
+                ('M',{
                     'ks': 2,
                     'stride': 2,
                    
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                     'in_channels':128,
                     'out_channels': 256,
                     'ks': 3,
                     'stride': 1,
                     'padding': 1,
                     'dilation': 1
-                },
-                'R':{
+                }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                     'in_channels':256,
                     'out_channels': 256,
                     'ks': 3,
                     'stride': 1,
                     'padding': 1,
                     'dilation': 1
-                },
-                'R':{
+                }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                     'in_channels':256,
                     'out_channels': 256,
                     'ks': 3,
                     'stride': 1,
                     'padding': 1,
                     'dilation': 1
-                },
-                'R':{
+                }),
+                ('R',{
                     'inplace':True
-                },
-                'M':{
+                }),
+                ('M',{
                     'ks': 2,
                     'stride': 2,
                    
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                     'in_channels':256,
                     'out_channels': 512,
                     'ks': 3,
                     'stride': 1,
                     'padding': 1,
                     'dilation': 1
-                },
-                'R':{
+                }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                     'in_channels':512,
                     'out_channels': 512,
                     'ks': 3,
                     'stride': 1,
                     'padding': 1,
                     'dilation': 1
-                },
-                'R':{
+                }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                     'in_channels':512,
                     'out_channels': 512,
                     'ks': 3,
                     'stride': 1,
                     'padding': 1,
                     'dilation': 1
-                },
-                'R':{
+                }),
+                ('R',{
                     'inplace':True
-                }
+                })
 
             
-        }
+        ]
         backEnd_shape={
-                'C2D':{
+                ('C2D',{
                         'in_channels':512,
                         'out_channels': 512,
                         'ks': 3,
                         'stride': 1,
                         'padding': 2,
                         'dilation': 2
-                    },
-                'R':{
+                    }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                         'in_channels':512,
                         'out_channels': 512,
                         'ks': 3,
                         'stride': 1,
                         'padding': 2,
                         'dilation': 2
-                    },
-                'R':{
+                    }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                         'in_channels':512,
                         'out_channels': 512,
                         'ks': 3,
                         'stride': 1,
                         'padding': 2,
                         'dilation': 2
-                    },
-                'R':{
+                    }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                         'in_channels':512,
                         'out_channels': 256,
                         'ks': 3,
                         'stride': 1,
                         'padding': 2,
                         'dilation': 2
-                    },
-                'R':{
+                    }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                         'in_channels':256,
                         'out_channels': 128,
                         'ks': 3,
                         'stride': 1,
                         'padding': 2,
                         'dilation': 2
-                    },
-                'R':{
+                    }),
+                ('R',{
                     'inplace':True
-                },
-                'C2D':{
+                }),
+                ('C2D',{
                         'in_channels':128,
                         'out_channels': 64,
                         'ks': 3,
                         'stride': 1,
                         'padding': 2,
                         'dilation': 2
-                    },
-                'R':{
+                    }),
+                ('R',{
                     'inplace':True
-                }  
+                })  
         }
         output_layer=nn.Conv2d(64, 1, kernel_size=1)
 
