@@ -40,7 +40,7 @@ class CSRNet(Model):
         self.frontEnd ,self.backEnd =layers.construct_net(self.frontEnd),layers.construct_net(self.backEnd)
         if not weightsFlag:
             mod = models.vgg16(pretrained = True)
-            
+            print(mod.features[0])
             self._initialize_weights()
             for i in self.frontEnd.state_dict().items():
                 self.frontEnd.state_dict().items()[i][1].data[:] = \
