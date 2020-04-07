@@ -159,7 +159,7 @@ class GenericLoader(Loader):
                 'test_size':test_size,
                 'batch_size':batch_size
             },
-            os.path.join(utils.BASEPATH,'obj','loaders',self.__class__.__name__,'saved.pkl')
+            os.path.join(utils.BASE_PATH,'obj','loaders',self.__class__.__name__,'saved.pkl')
             )
         return all_datasets
 
