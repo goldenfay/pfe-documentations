@@ -7,16 +7,16 @@ from torch import nn
 def conv2D_layer(params:dict):
     return nn.Conv2d(params['in_channels'],
                     params['out_channels'],
-                    params['ks'],
-                    params['stride'],
-                    params['padding'],
-                    params['dilation']
+                    kernel_size=params['ks'],
+                    stride=params['stride'],
+                    padding=params['padding'],
+                    dilation=params['dilation']
                     )
 def relu_layer(params:dict):
     return nn.ReLU(inplace=params['inplace'])
 
 def maxpool_layer(params:dict):
-    return nn.MaxPool2d(params['ks'],params['stride'])
+    return nn.MaxPool2d(params['ks'],stride=params['stride'])
 
 def fc_layer(params:dict):
     return nn.Linear(params['in_size'],params['out_size'])
