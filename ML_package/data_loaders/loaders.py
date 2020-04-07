@@ -153,6 +153,7 @@ class GenericLoader(Loader):
 
 
         if save:
+            utils.make_path(os.path.join(utils.BASE_PATH,'obj','loaders',self.__class__.__name__))
             utils.save_obj({
                 'paths': self.img_gt_dmap_list,
                 'samplers': samplers_list,
