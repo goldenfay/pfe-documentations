@@ -45,9 +45,7 @@ class CSRNet(Model):
 
     def forward(self,x):
         x = self.frontEnd(x)
-        print('After Front end',x.size())
         x = self.backEnd(x)
-        print('After back end',x.size())
         x = self.output_layer(x)
         x = F.interpolate(x,scale_factor=2, mode='bilinear')
         return x
@@ -262,7 +260,7 @@ class CSRNet(Model):
                     'inplace':True
                 })  
         ]
-        output_layer=nn.Conv2d(64, 1, kernel_size=1)
+        output_layer=nn.Conv2d(64, 1, kernel_size=1,padding=0)
 
         return frontEnd_shape,backEnd_shape,output_layer         
 
