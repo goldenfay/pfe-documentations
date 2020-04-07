@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import torch.nn.functional as F
 from torchvision import models
 import os,sys,inspect,glob,re,time,datetime
 import numpy as np
@@ -28,7 +29,7 @@ class CSRNet(Model):
         if not weightsFlag:
             mod = models.vgg16(pretrained = True)
             self._initialize_weights()
-            self.frontEnd.state_dict= mod.state_dict()
+            self.frontend.load_state_dict(mod.features[0:23].state_dict())
         
     
     
@@ -39,7 +40,7 @@ class CSRNet(Model):
         if not weightsFlag:
             mod = models.vgg16(pretrained = True)
             self._initialize_weights()
-            self.frontEnd.state_dict= mod.state_dict()
+            self.frontend.load_state_dict(mod.features[0:23].state_dict())
 
     def forward(self,x):
         x = self.frontEnd(x)
@@ -47,6 +48,7 @@ class CSRNet(Model):
         x = self.backEnd(x)
         print('After back end',x.size())
         x = self.output_layer(x)
+        x = F.interpolate(x,scale_factor=8, mode='bilinear')
         return x
 
     def _initialize_weights(self):
