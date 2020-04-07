@@ -49,7 +49,7 @@ class CSRNet(Model):
         x = self.backEnd(x)
         print('After back end',x.size())
         x = self.output_layer(x)
-        # x = F.interpolate(x,scale_factor=8, mode='bilinear')
+        x = F.interpolate(x,scale_factor=2, mode='bilinear')
         return x
 
     def _initialize_weights(self):
