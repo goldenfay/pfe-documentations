@@ -37,7 +37,7 @@ def construct_net(schema:dict,weight_flag=False):
         elif layer_key=='FC':
             arch.append(fc_layer(schema[layer_key]))    
 
-
+    print(arch)
     return nn.Sequential(*arch)        
 
 
