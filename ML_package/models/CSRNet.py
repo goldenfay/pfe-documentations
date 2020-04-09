@@ -317,8 +317,10 @@ class CSRNet(Model):
             for i,(img,gt_dmap) in enumerate(train_dataloader):
                 img=img.to(device)
                 gt_dmap=gt_dmap.to(device)
+              
                     # forward propagation
                 est_dmap=self(img)
+                print(est_dmap.data.sum())
                 #print('img',img.shape,' gt',gt_dmap.shape,'est',est_dmap.shape)
                 print('img',img.size(),' gt',gt_dmap.size(),'est',est_dmap.size())
                     # calculate loss
