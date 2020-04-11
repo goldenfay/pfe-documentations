@@ -123,7 +123,6 @@ class CSRNet(Model):
               
                     # forward propagation
                 est_dmap=self(img)
-                print(est_dmap.data.sum())
                 #print('img',img.shape,' gt',gt_dmap.shape,'est',est_dmap.shape)
                 
                 if not est_dmap.size()==gt_dmap.size():
