@@ -63,7 +63,7 @@ class CSRNet(Model):
 
     @staticmethod
     def default_architecture():
-        output_layer=nn.Conv2d(64, 1, kernel_size=1,padding=0)
+        output_layer=nn.Conv2d(64, 3, kernel_size=1,padding=0)
 
         return shapes.CSRNET_FRONTEND,shapes.CSRNET_BACKEND,output_layer         
 
