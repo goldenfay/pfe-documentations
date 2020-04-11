@@ -63,7 +63,7 @@ class CSRNet(Model):
 
     @staticmethod
     def default_architecture():
-        output_layer=nn.Conv2d(64, 1, kernel_size=1,padding=1)
+        output_layer=nn.Conv2d(64, 1, kernel_size=1,padding=0)
 
         return shapes.CSRNET_FRONTEND,shapes.CSRNET_BACKEND,output_layer         
 
@@ -126,6 +126,8 @@ class CSRNet(Model):
                 print(est_dmap.data.sum())
                 #print('img',img.shape,' gt',gt_dmap.shape,'est',est_dmap.shape)
                 print('img',img.size(),' gt',gt_dmap.size(),'est',est_dmap.size())
+                if not est_dmap.size()==gt_dmap.size():
+                    est_dmap=F.interpolate(est_dmap,gt_dmap.size(),mode='bilinear')
                     # calculate loss
                 loss=train_params.criterion(est_dmap,gt_dmap)
                 epoch_loss+=loss.item()
