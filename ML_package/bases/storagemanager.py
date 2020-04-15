@@ -50,7 +50,9 @@ def save_file(path,file_to_save,env,saver_module='torch',alternative=None):
 
 
 
-    else: torch.save(file_to_save,path)
+    else: 
+        print('there is a space')
+        torch.save(file_to_save,path)
           
 
 
