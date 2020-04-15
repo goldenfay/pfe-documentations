@@ -11,6 +11,7 @@ parentdir = os.path.dirname(currentdir)
     # User's module from another directory
 sys.path.append(os.path.join(parentdir, "bases"))   
 import utils 
+import storagemanager
 from params import *
 from torch import Tensor
 
@@ -194,7 +195,9 @@ class Model(NN.Module):
         '''
             # If the directory doesn't exist, create it.
         utils.make_path(os.path.split(path)[0])
-        torch.save(chkpt, path) 
+        # torch.save(chkpt, path) 
+        env='drive' if 'google.colab' in sys.modules else 'os'
+        storagemanager.save_file(path,chkpt,env)
 
     def load_chekpoint(self,path):
         '''
