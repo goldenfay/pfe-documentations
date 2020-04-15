@@ -196,9 +196,9 @@ class Model(NN.Module):
             # If the directory doesn't exist, create it.
         utils.make_path(os.path.split(path)[0])
         # torch.save(chkpt, path) 
-        if 'google.colab' in sys.modules:
+        if 'drive/My Drive' in path:
             print('google colab')
-        env='drive' if 'google.colab' in sys.modules else 'os'
+        env='drive' if 'drive/My Drive' in path else 'os'
         storagemanager.save_file(path,chkpt,env)
 
     def load_chekpoint(self,path):
