@@ -29,7 +29,8 @@ def save_file(path,file_to_save,env,saver_module='torch',alternative=None):
     infos=drive.GetAbout()
     if int(infos['quotaBytesUsed'])+sys.getsizeof(file_to_save)>=int(infos['quotaBytesTotal'])-(200*1024*1024):
             print('\t [Alert] Maximum storage reached !','\n\t',' Migration of all checkpoints to github ...')
-            git_manager=GitManager('8664af7d07116cf786e34dfa8b4952c9f4b39503')
+                # Authentification to github
+            git_manager=GitManager('e85ee37850529e3fdfe339373c928649231700a3')
             git_manager.authentification()
             target_repo=git_manager.get_repo('checkpoints')
                 # Fetch checkpoints from the directory in order to push them all to github
