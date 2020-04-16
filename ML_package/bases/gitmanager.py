@@ -10,7 +10,7 @@ class GitManager:
 
     def authentification(self):
     
-        x='ea8ab52f433b985c5853b0c52d87c6af38396417'
+        x='707a725cc9ca67b0ee3c9662a65f02ab88e1b597'
         self.gth = Github(self.token)
 
         return self.gth
