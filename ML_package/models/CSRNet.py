@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import torch.nn.functional as F
 from torchvision import models
 import os,sys,inspect,glob,re,time,datetime
 import numpy as np

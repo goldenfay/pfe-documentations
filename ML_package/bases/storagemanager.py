@@ -27,7 +27,7 @@ def save_file(path,file_to_save,env,saver_module='torch',alternative=None):
     
     drive = GoogleDrive(gauth)
     infos=drive.GetAbout()
-    if int(infos['quotaBytesUsed'])+sys.getsizeof(file_to_save)>=int(infos['quotaBytesTotal'])-(200*1024*1024):
+    if int(infos['quotaBytesUsed'])+sys.getsizeof(file_to_save)>=int(infos['quotaBytesTotal']):
             print('\t [Alert] Maximum storage reached !','\n\t',' Migration of all checkpoints to github ...')
                 # Authentification to github
             # git_manager=GitManager('5598c0e73e05423e7538fd19cb2d510379e9e588')
