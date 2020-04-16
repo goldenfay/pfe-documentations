@@ -80,8 +80,9 @@ class Model(NN.Module):
                         obj['model_state_dict']=None 
                         obj['optimizer_state_dict']=None
                         self.save_checkpoint(obj,path)
+                        print(sys.getsizeof(obj)/1024,'KB',end=' ')
                         files_to_push.append(path)
-
+                print(len(files_to_push))
                 git_manager=GitManager(user='ihasel2020@gmail.com',pwd='pfemaster2020')  
                 git_manager.authentification()
                 target_repo=git_manager.get_repo('checkpoints') 
