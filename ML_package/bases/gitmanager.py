@@ -5,13 +5,16 @@ from github.Repository import Repository
 import base64
 class GitManager:
 
-    def __init__(self,access_token):
+    def __init__(self,access_token=None,user=None,pwd=None):
        self.token=access_token
+       self.user=user
+       self.pwd=pwd
 
     def authentification(self):
     
         x='707a725cc9ca67b0ee3c9662a65f02ab88e1b597'
-        self.gth = Github(self.token)
+        
+        self.gth = Github(self.token) if self.token is not None else Github(self.user,self.pwd)
 
         return self.gth
 
