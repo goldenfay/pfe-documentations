@@ -31,9 +31,10 @@ class GitManager:
         return [el.path for el in repo.get_contents('')]
 
     def push_files(self,repo:Repository,files_list,push_msg,branch='master'):
-        if repo is None : print('repo none')
+        
         master_ref = repo.get_git_ref('heads/'+branch)
         master_sha = master_ref.object.sha
+        if master_sha is None : print('master_sha none')
         base_tree = repo.get_git_tree(master_sha)
         element_list = list()
         for entry in files_list:
