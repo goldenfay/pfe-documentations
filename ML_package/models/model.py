@@ -1,5 +1,6 @@
 import torch
 import torch.nn as NN
+import torch.nn.functional as F
 import pickle
 import matplotlib.pyplot as plt
 import matplotlib.cm as CM
@@ -12,6 +13,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.append(os.path.join(parentdir, "bases"))   
 import utils 
 import storagemanager
+from gitmanager import *
 from params import *
 from torch import Tensor
 
@@ -60,18 +62,41 @@ class Model(NN.Module):
 
             if len(params_hist)>0:
                 print("\t Restore Checkpoints2 found! Resuming training...")
-                # start_epoch=int(re.sub("[^0-9]+","",params_hist[-1][list(re.finditer("[\\\/]",params_hist[-1]))[-1].start(0):]))
-                start_epoch=max(sorted(params_hist))
-                #start_epoch=435
+                sorted_hist=sorted(params_hist)
+                start_epoch=max(sorted_hist)
                 last_epoch=glob.glob(os.path.join(os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__,'epoch_'+str(start_epoch)+'.pth')))[0]
-                # self.load_state_dict(torch.load(last_epoch))
                 
-                # last_model=torch.load(last_epoch.replace('.pth','.pkl'))
                 # #self.optimizer=last_model.optimizer
                 # if hasattr(last_model,'min_MAE'):self.min_MAE=last_model.min_MAE
                 # if hasattr(last_model,'min_epoch'):self.min_epoch=last_model.min_epoch
                     #//////////
-                _,self.min_MAE,self.min_epoch=self.load_chekpoint(last_epoch)    
+                _,self.min_MAE,self.min_epoch=self.load_chekpoint(last_epoch)
+
+                files_to_push=[]
+                for epoch in sorted_hist:
+                    if epoch!=self.min_epoch and epoch!=start_epoch:
+                        path= glob.glob(os.path.join(os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__,'epoch_'+str(epoch)+'.pth')))[0]
+                        obj=torch.load(path)
+                        obj['model_state_dict']=None 
+                        obj['optimizer_state_dict']=None
+                        self.save_checkpoint(obj,path)
+                        files_to_push.append(path)
+
+                git_manager=GitManager(user='ihasel2020@gmail.com',pwd='pfemaster2020')  
+                git_manager.authentification()
+                target_repo=git_manager.get_repo('checkpoints') 
+                res=git_manager.push_files(target_repo,files_to_push,'checkpoints migration')
+                if isinstance(res,int)and res==len(files_to_push):
+                    print('\t Successfully comitted previous checkpoints.')     
+
+                else :  raise RuntimeError('Couldn\'t push all files')
+  
+                            
+
+
+
+
+                        
 
         start_epoch+=1   
 
@@ -88,7 +113,10 @@ class Model(NN.Module):
                 gt_dmap=gt_dmap.to(device)
                     # forward propagation
                 est_dmap=self(img)
-                #print('img',img.shape,' gt',gt_dmap.shape,'est',est_dmap.shape)
+                if not est_dmap.size()==gt_dmap.size():
+                    
+                    est_dmap=F.interpolate(est_dmap,size=(gt_dmap.size()[2],gt_dmap.size()[3]),mode='bilinear')
+                
                     # calculate loss
                 loss=train_params.criterion(est_dmap,gt_dmap)
                 epoch_loss+=loss.item()
@@ -116,6 +144,10 @@ class Model(NN.Module):
                 gt_dmap=gt_dmap.to(device)
                     # forward propagation
                 est_dmap=self(img)
+                if not est_dmap.size()==gt_dmap.size():
+                    
+                    est_dmap=F.interpolate(est_dmap,size=(gt_dmap.size()[2],gt_dmap.size()[3]),mode='bilinear')
+
                 MAE+=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
                 MSE+=np.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(),2)
                 del img,gt_dmap,est_dmap
