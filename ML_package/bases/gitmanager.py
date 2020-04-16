@@ -41,8 +41,8 @@ class GitManager:
                 data = input_file.read()
             if entry.endswith('.pth'):
                 data = base64.b64encode(data)
-            block=data.decode("utf-8")    
-            blob = repo.create_git_blob(block, "base64")    
+            # block=data.decode("utf-8")    
+            blob = repo.create_git_blob(data, "base64")    
             element = InputGitTreeElement(os.path.basename(entry), '100644', 'blob', sha=blob.sha)
             element_list.append(element)    
         tree = repo.create_git_tree(element_list, base_tree)
