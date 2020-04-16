@@ -31,7 +31,7 @@ def save_file(path,file_to_save,env,saver_module='torch',alternative=None):
             print('\t [Alert] Maximum storage reached !','\n\t',' Migration of all checkpoints to github ...')
                 # Authentification to github
             # git_manager=GitManager('5598c0e73e05423e7538fd19cb2d510379e9e588')
-            git_manager=GitManager(user='selmanefaycal@hotmail.fr',pwd='selmaneREDX19031997')
+            git_manager=GitManager(user='ihasel2020@gmail.com',pwd='pfemaster2020')
             git_manager.authentification()
             target_repo=git_manager.get_repo('checkpoints')
                 # Fetch checkpoints from the directory in order to push them all to github
