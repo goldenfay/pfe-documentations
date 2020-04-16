@@ -34,7 +34,7 @@ class GitManager:
         
         master_ref = repo.get_git_ref('heads/'+branch)
         master_sha = master_ref.object.sha
-        print(master_sha)
+        print('Master sha' ,master_sha)
         base_tree = repo.get_git_tree(master_sha,recursive=True)
         element_list = list()
         for entry in files_list:
