@@ -250,6 +250,8 @@ class Model(NN.Module):
 
             else :  raise RuntimeError('Couldn\'t push all files')
 
+            torch.save(chkpt, path) 
+
 
     def load_chekpoint(self,path):
         '''
