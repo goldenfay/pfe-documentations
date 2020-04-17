@@ -224,7 +224,7 @@ class Model(NN.Module):
         utils.make_path(os.path.split(path)[0])
         # torch.save(chkpt, path) 
         env='drive' if 'drive/My Drive' in path else 'os'
-        flag=storagemanager.save_file(path,chkpt,env)
+        flag=storagemanager.save_file(path,chkpt,env,self.min_epoch)
 
         if flag==0: # There isn't available space on drive
             print("\t Optimizing space...")
