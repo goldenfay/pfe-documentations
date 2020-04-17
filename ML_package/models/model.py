@@ -77,25 +77,22 @@ class Model(NN.Module):
                     if epoch!=self.min_epoch and epoch!=start_epoch:
                         path= glob.glob(os.path.join(os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__,'epoch_'+str(epoch)+'.pth')))[0]
                         obj=torch.load(path)
-                        obj['model_state_dict']=None 
-                        obj['optimizer_state_dict']=None
-                        self.save_checkpoint(obj,path)
-                        print(sys.getsizeof(obj)/1024,'KB',end=' ')
-                        files_to_push.append(path)
-                print(len(files_to_push))
+                        if obj['model_state_dict'] is not None or obj['optimizer_state_dict']is not None:
+                            obj['model_state_dict']=None 
+                            obj['optimizer_state_dict']=None
+                            self.save_checkpoint(obj,path)
+                            files_to_push.append(path)
+                
                 git_manager=GitManager(user='ihasel2020@gmail.com',pwd='pfemaster2020')  
                 git_manager.authentification()
                 target_repo=git_manager.get_repo('checkpoints') 
                 res=git_manager.push_files(target_repo,files_to_push,'checkpoints migration')
                 if isinstance(res,int)and res==len(files_to_push):
-                    print('\t Successfully comitted previous checkpoints.')     
+                    print('\t Successfully comitted previous checkpoints(',res,' files).')     
 
                 else :  raise RuntimeError('Couldn\'t push all files')
   
                             
-
-
-
 
                         
 
@@ -132,9 +129,6 @@ class Model(NN.Module):
                 # Log results in checkpoints2 directory
             epochs_list.append(epoch)
             train_loss_list.append(epoch_loss/len(train_dataloader))
-            
-            # torch.save(self.state_dict(),os.path.join(utils.BASE_PATH,'checkpoints2/epoch_'+str(epoch)+'.pth'))
-            # torch.save(self,os.path.join(utils.BASE_PATH,'checkpoints2/epoch_'+str(epoch)+".pkl"))
 
                 # Set the Model on validation mode
             self.eval()
@@ -230,7 +224,32 @@ class Model(NN.Module):
         utils.make_path(os.path.split(path)[0])
         # torch.save(chkpt, path) 
         env='drive' if 'drive/My Drive' in path else 'os'
-        storagemanager.save_file(path,chkpt,env)
+        flag=storagemanager.save_file(path,chkpt,env)
+
+        if flag==0: # There isn't available space on drive
+            print("\t Optimizing space...")
+            parent_path=os.path.split(path)[0]
+            sorted_hist= sorted([int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join(parent_path,'*.pth'))])
+            files_to_push=[]
+            for epoch in sorted_hist:
+                    if epoch!=self.min_epoch:
+                        path= glob.glob(os.path.join(os.path.join(parent_path,'epoch_'+str(epoch)+'.pth')))[0]
+                        obj=torch.load(path)
+                        if obj['model_state_dict'] is not None or obj['optimizer_state_dict']is not None:
+                            obj['model_state_dict']=None 
+                            obj['optimizer_state_dict']=None
+                            self.save_checkpoint(obj,path)
+                            files_to_push.append(path)
+            print("\t Pushing checkpoints to github...")    
+            git_manager=GitManager(user='ihasel2020@gmail.com',pwd='pfemaster2020')  
+            git_manager.authentification()
+            target_repo=git_manager.get_repo('checkpoints') 
+            res=git_manager.push_files(target_repo,files_to_push,'checkpoints migration')
+            if isinstance(res,int)and res==len(files_to_push):
+                print('\t Successfully comitted previous checkpoints(',res,' files).')     
+
+            else :  raise RuntimeError('Couldn\'t push all files')
+
 
     def load_chekpoint(self,path):
         '''
