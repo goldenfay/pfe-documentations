@@ -77,7 +77,7 @@ class Model(NN.Module):
                 for epoch in sorted_hist:
                     if epoch!=self.min_epoch and epoch!=start_epoch:
                         path= glob.glob(os.path.join(os.path.join(self.checkpoints_dir,'epoch_'+str(epoch)+'.pth')))[0]
-                        obj=torch.load(path)
+                        obj=torch.load(path,map_location=device)
                         if obj['model_state_dict'] is not None or obj['optimizer_state_dict']is not None:
                             obj['model_state_dict']=None 
                             obj['optimizer_state_dict']=None
@@ -235,7 +235,7 @@ class Model(NN.Module):
             for epoch in sorted_hist:
                     if epoch!=self.min_epoch:
                         path= glob.glob(os.path.join(os.path.join(parent_path,'epoch_'+str(epoch)+'.pth')))[0]
-                        obj=torch.load(path)
+                        obj=torch.load(path,map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
                         if obj['model_state_dict'] is not None or obj['optimizer_state_dict']is not None:
                             obj['model_state_dict']=None 
                             obj['optimizer_state_dict']=None
