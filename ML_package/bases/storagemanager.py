@@ -8,13 +8,14 @@ import utils
 from gitmanager import GitManager
 
 
-def authentificate_Grive():
+def authenticate_Grive():
     
     from google.colab import auth
     
 
     gauth = GoogleAuth()
     if not os.path.exists(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt'))):
+        print('not found')
         auth.authenticate_user()
         gauth.credentials = GoogleCredentials.get_application_default()
         gauth.SaveCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
@@ -30,6 +31,7 @@ def authentificate_Grive():
         # gauth.credentials = GoogleCredentials.get_application_default()
 
     elif gauth.access_token_expired:
+        print('expired')
 
 
         gauth.Refresh()
@@ -53,7 +55,7 @@ def save_file(path,file_to_save,env,min_epoch,saver_module='torch',alternative=N
 
         # If platform is Google drive, then do checks 
     
-    gauth=authentificate_Grive
+    gauth=authenticate_Grive
     
     drive = GoogleDrive(gauth)
     infos=drive.GetAbout()
