@@ -45,15 +45,15 @@ class GitManager:
             blob = repo.create_git_blob(block, "base64")    
             element = InputGitTreeElement(os.path.basename(entry), '100644', 'blob', sha=blob.sha)
             element_list.append(element)  
-        if len(element_list)==0:
-            print('list elements is empty')      
-        tree = repo.create_git_tree(element_list, base_tree)
-        parent = repo.get_git_commit(master_sha)
-        commit = repo.create_git_commit(push_msg, tree, [parent])
-        
-        master_ref.edit(commit.sha)
-        self.log_commit('commit.txt',files_list)
-        print('\t Done')
+        if len(element_list)!=0:
+                  
+            tree = repo.create_git_tree(element_list, base_tree)
+            parent = repo.get_git_commit(master_sha)
+            commit = repo.create_git_commit(push_msg, tree, [parent])
+            
+            master_ref.edit(commit.sha)
+            self.log_commit('commit.txt',files_list)
+            print('\t Done')
         """ An egregious hack to change the PNG contents after the commit """
         # for entry in files_list:
         #     with open(entry, 'rb') as input_file:
