@@ -12,14 +12,14 @@ def authenticate_Grive():
     
     from google.colab import auth
     
-
+    print('hello')
     gauth = GoogleAuth()
     if not os.path.exists(os.path.join(os.path.dirname(utils.BASE_PATH),'mycredentials.txt')):
         print('not found')
         auth.authenticate_user()
         gauth.credentials = GoogleCredentials.get_application_default()
         gauth.SaveCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
-
+    else: print('nop')
     gauth.LoadCredentialsFile(os.path.join(os.path.dirname(utils.BASE_PATH),'mycredentials.txt'))
     if gauth.credentials is None:
         print('none')
