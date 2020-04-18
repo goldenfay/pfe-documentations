@@ -15,7 +15,7 @@ def authentificate_Grive():
 
     gauth = GoogleAuth()
 
-    gauth.LoadCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
+    # gauth.LoadCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
     if gauth.credentials is None:
  
         gauth.GetFlow()
@@ -33,7 +33,7 @@ def authentificate_Grive():
 
         gauth.Authorize()
         # auth.authenticate_user()
-    gauth.SaveCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
+    # gauth.SaveCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
 
     return gauth
 
