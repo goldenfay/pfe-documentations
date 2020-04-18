@@ -258,7 +258,7 @@ class Model(NN.Module):
         '''
             Load a checkpoint from the specified path in order to resume training.
         '''
-        chkpt=torch.load(path).to(torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+        chkpt=torch.load(path,map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
         self.load_state_dict(chkpt['model_state_dict'])
         self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
 
