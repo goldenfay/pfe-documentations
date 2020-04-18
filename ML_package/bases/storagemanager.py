@@ -10,11 +10,15 @@ from gitmanager import GitManager
 
 def authentificate_Grive():
     
-    # from google.colab import auth
+    from google.colab import auth
     
 
     gauth = GoogleAuth()
-    
+    if not os.path.exists(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt'))):
+        auth.authenticate_user()
+        gauth.credentials = GoogleCredentials.get_application_default()
+        gauth.SaveCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
+
     gauth.LoadCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
     if gauth.credentials is None:
  
