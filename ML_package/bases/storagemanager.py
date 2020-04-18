@@ -55,7 +55,7 @@ def save_file(path,file_to_save,env,min_epoch,saver_module='torch',alternative=N
 
         # If platform is Google drive, then do checks 
     
-    gauth=authenticate_Grive
+    gauth=authenticate_Grive()
     
     drive = GoogleDrive(gauth)
     infos=drive.GetAbout()
