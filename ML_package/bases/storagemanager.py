@@ -39,7 +39,7 @@ def authenticate_Grive():
         print('authorize')
         gauth.Authorize()
         # auth.authenticate_user()
-    gauth.SaveCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
+    gauth.SaveCredentialsFile(os.path.join(os.path.dirname(utils.BASE_PATH),'mycredentials.txt'))
 
     return gauth
 
