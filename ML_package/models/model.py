@@ -22,6 +22,7 @@ class Model(NN.Module):
     def __init__(self):
         super(Model,self).__init__()
         self.params=TrainParams.defaultTrainParams()
+        self.checkpoints_dir=os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__)
         
     def build(self,weightsFlag):
         '''
@@ -56,7 +57,7 @@ class Model(NN.Module):
 
             # If resume option is specified, restore state of model and resume training
         if resume:
-            params_hist=[int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join(os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__),'*.pth'))]
+            params_hist=[int(re.sub("[^0-9]+","",file_path[list(re.finditer("[\\\/]",file_path))[-1].start(0):])) for file_path in glob.glob(os.path.join(os.path.join(self.checkpoints_dir),'*.pth'))]
             
             
 
@@ -64,7 +65,7 @@ class Model(NN.Module):
                 print("\t Restore Checkpoints2 found! Resuming training...")
                 sorted_hist=sorted(params_hist)
                 start_epoch=max(sorted_hist)
-                last_epoch=glob.glob(os.path.join(os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__,'epoch_'+str(start_epoch)+'.pth')))[0]
+                last_epoch=glob.glob(os.path.join(os.path.join(self.checkpoints_dir,'epoch_'+str(start_epoch)+'.pth')))[0]
                 
                 # #self.optimizer=last_model.optimizer
                 # if hasattr(last_model,'min_MAE'):self.min_MAE=last_model.min_MAE
@@ -75,7 +76,7 @@ class Model(NN.Module):
                 files_to_push=[]
                 for epoch in sorted_hist:
                     if epoch!=self.min_epoch and epoch!=start_epoch:
-                        path= glob.glob(os.path.join(os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__,'epoch_'+str(epoch)+'.pth')))[0]
+                        path= glob.glob(os.path.join(os.path.join(self.checkpoints_dir,'epoch_'+str(epoch)+'.pth')))[0]
                         obj=torch.load(path)
                         if obj['model_state_dict'] is not None or obj['optimizer_state_dict']is not None:
                             obj['model_state_dict']=None 
@@ -162,7 +163,7 @@ class Model(NN.Module):
                 'min_MAE': self.min_MAE,
                 'min_epoch': self.min_epoch
             }
-            self.save_checkpoint(check_point,os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__,'epoch_'+str(epoch)+'.pth'))
+            self.save_checkpoint(check_point,os.path.join(self.checkpoints_dir,'epoch_'+str(epoch)+'.pth'))
             # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
             # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
             # show an image
@@ -257,7 +258,7 @@ class Model(NN.Module):
         '''
             Load a checkpoint from the specified path in order to resume training.
         '''
-        chkpt=torch.load(path)
+        chkpt=torch.load(path).to(torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
         self.load_state_dict(chkpt['model_state_dict'])
         self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
 
@@ -273,7 +274,7 @@ class Model(NN.Module):
         torch.save(self,path) 
 
     def make_summary(self,finished=False):
-        path=os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__,'summary.json')
+        path=os.path.join(self.checkpoints_dir,'summary.json')
         summary={
             'status': finished,
             'min_epoch':self.min_epoch,
@@ -290,6 +291,7 @@ class Model(NN.Module):
         }
         utils.make_path(os.path.split(path)[0])
         utils.save_json(summary,path)
+
 
 
 

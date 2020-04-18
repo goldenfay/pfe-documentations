@@ -3,11 +3,42 @@ import os,sys,glob
 import torch
 from pydrive.drive import GoogleDrive
 from pydrive.auth import GoogleAuth
-
+from oauth2client.client import GoogleCredentials
 import utils
 from gitmanager import GitManager
 
+
+def authentificate_Grive():
+    
+    # from google.colab import auth
+    
+
+    gauth = GoogleAuth()
+
+    gauth.LoadCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
+    if gauth.credentials is None:
+ 
+        gauth.GetFlow()
+        gauth.flow.params.update({'access_type': 'offline'})
+        gauth.flow.params.update({'approval_prompt': 'force'})
+
+        gauth.LocalWebserverAuth()
+        # gauth.credentials = GoogleCredentials.get_application_default()
+
+    elif gauth.access_token_expired:
+
+
+        gauth.Refresh()
+    else:
+
+        gauth.Authorize()
+        # auth.authenticate_user()
+    gauth.SaveCredentialsFile(os.path.dirname(os.path.join(utils.BASE_PATH,'mycredentials.txt')))
+
+    return gauth
+
 def save_file(path,file_to_save,env,min_epoch,saver_module='torch',alternative=None):
+    
     if env!='drive':
         if saver_module=='torch':
             torch.save(file_to_save,path)
@@ -17,13 +48,8 @@ def save_file(path,file_to_save,env,min_epoch,saver_module='torch',alternative=N
         return 1
 
         # If platform is Google drive, then do checks 
-    from google.colab import auth
-    from oauth2client.client import GoogleCredentials
-
-    auth.authenticate_user()
-    gauth = GoogleAuth()
-    gauth.credentials = GoogleCredentials.get_application_default()
-    #gauth.LocalWebserverAuth()
+    
+    gauth=authentificate_Grive
     
     drive = GoogleDrive(gauth)
     infos=drive.GetAbout()

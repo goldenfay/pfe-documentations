@@ -18,6 +18,7 @@ from utils import BASE_PATH
 
 
 class CSRNet(Model):
+    
     def __init__(self,frontEnd,backEnd,output_layer_arch, weightsFlag=False):
         super(CSRNet, self).__init__()
         # self.seen = 0
@@ -67,4 +68,7 @@ class CSRNet(Model):
 
         return shapes.CSRNET_FRONTEND,shapes.CSRNET_BACKEND,output_layer         
 
-    
+
+
+m=CSRNet()
+print(m.checkpoints_dir)    
