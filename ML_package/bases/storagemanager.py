@@ -12,15 +12,15 @@ def authenticate_Grive():
     
     from google.colab import auth
     
-    print('hello')
     gauth = GoogleAuth()
-    if not os.path.exists(os.path.join(os.path.dirname(utils.BASE_PATH),'mycredentials.txt')):
+    credential_file_path=os.path.join(os.path.dirname(utils.BASE_PATH),'mycredentials.txt')
+    if not os.path.exists(credential_file_path):
         
         auth.authenticate_user()
         gauth.credentials = GoogleCredentials.get_application_default()
-        gauth.SaveCredentialsFile(os.path.join(os.path.dirname(utils.BASE_PATH),'mycredentials.txt'))
+        gauth.SaveCredentialsFile(credential_file_path)
     
-    gauth.LoadCredentialsFile(os.path.join(os.path.dirname(utils.BASE_PATH),'mycredentials.txt'))
+    gauth.LoadCredentialsFile(credential_file_path)
     if gauth.credentials is None:
         
         gauth.GetFlow()
@@ -32,14 +32,12 @@ def authenticate_Grive():
 
     elif gauth.access_token_expired:
         
-
-
         gauth.Refresh()
     else:
         
         gauth.Authorize()
         # auth.authenticate_user()
-    gauth.SaveCredentialsFile(os.path.join(os.path.dirname(utils.BASE_PATH),'mycredentials.txt'))
+    gauth.SaveCredentialsFile(credential_file_path)
 
     return gauth
 

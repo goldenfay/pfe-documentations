@@ -68,7 +68,3 @@ class CSRNet(Model):
 
         return shapes.CSRNET_FRONTEND,shapes.CSRNET_BACKEND,output_layer         
 
-
-
-m=CSRNet()
-print(m.checkpoints_dir)    

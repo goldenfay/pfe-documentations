@@ -73,9 +73,9 @@ class SimpleLoader(Loader):
             test_sampler = SubsetRandomSampler(list(indices[:split]))
 
         train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                                   sampler=train_sampler,num_workers=2)
+                                                   sampler=train_sampler,num_workers=4)
         test_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                                  sampler=test_sampler,num_workers=2)
+                                                  sampler=test_sampler,num_workers=4)
 
         if save:
             torch.save({'paths':(self.img_rootPath,self.gt_dmap_rootPath),'loaders':[(train_loader, test_loader)]},
@@ -116,10 +116,10 @@ class GenericLoader(Loader):
                 dataset = CrowdDataset(
                     obj['img_rootPath'], obj['dm_root_path'])
                 all_datasets.append((torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                                                 sampler=obj['train_sampler'],num_workers=2),
+                                                                 sampler=obj['train_sampler'],num_workers=4),
 
                                      torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                                                 sampler=obj['test_sampler'],num_workers=2)
+                                                                 sampler=obj['test_sampler'],num_workers=4)
                                      )
                                     )
             print("\t Done. Dataset restored.")
@@ -142,9 +142,9 @@ class GenericLoader(Loader):
                 test_sampler = SubsetRandomSampler(list(indices[:split]))
 
                 train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                                           sampler=train_sampler,num_workers=2)
+                                                           sampler=train_sampler,num_workers=4)
                 test_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size,
-                                                          sampler=test_sampler,num_workers=2)
+                                                          sampler=test_sampler,num_workers=4)
 
                 all_datasets.append((train_loader, test_loader))
 
@@ -173,9 +173,9 @@ class GenericLoader(Loader):
             dataset = CrowdDataset(img_root_path, dm_root_path)
 
             train_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
-                                                           sampler=samplers[i][0],num_workers=2)
+                                                           sampler=samplers[i][0],num_workers=4)
             test_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
-                                                          sampler=samplers[i][1],num_workers=2)
+                                                          sampler=samplers[i][1],num_workers=4)
 
             all_datasets.append((train_loader, test_loader))
 

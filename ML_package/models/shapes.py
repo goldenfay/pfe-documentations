@@ -1,3 +1,9 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+import layers
+
 CSRNET_FRONTEND = [
 
     ('C2D', {
@@ -197,3 +203,59 @@ CSRNET_BACKEND = [
         'inplace': True
     })
 ]
+
+
+class SANetHead(nn.Module):
+    def __init__(self, in_channels, out_channels, use_bn):
+        super(SANetHead, self).__init__()
+        branch_out = out_channels // 4
+        self.branch_1x1 = layers.BasicConv(in_channels, branch_out, use_bn=use_bn,
+                            kernel_size=1)
+        self.branch_3x3 = layers.BasicConv(in_channels, branch_out, use_bn=use_bn,
+                            kernel_size=3, padding=1)
+        self.branch_5x5 = layers.BasicConv(in_channels, branch_out, use_bn=use_bn,
+                            kernel_size=5, padding=2)
+        self.branch_7x7 = layers.BasicConv(in_channels, branch_out, use_bn=use_bn,
+                            kernel_size=7, padding=3)
+    
+    def forward(self, x):
+        branch_1x1 = self.branch_1x1(x)
+        branch_3x3 = self.branch_3x3(x)
+        branch_5x5 = self.branch_5x5(x)
+        branch_7x7 = self.branch_7x7(x)
+        out = torch.cat([branch_1x1, branch_3x3, branch_5x5, branch_7x7], 1)
+        return out
+
+
+class SANetCore(nn.Module):
+    def __init__(self, in_channels, out_channels, use_bn):
+        super(SANetCore, self).__init__()
+        branch_out = out_channels // 4
+        self.branch_1x1 = layers.BasicConv(in_channels, branch_out, use_bn=use_bn,
+                            kernel_size=1)
+        self.branch_3x3 = nn.Sequential(
+                        layers.BasicConv(in_channels, 2*branch_out, use_bn=use_bn,
+                            kernel_size=1),
+                        layers.BasicConv(2*branch_out, branch_out, use_bn=use_bn,
+                            kernel_size=3, padding=1),
+                        )
+        self.branch_5x5 = nn.Sequential(
+                        layers.BasicConv(in_channels, 2*branch_out, use_bn=use_bn,
+                            kernel_size=1),
+                        layers.BasicConv(2*branch_out, branch_out, use_bn=use_bn,
+                            kernel_size=5, padding=2),
+                        )
+        self.branch_7x7 = nn.Sequential(
+                        layers.BasicConv(in_channels, 2*branch_out, use_bn=use_bn,
+                            kernel_size=1),
+                        layers.BasicConv(2*branch_out, branch_out, use_bn=use_bn,
+                            kernel_size=7, padding=3),
+                        )
+    
+    def forward(self, x):
+        branch_1x1 = self.branch_1x1(x)
+        branch_3x3 = self.branch_3x3(x)
+        branch_5x5 = self.branch_5x5(x)
+        branch_7x7 = self.branch_7x7(x)
+        out = torch.cat([branch_1x1, branch_3x3, branch_5x5, branch_7x7], 1)
+        return out
