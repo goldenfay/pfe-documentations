@@ -23,6 +23,9 @@ class Model(NN.Module):
         super(Model,self).__init__()
         self.params=TrainParams.defaultTrainParams()
         self.checkpoints_dir=os.path.join(utils.BASE_PATH,'checkpoints2',self.__class__.__name__)
+        self.git_manager=GitManager(user='ihasel2020@gmail.com',pwd='pfemaster2020')  
+        self.git_manager.authentification()
+
         
     def build(self,weightsFlag):
         '''
@@ -84,10 +87,9 @@ class Model(NN.Module):
                             self.save_checkpoint(obj,path)
                             files_to_push.append(path)
                 
-                git_manager=GitManager(user='ihasel2020@gmail.com',pwd='pfemaster2020')  
-                git_manager.authentification()
-                target_repo=git_manager.get_repo('checkpoints') 
-                res=git_manager.push_files(target_repo,files_to_push,'checkpoints migration')
+                
+                target_repo=self.git_manager.get_repo('checkpoints') 
+                res=self.git_manager.push_files(target_repo,files_to_push,'checkpoints migration')
                 if isinstance(res,int)and res==len(files_to_push):
                     print('\t Successfully comitted previous checkpoints(',res,' files).')     
 
@@ -242,10 +244,9 @@ class Model(NN.Module):
                             self.save_checkpoint(obj,path)
                             files_to_push.append(path)
             print("\t Pushing checkpoints to github...")    
-            git_manager=GitManager(user='ihasel2020@gmail.com',pwd='pfemaster2020')  
-            git_manager.authentification()
-            target_repo=git_manager.get_repo('checkpoints') 
-            res=git_manager.push_files(target_repo,files_to_push,'checkpoints migration')
+            
+            target_repo=self.git_manager.get_repo('checkpoints') 
+            res=self.git_manager.push_files(target_repo,files_to_push,'checkpoints migration')
             if isinstance(res,int)and res==len(files_to_push):
                 print('\t Successfully comitted previous checkpoints(',res,' files).')     
 
