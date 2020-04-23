@@ -22,7 +22,7 @@ def authenticate_Grive():
     
     gauth.LoadCredentialsFile(credential_file_path)
     if gauth.credentials is None:
-        print('\t\t Credentials were None')
+        
         gauth.GetFlow()
         gauth.flow.params.update({'access_type': 'offline'})
         gauth.flow.params.update({'approval_prompt': 'force'})
@@ -31,11 +31,12 @@ def authenticate_Grive():
         # gauth.credentials = GoogleCredentials.get_application_default()
 
     elif gauth.access_token_expired:
-        print('\t\t Expired token, Refreshing...')
+        
         gauth.Refresh()
     else:
-        print('\t\t Authorisation....')
+        
         gauth.Authorize()
+        
         # auth.authenticate_user()
     gauth.SaveCredentialsFile(credential_file_path)
 
@@ -57,6 +58,7 @@ def save_file(path,file_to_save,env,min_epoch,saver_module='torch',alternative=N
     
     drive = GoogleDrive(gauth)
     infos=drive.GetAbout()
+    print(infos['quotaBytesUsed'])
     if int(infos['quotaBytesUsed'])+sys.getsizeof(file_to_save)>=int(infos['quotaBytesTotal']):
             print('\t [Alert] Maximum storage reached on Drive!','\n\t',' Migration of all checkpoints to github ...')
                 # Authentification to github
