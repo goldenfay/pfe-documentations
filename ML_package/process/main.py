@@ -7,7 +7,7 @@ def import_or_install(package,pipname):
         subprocess.check_call([sys.executable, "-m", "pip", "install", pipname])
 
 import_or_install("matplotlib","matplotlib")
-# import_or_install("visdom","visdom")
+import_or_install("visdom","visdom")
 import_or_install("numpy","numpy")
 import_or_install("pydrive","Pydrive")
 import_or_install("github","PyGithub")
