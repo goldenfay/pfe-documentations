@@ -7,7 +7,7 @@ def import_or_install(package,pipname):
         subprocess.check_call([sys.executable, "-m", "pip", "install", pipname])
 
 import_or_install("matplotlib","matplotlib")
-import_or_install("visdom","visdom")
+# import_or_install("visdom","visdom")
 import_or_install("numpy","numpy")
 import_or_install("pydrive","Pydrive")
 import_or_install("github","PyGithub")
@@ -33,6 +33,7 @@ from knn_gaussian_kernal import *
 from loaders import *
 from mcnn import *
 from CSRNet import *
+from SANet import *
 import utils
 import plots
 
@@ -152,7 +153,9 @@ def getModel(model_type,load_saved=False,weightsFlag=False):
     if model_type=="MCNN":
         return MCNN(weightsFlag)
     elif model_type=="CSRNet":
-        return CSRNet(weightsFlag)        
+        return CSRNet(weightsFlag)
+    elif model_type=="SANet":
+        return SANet()            
 
 def get_best_model(min_epoch,className):
     
@@ -172,7 +175,7 @@ if __name__=="__main__":
     dataset_names=["ShanghaiTech_partA","ShanghaiTech_partB"]
     dm_generator=None
     loader_type="GenericLoader"
-    model_type="CSRNet"
+    model_type=sys.argv[2] if len(sys.argv)>2 else "CSRNet"
     model=None
    # device=torch.device("cuda")
     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
