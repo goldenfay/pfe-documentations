@@ -89,7 +89,7 @@ class Model(NN.Module):
                 
                 
                 target_repo=self.git_manager.get_repo('checkpoints') 
-                res=self.git_manager.push_files(target_repo,files_to_push,'checkpoints migration')
+                res=self.git_manager.push_files(target_repo,files_to_push,'checkpoints migration',branch=self.__class__.__name__)
                 if isinstance(res,int)and res==len(files_to_push):
                     print('\t Successfully comitted previous checkpoints(',res,' files).')     
 
@@ -246,7 +246,7 @@ class Model(NN.Module):
             print("\t Pushing checkpoints to github...")    
             
             target_repo=self.git_manager.get_repo('checkpoints') 
-            res=self.git_manager.push_files(target_repo,files_to_push,'checkpoints migration')
+            res=self.git_manager.push_files(target_repo,files_to_push,'checkpoints migration',branch=self.__class__.__name__)
             if isinstance(res,int)and res==len(files_to_push):
                 print('\t Successfully comitted previous checkpoints(',res,' files).')     
 
