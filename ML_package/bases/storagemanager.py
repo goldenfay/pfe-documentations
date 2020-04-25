@@ -15,14 +15,14 @@ def authenticate_Grive():
     gauth = GoogleAuth()
     credential_file_path=os.path.join(os.path.dirname(utils.BASE_PATH),'mycredentials.txt')
     if not os.path.exists(credential_file_path):
-        
+        print('cred file not found')
         auth.authenticate_user()
         gauth.credentials = GoogleCredentials.get_application_default()
         gauth.SaveCredentialsFile(credential_file_path)
     
     gauth.LoadCredentialsFile(credential_file_path)
     if gauth.credentials is None:
-        
+        print('None')
         gauth.GetFlow()
         gauth.flow.params.update({'access_type': 'offline'})
         gauth.flow.params.update({'approval_prompt': 'force'})
@@ -31,10 +31,10 @@ def authenticate_Grive():
         # gauth.credentials = GoogleCredentials.get_application_default()
 
     elif gauth.access_token_expired:
-        
+        print('Expired')
         gauth.Refresh()
     else:
-        
+        print('Authorize')
         gauth.Authorize()
         
         # auth.authenticate_user()
