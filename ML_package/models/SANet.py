@@ -43,7 +43,7 @@ class SANet(Model):
             layers.BasicConv(16, 16,  use_bn=uses_batch_norm, kernel_size=3, padding=1),
             layers.BasicConv(16, 1, use_bn=False, kernel_size=1),
             )
-        self._initialize_weights()
+        self._initialize_weights(self.modules())
         
             
     def forward(self,x):
@@ -51,8 +51,7 @@ class SANet(Model):
         out = self.decoder(features)
         return out
 
-    def _initialize_weights(self):
-        for m in self.modules():
+    def _initialize_weights(self,m):
             if isinstance(m, list):
                 for mini_m in m:
                     self._initialize_weights(mini_m)
