@@ -32,8 +32,9 @@ class GitManager:
 
     def push_files(self,repo:Repository,files_list,push_msg,branch='master'):
         
-        master_ref = repo.get_git_ref('heads/'+branch)
-        master_sha = master_ref.object.sha
+        branch_ref = repo.get_git_ref('heads/'+branch)
+        branch_sha = branch_ref.object.sha
+        master_sha=repo.get_git_ref('heads/'+branch).object.sha
         base_tree = repo.get_git_tree(master_sha,recursive=True)
         element_list = list()
         for entry in files_list:
@@ -48,10 +49,10 @@ class GitManager:
         if len(element_list)!=0:
                   
             tree = repo.create_git_tree(element_list, base_tree)
-            parent = repo.get_git_commit(master_sha)
+            parent = repo.get_git_commit(branch_sha)
             commit = repo.create_git_commit(push_msg, tree, [parent])
             
-            master_ref.edit(commit.sha)
+            branch_ref.edit(commit.sha)
             self.log_commit('commit.txt',files_list)
             print('\t Done')
         """ An egregious hack to change the PNG contents after the commit """
