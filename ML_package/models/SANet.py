@@ -43,7 +43,8 @@ class SANet(Model):
             layers.BasicConv(16, 16,  use_bn=uses_batch_norm, kernel_size=3, padding=1),
             layers.BasicConv(16, 1, use_bn=False, kernel_size=1),
             )
-        self._initialize_weights(self.modules())
+        for modules in self.modules():
+            self._initialize_weights(module)
         
             
     def forward(self,x):
