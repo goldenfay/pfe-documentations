@@ -64,9 +64,9 @@ class BasicConv(nn.Module):
 
 
 class BasicDeconv(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, batch_norm=False):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, use_bn=False):
         super(BasicDeconv, self).__init__()
-        self.batch_norm = batch_norm
+        self.batch_norm = use_bn
         self.tconv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride=stride, bias=not self.batch_norm)
         self.bn = nn.InstanceNorm2d(out_channels, affine=True) if self.batch_norm else None
 
