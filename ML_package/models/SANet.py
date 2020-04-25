@@ -34,14 +34,14 @@ class SANet(Model):
             )
 
         self.decoder = nn.Sequential(
-            layers.BasicConv(128, 64, uses_batch_norm=uses_batch_norm, kernel_size=9, padding=4),
-            layers.BasicDeconv(64, 64, 2, stride=2, uses_batch_norm=uses_batch_norm),
-            layers.BasicConv(64, 32, uses_batch_norm=uses_batch_norm, kernel_size=7, padding=3),
-            layers.BasicDeconv(32, 32, 2, stride=2, uses_batch_norm=uses_batch_norm),
-            layers.BasicConv(32, 16,  uses_batch_norm=uses_batch_norm, kernel_size=5, padding=2),
-            layers.BasicDeconv(16, 16, 2, stride=2, uses_batch_norm=uses_batch_norm),
-            layers.BasicConv(16, 16,  uses_batch_norm=uses_batch_norm, kernel_size=3, padding=1),
-            layers.BasicConv(16, 1, uses_batch_norm=False, kernel_size=1),
+            layers.BasicConv(128, 64, use_bn=uses_batch_norm, kernel_size=9, padding=4),
+            layers.BasicDeconv(64, 64, 2, stride=2, use_bn=uses_batch_norm),
+            layers.BasicConv(64, 32, use_bn=uses_batch_norm, kernel_size=7, padding=3),
+            layers.BasicDeconv(32, 32, 2, stride=2, use_bn=uses_batch_norm),
+            layers.BasicConv(32, 16,  use_bn=uses_batch_norm, kernel_size=5, padding=2),
+            layers.BasicDeconv(16, 16, 2, stride=2, use_bn=uses_batch_norm),
+            layers.BasicConv(16, 16,  use_bn=uses_batch_norm, kernel_size=3, padding=1),
+            layers.BasicConv(16, 1, use_bn=False, kernel_size=1),
             )
         self._initialize_weights()
         
