@@ -49,9 +49,10 @@ def construct_net(schema:list,weight_flag=False):
 
 
 class BasicConv(nn.Module):
-    def __init__(self, in_channels, out_channels, batch_norm=False, **kwargs):
+    def __init__(self, in_channels, out_channels, use_bn=False, **kwargs):
         super(BasicConv, self).__init__()
-        self.batch_norm = batch_norm
+        self.batch_norm = use_bn
+        self.conv = nn.Conv2d(in_channels, out_channels, bias=not self.batch_norm, **kwargs)
         self.conv = nn.Conv2d(in_channels, out_channels, bias=not self.batch_norm, **kwargs)
         self.bn = nn.InstanceNorm2d(out_channels, affine=True) if self.batch_norm else None
 
