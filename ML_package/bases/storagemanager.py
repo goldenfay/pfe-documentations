@@ -15,14 +15,14 @@ def authenticate_Grive():
     gauth = GoogleAuth()
     credential_file_path=os.path.join(os.path.dirname(utils.BASE_PATH),'mycredentials.txt')
     if not os.path.exists(credential_file_path):
-        print('cred file not found')
+        # print('cred file not found')
         auth.authenticate_user()
         gauth.credentials = GoogleCredentials.get_application_default()
         gauth.SaveCredentialsFile(credential_file_path)
     
     gauth.LoadCredentialsFile(credential_file_path)
     if gauth.credentials is None:
-        print('None')
+        # print('None')
         gauth.GetFlow()
         gauth.flow.params.update({'access_type': 'offline'})
         gauth.flow.params.update({'approval_prompt': 'force'})
@@ -31,10 +31,10 @@ def authenticate_Grive():
         # gauth.credentials = GoogleCredentials.get_application_default()
 
     elif gauth.access_token_expired:
-        print('Expired')
+        # print('Expired')
         gauth.Refresh()
     else:
-        print('Authorize')
+        # print('Authorize')
         gauth.Authorize()
         
         # auth.authenticate_user()
@@ -59,7 +59,9 @@ def save_file(path,file_to_save,env,min_epoch,saver_module='torch',alternative=N
     drive = GoogleDrive(gauth)
     infos=drive.GetAbout()
     print('\t\t Drive storage  : ',int(infos['quotaBytesUsed'])/int(infos['quotaBytesTotal'])*100,'%')
-    if int(infos['quotaBytesUsed'])/int(infos['quotaBytesTotal'])>=0.98:
+
+    torch.save(file_to_save,path)
+    if not os.path.exists(path) and int(infos['quotaBytesUsed'])/int(infos['quotaBytesTotal'])>=0.99:
             print('\t [Alert] Maximum storage reached on Drive!','\n\t',' Migration of all checkpoints to github ...')
                 # Authentification to github
             # git_manager=GitManager('5598c0e73e05423e7538fd19cb2d510379e9e588')
@@ -80,14 +82,8 @@ def save_file(path,file_to_save,env,min_epoch,saver_module='torch',alternative=N
             # else: raise RuntimeError('Couldn\'t push all files')
             return 0
             
-
-
-
-
-
-
     else: 
-        torch.save(file_to_save,path)
+        # torch.save(file_to_save,path)
         return 1
           
 
