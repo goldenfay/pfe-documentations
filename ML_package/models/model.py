@@ -292,7 +292,7 @@ class Model(NN.Module):
         try:
             torch.save(model, path)
         except:
-            torch.save(model.cpu(), path)   
+            torch.save(model.to('cpu'), path,)   
 
     def make_summary(self, finished=False, test_mse=None, test_mae=None):
         path = os.path.join(self.checkpoints_dir, 'summary.json')
