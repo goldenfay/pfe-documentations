@@ -289,7 +289,10 @@ class Model(NN.Module):
         path = os.path.join(utils.BASE_PATH, 'obj', 'models',
                             model.__class__.__name__+'.pth')
         utils.make_path(os.path.split(path)[0])
-        torch.save(model, path)
+        try:
+            torch.save(model, path)
+        except:
+            torch.save(model.module, path)   
 
     def make_summary(self, finished=False, test_mse=None, test_mae=None):
         path = os.path.join(self.checkpoints_dir, 'summary.json')
