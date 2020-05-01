@@ -1,4 +1,4 @@
-import os, glob,sys,inspect
+import os, glob,sys,inspect,re
 
     # Root path of the ML Package
 BASE_PATH=os.path.dirname(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
@@ -59,3 +59,7 @@ def load_obj(path):
     import pickle
     with open(path, 'rb') as inFile:
         return pickle.load(inFile)
+
+def extract_number(path):
+
+    return int(re.sub("[^0-9]+","",path[list(re.finditer("[\\\/]",path))[-1].start(0):]))

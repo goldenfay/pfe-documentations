@@ -75,3 +75,15 @@ class BasicDeconv(nn.Module):
         if self.batch_norm:
             x = self.bn(x)
         return F.relu(x, inplace=True)
+
+class SumPool2d(nn.Module):
+    def __init__(self, kernel_size):
+        super(SumPool2d, self).__init__()
+        self.avgpool = nn.AvgPool2d(kernel_size, stride=1, padding=kernel_size // 2)
+        if type(kernel_size) is not int:
+            self.area = kernel_size[0] * kernel_size[1]
+        else:
+            self.area = kernel_size * self.kernel_size
+    
+    def forward(self, x):
+        return self.avgpool(x) * self.area        

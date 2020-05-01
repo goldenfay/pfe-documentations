@@ -40,6 +40,9 @@ import plots
 
 
 def prepare_datasets(baseRootPath,datasets_list:list,dm_generator,resetFlag=False):
+    '''
+        Prepars DataSets for training by generating ground-truth density map for every image of every Dataset.
+    '''
     print("####### Preparing Data...")
     paths_list=[]
     for dataset_name in datasets_list:
@@ -105,7 +108,11 @@ def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
 
     return paths_dict        
 
+    
 def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
+    '''
+        Checks for previous versions of the loader, in order to optimize creating and generating Dataloaders.
+    '''
     print("\t Checking for previous loader ...")
     if params is None:
         test_size=20
@@ -131,22 +138,20 @@ def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
 
 
 def getloader(loader_type,img_gtdm_paths,restore_flag=True):
+    '''
+        Returns a new loader according to the passed type.
+    '''
     print("####### Getting DataLoader...")
-    # restore_dir=os.path.join(utils.BASE_PATH,'obj','loaders')
-    # if loader_type=="Generic_Loader":
-    #     if restore_flag:
-    #         try:
-    #             return torch.load(glob.glob(os.path.join(restore_dir,'Generic_loader'))[0])
-    #         except Exception:
-    #             return GenericLoader(img_gtdm_paths)    
-    #     else: return GenericLoader(img_gtdm_paths)
     if loader_type=="GenericLoader":
         return GenericLoader(img_gtdm_paths)
 
 
-
+    
 
 def getModel(model_type,load_saved=False,weightsFlag=False):
+    '''
+        Loads a models according to type, if a previous version was found, load it directely.
+    '''
     print("####### Getting Model : ",model_type,"...")
     if load_saved and  os.path.exists(os.path.join(utils.BASE_PATH,'obj','models',model_type)):
         return torch.load(os.path.join(utils.BASE_PATH,'obj','models',model_type))
@@ -158,6 +163,9 @@ def getModel(model_type,load_saved=False,weightsFlag=False):
         return SANet()            
 
 def get_best_model(min_epoch,className):
+    '''
+        Loads the best model resulting from train.
+    '''
     
     if not os.path.exists(os.path.join(utils.BASE_PATH , 'checkpoints2',className)):
         raise Exception("Cannot load model. Checkpoint directory not found!")
@@ -177,7 +185,6 @@ if __name__=="__main__":
     loader_type="GenericLoader"
     model_type=sys.argv[2] if len(sys.argv)>2 else "CSRNet"
     model=None
-   # device=torch.device("cuda")
     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     params={"lr":1e-6,
             "momentum":0.95,
