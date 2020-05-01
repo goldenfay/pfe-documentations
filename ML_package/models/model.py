@@ -268,6 +268,7 @@ class Model(NN.Module):
 
             torch.save(chkpt, path)
 
+    
     def load_chekpoint(self, path):
         '''
             Load a checkpoint from the specified path in order to resume training.
@@ -279,15 +280,16 @@ class Model(NN.Module):
 
         return chkpt['loss'], chkpt['min_MAE'], chkpt['min_epoch']
 
-    def save(self):
+    @staticmethod
+    def save(model):
         '''
             Save the whole model. This method is called once training is finished in order to keep the best model.
 
         '''
         path = os.path.join(utils.BASE_PATH, 'obj', 'models',
-                            self.__class__.__name__+'.pth')
+                            model.__class__.__name__+'.pth')
         utils.make_path(os.path.split(path)[0])
-        torch.save(self, path)
+        torch.save(model, path)
 
     def make_summary(self, finished=False, test_mse=None, test_mae=None):
         path = os.path.join(self.checkpoints_dir, 'summary.json')
