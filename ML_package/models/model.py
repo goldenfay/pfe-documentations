@@ -6,17 +6,18 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as CM
 import os,sys,inspect,glob,random,re,time,datetime
 import numpy as np
-import utils
-from params import *
-from gitmanager import *
-import storagemanager
 
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 # User's module from another directory
 sys.path.append(os.path.join(parentdir, "bases"))
-
+sys.path.append(os.path.join(parentdir, "process"))
+import utils
+from params import *
+from gitmanager import *
+import storagemanager
+import displays
 
 class Model(NN.Module):
 
@@ -211,9 +212,11 @@ class Model(NN.Module):
 
                 # Show the estimated density map via matplotlib
                 if cpt % 10 == 0:
-                    est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
-                    plt.imshow(est_dmap, cmap=CM.jet)
-                    plt.show()
+                    displays.display_comparaison(gt_dmap,est_dmap)
+                    # est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
+                    # plt.imshow(est_dmap, cmap=CM.jet)
+                    # plt.show()
+
                 del img, gt_dmap, est_dmap
             MAE = MAE/len(test_dataloader)
             MSE = np.math.sqrt(MSE/len(test_dataloader))
