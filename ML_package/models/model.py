@@ -168,8 +168,7 @@ class Model(NN.Module):
                 # Save checkpoint
             self.save_checkpoint(check_point, os.path.join(
                 self.checkpoints_dir, 'epoch_'+str(epoch)+'.pth'))
-
-            gc.collect()    
+   
             # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
             # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
             # show an image
