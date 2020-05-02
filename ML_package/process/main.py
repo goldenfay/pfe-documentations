@@ -229,12 +229,12 @@ if __name__=="__main__":
     samplers=check_previous_loaders(loader_type,img_gtdm_paths)
     if samplers is None:
         dataloaders=data_loader.load(save=True)
-        gc.collect()
+        
     else:
         print('\t A previous version of the loader was found! Restoring samplers ...')
         dataloaders=data_loader.load_from_samplers(samplers)    
         
-
+    gc.collect()
     
 
         # This loop is basically used in experimentations
@@ -250,12 +250,12 @@ if __name__=="__main__":
         # defining train params
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
         # Launch the train
-    epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE,train_time=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
-    print(epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE,train_time)
+    train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
+    print(train_loss_list,test_error_list,min_epoch,min_MAE)
 
     _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(utils.BASE_PATH , 'checkpoints2',model.__class__.__name__,'epoch_'+str(min_epoch)+'.pth'))
     # Model.save(model)
-
+    gc.collect()
     print('Evaluation Results',model.eval_model(test_dataloader))
 
         # Plots learning results

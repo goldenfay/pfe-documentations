@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import pickle
 import matplotlib.pyplot as plt
 import matplotlib.cm as CM
-import os,sys,inspect,glob,random,re,time,datetime
+import os,sys,inspect,glob,random,re,time,datetime,gc
 import numpy as np
 
 currentdir = os.path.dirname(os.path.abspath(
@@ -54,7 +54,6 @@ class Model(NN.Module):
         print("\t Initializing ", "...")
         self.min_MAE = 10000
         self.min_epoch = 0
-        epochs_list = []
         train_loss_list = []
         test_error_list = []
         start_epoch = 0
@@ -98,18 +97,17 @@ class Model(NN.Module):
 
         start_epoch += 1
 
-        start = time.time()
-
-        # Start Train
+            # Start Train
         for epoch in range(start_epoch, train_params.maxEpochs):
+            start = time.time()
                 # Set the Model on training mode
             self.train()
             epoch_loss = 0
-            # Run training pass (feedforward,backpropagation,...) for each batch
+                # Run training pass (feedforward,backpropagation,...) for each batch
             for i, (img, gt_dmap) in enumerate(train_dataloader):
                 img = img.to(device)
                 gt_dmap = gt_dmap.to(device)
-                # forward propagation
+                    # forward propagation
                 est_dmap = self(img)
                 if not est_dmap.size() == gt_dmap.size():
 
@@ -119,35 +117,33 @@ class Model(NN.Module):
                     # calculate loss
                 loss = train_params.criterion(est_dmap, gt_dmap)
                 epoch_loss += loss.item()
-                # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
+                    # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
                 self.optimizer.zero_grad()
-                # Backpropagation
+                    # Backpropagation
                 loss.backward()
                 self.optimizer.step()
                 del img, gt_dmap, est_dmap
             print("\t epoch:"+str(epoch)+"\n", "\t loss:",
                   epoch_loss/len(train_dataloader))
+            train_loss_list.append(epoch_loss/len(train_dataloader))      
 
-            # Log results in checkpoints2 directory
-            epochs_list.append(epoch)
-            train_loss_list.append(epoch_loss/len(train_dataloader))
+           
 
-            # Set the Model on validation mode
+                # Set the Model on validation mode
             self.eval()
             MAE = 0
             MSE = 0
             for i, (img, gt_dmap) in enumerate(test_dataloader):
                 img = img.to(device)
                 gt_dmap = gt_dmap.to(device)
-                # forward propagation
+                    # forward propagation
                 est_dmap = self(img)
                 if not est_dmap.size() == gt_dmap.size():
-
                     est_dmap = F.interpolate(est_dmap, size=(
                         gt_dmap.size()[2], gt_dmap.size()[3]), mode='bilinear')
-
-                MAE += abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
-                MSE += np.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(), 2)
+                mae=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
+                MAE += mae
+                MSE += mae**2
                 del img, gt_dmap, est_dmap
             MAE = MAE/len(test_dataloader)
             MSE = np.math.sqrt(MSE/len(test_dataloader))
@@ -158,16 +154,22 @@ class Model(NN.Module):
             test_error_list.append(MAE)
             print("\t error:"+str(MAE)+" min_MAE:" +
                   str(self.min_MAE)+" min_epoch:"+str(self.min_epoch))
+
+            end = time.time()      
             check_point = {
                 'model_state_dict': self.state_dict(),
                 'optimizer_state_dict': self.optimizer.state_dict(),
                 'loss': epoch_loss/len(train_dataloader),
                 'mae': MAE,
                 'min_MAE': self.min_MAE,
-                'min_epoch': self.min_epoch
+                'min_epoch': self.min_epoch,
+                'duration':str(datetime.timedelta(seconds=end-start))
             }
+                # Save checkpoint
             self.save_checkpoint(check_point, os.path.join(
                 self.checkpoints_dir, 'epoch_'+str(epoch)+'.pth'))
+
+            gc.collect()    
             # vis.line(win=1,X=epochs_list, Y=train_loss_list, opts=dict(title='train_loss'))
             # vis.line(win=2,X=epochs_list, Y=test_error_list, opts=dict(title='test_error'))
             # show an image
@@ -180,9 +182,11 @@ class Model(NN.Module):
             # est_dmap=self(img)
             # est_dmap=est_dmap.squeeze(0).detach().cpu().numpy()
             # vis.image(win=5,img=est_dmap/(est_dmap.max())*255,opts=dict(title='est_dmap('+str(est_dmap.sum())+')'))
-        end = time.time()
+        
+            # Save training summary into disk
         self.make_summary(finished=True)
-        return (epochs_list, train_loss_list, test_error_list, self.min_epoch, self.min_MAE, str(datetime.timedelta(seconds=end-start)))
+        print('Training finished.')
+        return (train_loss_list, test_error_list, self.min_epoch, self.min_MAE)
 
     def retrain_model(self, params=None):
         pass
@@ -204,11 +208,11 @@ class Model(NN.Module):
                 img = img.to(device)
                 gt_dmap = gt_dmap.to(device)
 
-                # Forward propagation
+                    # Forward propagation
                 est_dmap = self(img.squeeze(0))
-
-                MAE += abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
-                MSE += np.math.pow(est_dmap.data.sum()-gt_dmap.data.sum(), 2)
+                mae=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
+                MAE += mae
+                MSE += mae**2
 
                 # Show the estimated density map via matplotlib
                 if cpt % 10 == 0:
@@ -220,8 +224,10 @@ class Model(NN.Module):
                 del img, gt_dmap, est_dmap
             MAE = MAE/len(test_dataloader)
             MSE = np.math.sqrt(MSE/len(test_dataloader))
+        gc.collect(0)    
         print("\t Test MAE : ", MAE, "\t test MSE : ", MSE)
         self.make_summary(finished=True, test_mse=MSE, test_mae=MAE)
+        print('Validation finished.')
         return (MAE, MSE)
 
     def save_checkpoint(self, chkpt, path):
