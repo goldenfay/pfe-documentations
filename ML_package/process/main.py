@@ -234,7 +234,7 @@ if __name__=="__main__":
         print('\t A previous version of the loader was found! Restoring samplers ...')
         dataloaders=data_loader.load_from_samplers(samplers)    
         
-    gc.collect()
+   
     
 
         # This loop is basically used in experimentations
