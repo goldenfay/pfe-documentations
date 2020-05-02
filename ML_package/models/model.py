@@ -212,10 +212,10 @@ class Model(NN.Module):
 
                 # Show the estimated density map via matplotlib
                 if cpt % 10 == 0:
-                    displays.display_comparaison(gt_dmap,est_dmap)
-                    # est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
-                    # plt.imshow(est_dmap, cmap=CM.jet)
-                    # plt.show()
+                    # displays.display_comparaison(gt_dmap,est_dmap)
+                    est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
+                    plt.imshow(est_dmap, cmap=CM.jet)
+                    plt.show()
 
                 del img, gt_dmap, est_dmap
             MAE = MAE/len(test_dataloader)
