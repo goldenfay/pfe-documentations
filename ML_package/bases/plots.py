@@ -38,21 +38,14 @@ def showLineChart(list_axes: list, names: list, title=None, x_title=None, y_titl
         frames.append(go.Frame(frame.copy()))
 
     for i, (x, y) in enumerate(list_axes):
-        # frame={'data': [], 'name': names[i], 'traces':list(range(len(list_axes)))}
-        dic=lambda k,l:{'x':x[k], 'y':y[k], 'name':names[l], 'line':{'color':'rgb'+str(colors_set[l])},
-                'hovertemplate':'<b>Epoch:</b> %{x} <br><b>Error:</b> %{y:.2f}'
-                # 'marker':{'size':[6 if (x[j],y[j]) not in [(a,b) for (a,b,c) in special_points] else 15 for j in range(len(x))]}
-        }
+    
         fig.add_trace(go.Scatter(x=x, y=y, name=names[i], line=dict(color='rgb'+str(colors_set[i])),
                                  hovertemplate='<b>Epoch:</b> %{x} <br><b>Error:</b> %{y:.2f}',
                                 marker={'size':[6 if (x[j],y[j]) not in [(a,b) for (a,b,c) in special_points] else 15 for j in range(len(x))]}
                                 )
            )
-        # frame['data']=[dic(m,i) for m in range(len(x))]#.append(dic)
-        # frames.append(frame)   
-        # frames.append(l)   
+ 
     fig.frames=frames.copy()
-    print(fig.frames)
     fig.update_layout(title={'text': title if title is not None else '',
                              'y': 0.9,
                              'x': 0.5,
