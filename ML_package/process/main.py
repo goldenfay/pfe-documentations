@@ -182,7 +182,8 @@ def show_plots(model):
         raise FileNotFoundError('Summary file for the model not found.')
     summary=utils.load_json(path)
     losses=summary['train_summary']
-    train_loss=validations_loss=[]
+    train_loss=[]
+    validations_loss=[]
     min_error_point=(summary['min_epoch'],summary['min_MAE'])
     min_loss_point=()
     for chkpt in losses:
