@@ -93,10 +93,10 @@ def showLineChart(list_axes: list, names: list, title=None, x_title=None, y_titl
             opacity=0.8
         ) for i,pt in enumerate(special_points)
     ],
-    transition={'duration': 500,'easing': 'bounce-in-out'}
+    transition={'duration': 1,'easing': 'bounce-in-out'}
     )
     fig.update_traces(mode="markers+lines")
-    plot.iplot(fig, filename='jupyter-basic_bar',animation_opts={'frame':{'duration':100}})
+    plot.iplot(fig, filename='jupyter-basic_bar',animation_opts={'frame':{'duration':1}})
     fig.show(animation_opts={'frame':{'duration':100}})
     return fig
 
