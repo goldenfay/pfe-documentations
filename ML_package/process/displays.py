@@ -26,3 +26,14 @@ def display_comparaison(original,predicted,dmap=None):
     print("Predicted Count : ",int(predicted.sum().numpy()))
     temp = np.asarray(predicted.reshape(predicted.shape[2],predicted.shape[3]))
     plt.imshow(temp,cmap = CM.jet)
+    plt.show()
+    if len(original.shape)>3:
+        original=original.detach().cpu()
+        print("Original Count : ",int(original.sum().numpy()))
+        temp = np.asarray(original.reshape(original.shape[2],original.shape[3]))
+    else:
+        print("Original Count : ",int(original.sum()))
+        temp = np.asarray(original)
+    plt.imshow(temp,cmap = CM.jet)
+    plt.show()    
+

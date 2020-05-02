@@ -1,23 +1,15 @@
-import utils
-from torch import Tensor
-from params import *
-from gitmanager import *
-import storagemanager
 import torch
 import torch.nn as NN
 import torch.nn.functional as F
 import pickle
 import matplotlib.pyplot as plt
 import matplotlib.cm as CM
-import os
-import sys
-import inspect
-import glob
-import random
-import re
-import time
-import datetime
+import os,sys,inspect,glob,random,re,time,datetime
 import numpy as np
+import utils
+from params import *
+from gitmanager import *
+import storagemanager
 
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))

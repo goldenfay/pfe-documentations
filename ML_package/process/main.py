@@ -3,7 +3,6 @@ def import_or_install(package,pipname):
     try:
         __import__(package) 
     except ImportError:
-        #pip.main(['install', pipname])
         subprocess.check_call([sys.executable, "-m", "pip", "install", pipname])
 
 import_or_install("matplotlib","matplotlib")
@@ -11,6 +10,8 @@ import_or_install("visdom","visdom")
 import_or_install("numpy","numpy")
 import_or_install("pydrive","Pydrive")
 import_or_install("github","PyGithub")
+import_or_install("plotly","plotly")
+import_or_install("chart_studio","chart-studio")
 
 import torch
 from torch import nn
@@ -36,6 +37,7 @@ from CSRNet import *
 from SANet import *
 import utils
 import plots
+import displays
 
 
 
@@ -174,6 +176,26 @@ def get_best_model(min_epoch,className):
 
     return torch.load(os.path.join(utils.BASE_PATH , 'checkpoints2',className,'epoch_'+str(min_epoch)+'.pth'))
 
+def show_plots(model):
+    path=os.path.join(model.checkpoints_dir,'summary.json')
+    if not utils.path_exists(path):
+        raise FileNotFoundError('Summary file for the model not found.')
+    summary=utils.load_json(path)
+    losses=summary['train_summary']
+    train_loss=validations_loss=[]
+    min_error_point=(summary['min_epoch'],summary['min_MAE'])
+    min_loss_point=()
+    for chkpt in losses:
+        train_loss.append((chkpt['epoch'], chkpt['loss']))
+        validations_loss.append((chkpt['epoch'], chkpt['loss']))
+        if summary['min_loss']==chkpt['loss']:
+            min_loss_point=(chkpt['epoch'],summary['min_loss'])
+
+
+    plots.showLineChart([train_loss,validations_loss], ['Train loss','Validation loss'], title=model.__class__.__name__+' Errors Plot', x_title='Epochs', y_title='Error', special_points=[min_error_point,min_loss_point])
+    
+
+
 if __name__=="__main__":
     if len(sys.argv)>1:
         root = os.path.join(sys.argv[1],'ShanghaiTech')
@@ -216,18 +238,26 @@ if __name__=="__main__":
     # for train_loader,test_loader in dataloaders:
     #     model.train_model(train_loader,test_loader,train_params)
 
+        # ToDo: use listDataSet
     merged_train_dataset,merged_test_dataset=data_loader.merge_datasets(dataloaders)
     train_dataloader=torch.utils.data.DataLoader(merged_train_dataset)
     test_dataloader=torch.utils.data.DataLoader(merged_test_dataset)
     
     model=getModel(model_type,load_saved=True)
+        # defining train params
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
+        # Launch the train
     epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE,train_time=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
     print(epochs_list,train_loss_list,test_error_list,min_epoch,min_MAE,train_time)
-    _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(utils.BASE_PATH , 'checkpoints2',model.__class__.__name__,'epoch_'+str(min_epoch)+'.pth'))
-    Model.save(model)
 
-    print(model.eval_model(test_dataloader))
-    
-    
+    _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(utils.BASE_PATH , 'checkpoints2',model.__class__.__name__,'epoch_'+str(min_epoch)+'.pth'))
+    # Model.save(model)
+
+    print('Evaluation Results',model.eval_model(test_dataloader))
+
+        # Plots learning results
+
+    show_plots(model)
+
+
     
