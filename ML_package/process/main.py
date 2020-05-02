@@ -255,7 +255,7 @@ if __name__=="__main__":
 
     _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(utils.BASE_PATH , 'checkpoints2',model.__class__.__name__,'epoch_'+str(min_epoch)+'.pth'))
     # Model.save(model)
-    gc.collect()
+    # gc.collect()
     print('Evaluation Results',model.eval_model(test_dataloader))
 
         # Plots learning results

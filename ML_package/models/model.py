@@ -223,7 +223,7 @@ class Model(NN.Module):
                 del img, gt_dmap, est_dmap
             MAE = MAE/len(test_dataloader)
             MSE = np.math.sqrt(MSE/len(test_dataloader))
-        gc.collect(0)    
+        # gc.collect(0)    
         print("\t Test MAE : ", MAE, "\t test MSE : ", MSE)
         self.make_summary(finished=True, test_mse=MSE, test_mae=MAE)
         print('Validation finished.')
