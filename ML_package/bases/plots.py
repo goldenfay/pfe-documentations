@@ -97,7 +97,7 @@ def showLineChart(list_axes: list, names: list, title=None, x_title=None, y_titl
     )
     fig.update_traces(mode="markers+lines")
     plot.iplot(fig, filename='jupyter-basic_bar',animation_opts={'frame':{'duration':100}})
-    # fig.show()
+    fig.show(animation_opts={'frame':{'duration':100}})
     return fig
 
 

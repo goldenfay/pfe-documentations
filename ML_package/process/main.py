@@ -195,7 +195,7 @@ def show_plots(model):
             min_loss_point=(chkpt['epoch'],summary['min_loss'],'min train loss')
 
 
-    plots.showLineChart([(train_loss,epochs),(validations_loss,epochs)], ['Train loss','Validation loss'], title=model.__class__.__name__+' Errors Plot', x_title='Epochs', y_title='Error', special_points=[min_error_point,min_loss_point])
+    plots.showLineChart([(epochs,train_loss),(epochs,validations_loss)], ['Train loss','Validation loss'], title=model.__class__.__name__+' Errors Plot', x_title='Epochs', y_title='Error', special_points=[min_error_point,min_loss_point])
     
 
 
