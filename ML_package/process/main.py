@@ -178,7 +178,7 @@ def get_best_model(min_epoch,className):
 
 def show_plots(model):
     path=os.path.join(model.checkpoints_dir,'summary.json')
-    if not utils.path_exists(path):
+    if not os.path.exists(path):
         raise FileNotFoundError('Summary file for the model not found.')
     summary=utils.load_json(path)
     losses=summary['train_summary']
