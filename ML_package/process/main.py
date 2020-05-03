@@ -231,7 +231,7 @@ if __name__=="__main__":
 
     
     data_loader=getloader(loader_type,img_gtdm_paths)
-    samplers=check_previous_loaders(loader_type,img_gtdm_paths,dict(batch_size=params['batch_size'],test_size=params['test_size']))
+    samplers=check_previous_loaders(loader_type,img_gtdm_paths,dict(batch_size=params['batch_size'],test_size=20))
     if samplers is None:
         dataloaders=data_loader.load(save=True)
         
