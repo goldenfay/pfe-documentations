@@ -35,6 +35,7 @@ from loaders import *
 from mcnn import *
 from CSRNet import *
 from SANet import *
+from CCNN import *
 import utils
 import plots
 import displays
@@ -164,6 +165,8 @@ def getModel(model_type,load_saved=False,weightsFlag=False):
         return CSRNet(weightsFlag)
     elif model_type=="SANet":
         return SANet()            
+    elif model_type=="SANet":
+        return CCNN()            
 
 def get_best_model(min_epoch,className):
     '''
