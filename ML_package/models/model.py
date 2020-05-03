@@ -47,8 +47,8 @@ class Model(NN.Module):
         device = train_params.device
         print("\t Setting up model on ", device.type, "...")
         self.to(device)
-        if not os.path.exists(os.path.join(utils.BASE_PATH, 'checkpoints2')):
-            os.mkdir(os.path.join(utils.BASE_PATH, 'checkpoints2'))
+        if not os.path.exists(self.checkpoints_dir):
+            os.mkdir(self.checkpoints_dir)
 
             # Initialize training variables
         print("\t Initializing ", "...")
@@ -58,8 +58,21 @@ class Model(NN.Module):
         test_error_list = []
         start_epoch = 0
 
+        dirs=utils.list_dirs(self.checkpoints_dir)
+        train_dirs=re.findall('Train_[0-9]+',' '.join(dirs))
+        if len(train_dirs)==0:
+            self.checkpoints_dir = os.path.join(self.checkpoints_dir,('Train_1'))
+        else:
+            last_train=max(sorted([int(re.sub(dirname)) for dirname in train_dirs]))    
         # If resume option is specified, restore state of model and resume training
-        if resume:
+        if not resume:
+            if len(train_dirs)==0:
+                self.checkpoints_dir = os.path.join(self.checkpoints_dir,('Train_1'))
+            else:
+                self.checkpoints_dir = os.path.join(self.checkpoints_dir, str(last_train+1) )  
+
+        else:
+            self.checkpoints_dir = os.path.join(self.checkpoints_dir, str(last_train))
             params_hist = [utils.extract_number(file_path) for file_path in glob.glob(
                 os.path.join(os.path.join(self.checkpoints_dir), '*.pth'))]
 
@@ -201,6 +214,7 @@ class Model(NN.Module):
         MAE = 0
         MSE = 0
         cpt = 0
+        fig = plt.figure(figsize=(64, 64))
         with torch.no_grad():
             for i, (img, gt_dmap) in enumerate(test_dataloader):
                     # Transfer input and target to Device(GPU/CPU)
@@ -214,13 +228,15 @@ class Model(NN.Module):
                 MSE += mae**2
 
                 # Show the estimated density map via matplotlib
-                if cpt % 10 == 0:
+                if i % 10 == 0:
                     # displays.display_comparaison(gt_dmap,est_dmap)
                     est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
+                    fig.add_subplot(i/10,cpt%2)
+                    print('Estimated crowd number :',est_dmap.sum(), 'Ground Truth number',gt_dmap.sum())
                     plt.imshow(est_dmap, cmap=CM.jet)
-                    plt.show()
-
+                    cpt+=1
                 del img, gt_dmap, est_dmap
+            plt.show()    
             MAE = MAE/len(test_dataloader)
             MSE = np.math.sqrt(MSE/len(test_dataloader))
         # gc.collect(0)    
@@ -340,3 +356,19 @@ class Model(NN.Module):
 
         utils.make_path(os.path.split(path)[0])
         utils.save_json(summary, path)
+
+import re
+def extract_number(path):
+    '''
+        Extract number from a pth (only the last occurence)
+    '''
+    return int(re.sub("[^0-9]+","",path[list(re.finditer("[\\\/]",path))[-1].start(0):]))
+
+x=['Train_49','Train_46','Train_19','Train_29','Train']
+
+train_dirs=re.findall('Train_[0-9]+',' '.join(x))
+if len(train_dirs)==0:
+            y = 'Train_1'
+else:
+            y='Train'+str(max(sorted([int(re.sub("[^0-9]+","",dirname)) for dirname in train_dirs])))
+print(y)            

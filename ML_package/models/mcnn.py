@@ -1,16 +1,9 @@
 import torch
 from torch import nn
-import visdom as vis
 import os
     # User's modules
 import model
 from model import *
-
-# currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-# parentdir = os.path.dirname(currentdir)
-#     # User's module from another directory
-# sys.path.append(os.path.join(parentdir, "bases"))
-# from utils import BASE_PATH
 
 
 

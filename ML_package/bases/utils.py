@@ -1,7 +1,10 @@
 import os, glob,sys,inspect,re
+from concurrent.futures.process import ProcessPoolExecutor
 
     # Root path of the ML Package
 BASE_PATH=os.path.dirname(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+
+sys.path.append(os.path.join(BASE_PATH, "models"))
 
 
 def path_exists(path):
@@ -11,6 +14,11 @@ def path_exists(path):
     path=[el for el in path.split('/') if el!='.']
     
     return os.path.exists(os.path.join(BASE_PATH,*path))
+
+
+def list_dirs(path):
+    return [el for el in os.listdir(path) if os.path.isdir(el)]
+
 
 def make_path(dir_path):
     '''
@@ -61,5 +69,13 @@ def load_obj(path):
         return pickle.load(inFile)
 
 def extract_number(path):
-
+    '''
+        Extract number from a pth (only the last occurence)
+    '''
     return int(re.sub("[^0-9]+","",path[list(re.finditer("[\\\/]",path))[-1].start(0):]))
+
+
+def parallel_processing(func,args,workers):
+    with ProcessPoolExecutor(workers) as ex:
+            res = ex.map(func, args)
+    return list(res)

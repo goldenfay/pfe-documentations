@@ -1,5 +1,5 @@
 torch-1.4.0 documentation/*
-ML_package/.vscode
+ML_package/.vscode/*
 .idea/*
 **/.idea/*
 **/__pycache__/*

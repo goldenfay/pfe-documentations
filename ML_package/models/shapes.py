@@ -204,6 +204,74 @@ CSRNET_BACKEND = [
     })
 ]
 
+CCNN_BACKEND=[
+    ('C2D', {
+        'in_channels': 40,
+        'out_channels': 40,
+        'ks': 3,
+        'stride': 1,
+        'padding': 1,
+        'dilation': 1
+    }),
+    ('R', {
+        'inplace': True
+    }),
+    ('C2D', {
+        'in_channels': 40,
+        'out_channels': 60,
+        'ks': 3,
+        'stride': 1,
+        'padding': 1,
+        'dilation': 1
+    }),
+    ('R', {
+        'inplace': True
+    }),
+    ('M', {
+        'ks': 2,
+        'stride': 2,
+
+    }),
+    ('C2D', {
+        'in_channels': 60,
+        'out_channels': 40,
+        'ks': 3,
+        'stride': 1,
+        'padding': 1,
+        'dilation': 1
+    }),
+    ('R', {
+        'inplace': True
+    }),
+    ('M', {
+        'ks': 2,
+        'stride': 2,
+
+    }),
+    ('C2D', {
+        'in_channels': 40,
+        'out_channels': 20,
+        'ks': 3,
+        'stride': 1,
+        'padding': 1,
+        'dilation': 1
+    }),
+    ('R', {
+        'inplace': True
+    }),
+    ('C2D', {
+        'in_channels': 20,
+        'out_channels': 10,
+        'ks': 3,
+        'stride': 1,
+        'padding': 1,
+        'dilation': 1
+    }),
+    ('R', {
+        'inplace': True
+    })
+]
+
 
 class SANetHead(nn.Module):
     def __init__(self, in_channels, out_channels, use_bn):

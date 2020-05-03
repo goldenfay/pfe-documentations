@@ -16,6 +16,8 @@ class TrainParams:
             
         elif criterionMethode.lower()=="L1Loss".lower():
             self.criterion=nn.L1Loss(size_average=False).to(device)
+        elif criterionMethode.lower()=="L2Loss".lower():
+            self.criterion=nn.L2Loss(size_average=False).to(device)
         else: raise TypeError("Invalide argument\n\t 'Criterion' Value is invalide ")
 
         if optimizationMethod.lower()=="SGD".lower():
@@ -38,5 +40,5 @@ class TrainParams:
 
     @staticmethod
     def defaultTrainParams():
-        device=torch.device("cuda")
+    
         return None

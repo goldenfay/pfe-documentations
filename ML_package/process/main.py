@@ -16,7 +16,6 @@ import_or_install("chart_studio","chart-studio")
 import torch
 from torch import nn
 import matplotlib as plt
-import visdom as vis
 import numpy as np
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -26,6 +25,7 @@ sys.path.append(os.path.join(parentdir , "bases"))
 sys.path.append(os.path.join(parentdir , "models"))
 sys.path.append(os.path.join(parentdir , "data_loaders"))
 sys.path.append(os.path.join(parentdir , "density_map_generators"))
+sys.path.append(os.path.join(parentdir , "configs"))
 
 from datasets import *
 from params import *
@@ -38,6 +38,7 @@ from SANet import *
 import utils
 import plots
 import displays
+import trainsparams
 
 
 
@@ -211,12 +212,13 @@ if __name__=="__main__":
     model_type=sys.argv[2] if len(sys.argv)>2 else "CSRNet"
     model=None
     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    params={"lr":1e-6,
-            "momentum":0.95,
-            "maxEpochs":1000,
-            "criterionMethode":'MSELoss',
-            "optimizationMethod":'SGD'
-            }
+    # params={"lr":1e-6,
+    #         "momentum":0.95,
+    #         "maxEpochs":1000,
+    #         "criterionMethode":'MSELoss',
+    #         "optimizationMethod":'SGD'
+    #         }
+    params=getattr(trainsparams,model_type)
 
     if dm_generator_type=="knn_gaussian_kernal":
         dm_generator=KNN_Gaussian_Kernal_DMGenerator()
@@ -226,7 +228,7 @@ if __name__=="__main__":
 
     
     data_loader=getloader(loader_type,img_gtdm_paths)
-    samplers=check_previous_loaders(loader_type,img_gtdm_paths)
+    samplers=check_previous_loaders(loader_type,img_gtdm_paths,dict(batch_size=params['batch_size'],test_size=params['test_size']))
     if samplers is None:
         dataloaders=data_loader.load(save=True)
         
