@@ -221,7 +221,7 @@ if __name__=="__main__":
     #         "criterionMethode":'MSELoss',
     #         "optimizationMethod":'SGD'
     #         }
-    params=getattr(trainsparams,model_type)
+    params=getattr(trainsparams,model_type+'_PARAMS')
 
     if dm_generator_type=="knn_gaussian_kernal":
         dm_generator=KNN_Gaussian_Kernal_DMGenerator()
