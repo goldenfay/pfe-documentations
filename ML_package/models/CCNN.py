@@ -20,8 +20,8 @@ class CCNN(Model):
         print("####### Building Net architecture...")
         
         self.parallel_layer=[
-            nn.Sequential(nn.Conv2d(3,10,9),nn.MaxPool2d(2)),
-            nn.Sequential(nn.Conv2d(3,14,7),nn.MaxPool2d(2)),
+            nn.Sequential(nn.Conv2d(3,10,9),nn.MaxPool2d(2,padding=2)),
+            nn.Sequential(nn.Conv2d(3,14,7),nn.MaxPool2d(2,padding=1)),
             nn.Sequential(nn.Conv2d(3,16,5),nn.MaxPool2d(2))
         ]
 
