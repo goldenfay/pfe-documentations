@@ -107,7 +107,7 @@ class Model(NN.Module):
                 else:
                     raise RuntimeError('Couldn\'t push all files')
         self.to(device)
-       
+        self.optimizer.to(device)
         start_epoch += 1
 
             # Start Train
