@@ -47,10 +47,13 @@ class CCNN(Model):
 
         # for j in jobs:
         #     j.join()  
+        device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        for index in range(len(self.parallel_layer)):
+            self.parallel_layer[index].to(device)
         a,b,c=self.parallel_layer[0](img_tensor),self.parallel_layer[1](img_tensor),self.parallel_layer[2](img_tensor)    
         x=torch.cat((a,b,c),1)
-        x=self.backend(x)
-        x=self.output_layer(x)
+        x=self.backend.to(device)(x)
+        x=self.output_layer.to(device)(x)
         return x
 
     def _initialize_weights(self):
