@@ -38,16 +38,17 @@ class CCNN(Model):
             import numpy as np
             img_tensor=torch.tensor(img_tensor[np.newaxis,:,:,:],dtype=torch.float)
 
-        manager = multiprocessing.Manager()
-        return_dict = manager.dict()
-        jobs=[multiprocessing.Process(target=self.parallel_process, 
-                                            args=(i,img_tensor,return_dict)) for i in range(len(self.parallel_layer))]
-        for j in jobs:
-            j.start()
+        # manager = multiprocessing.Manager()
+        # return_dict = manager.dict()
+        # jobs=[multiprocessing.Process(target=self.parallel_process, 
+        #                                     args=(i,img_tensor,return_dict)) for i in range(len(self.parallel_layer))]
+        # for j in jobs:
+        #     j.start()
 
-        for j in jobs:
-            j.join()     
-        x=torch.cat((return_dict['0'],return_dict['1'],return_dict['2']),1)
+        # for j in jobs:
+        #     j.join()  
+        a,b,c=self.parallel_layer[0](img_tensor),self.parallel_layer[1](img_tensor),self.parallel_layer[2](img_tensor)    
+        x=torch.cat((a,b,c),1)
         x=self.backend(x)
         x=self.output_layer(x)
         return x
