@@ -290,12 +290,22 @@ class Model(NN.Module):
         '''
             Load a checkpoint from the specified path in order to resume training.
         '''
-        chkpt = torch.load(path, map_location=torch.device(
-            'cuda' if torch.cuda.is_available() else 'cpu'))
+        device=torch.device(
+            'cuda' if torch.cuda.is_available() else 'cpu')
+        chkpt = torch.load(path, map_location=device)
         self.load_state_dict(chkpt['model_state_dict'])
         self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
-
+        self.optimizer=self.migrate(self.optimizer,device)
+        
         return chkpt['loss'], chkpt['min_MAE'], chkpt['min_epoch']
+
+    @staticmethod
+    def migrate(optimizer,device):
+        for state in optimizer.state.values():
+            for k, v in state.items():
+                if isinstance(v, torch.Tensor):
+                    state[k] = v.to(device)
+        return optimizer            
 
     @staticmethod
     def save(model):
