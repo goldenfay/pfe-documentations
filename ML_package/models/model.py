@@ -61,7 +61,7 @@ class Model(NN.Module):
         dirs=utils.list_dirs(self.checkpoints_dir)
         train_dirs=re.findall('Train_[0-9]+',' '.join(dirs))
         if len(train_dirs)==0:
-            self.checkpoints_dir = os.path.join(self.checkpoints_dir,('Train_1'))
+            last_train=1#self.checkpoints_dir = os.path.join(self.checkpoints_dir,('Train_1'))
         else:
             last_train=max(sorted([int(re.sub(dirname)) for dirname in train_dirs]))    
         # If resume option is specified, restore state of model and resume training
@@ -69,10 +69,10 @@ class Model(NN.Module):
             if len(train_dirs)==0:
                 self.checkpoints_dir = os.path.join(self.checkpoints_dir,('Train_1'))
             else:
-                self.checkpoints_dir = os.path.join(self.checkpoints_dir, str(last_train+1) )  
+                self.checkpoints_dir = os.path.join(self.checkpoints_dir, 'Train_'+str(last_train+1) )  
 
         else:
-            self.checkpoints_dir = os.path.join(self.checkpoints_dir, str(last_train))
+            self.checkpoints_dir = os.path.join(self.checkpoints_dir, 'Train_'+str(last_train))
             params_hist = [utils.extract_number(file_path) for file_path in glob.glob(
                 os.path.join(os.path.join(self.checkpoints_dir), '*.pth'))]
 

@@ -165,7 +165,7 @@ def getModel(model_type,load_saved=False,weightsFlag=False):
         return CSRNet(weightsFlag)
     elif model_type=="SANet":
         return SANet()            
-    elif model_type=="SANet":
+    elif model_type=="CCNN":
         return CCNN()            
 
 def get_best_model(min_epoch,className):
