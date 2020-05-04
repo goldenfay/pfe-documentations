@@ -46,7 +46,6 @@ class Model(NN.Module):
         # Get the device (GPU/CPU) and migrate the model to it
         device = train_params.device
         print("\t Setting up model on ", device.type, "...")
-        self.to(device)
         if not os.path.exists(self.checkpoints_dir):
             os.mkdir(self.checkpoints_dir)
 
@@ -107,7 +106,7 @@ class Model(NN.Module):
 
                 else:
                     raise RuntimeError('Couldn\'t push all files')
-
+        self.to(device)
         start_epoch += 1
 
             # Start Train
