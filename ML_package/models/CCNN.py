@@ -34,9 +34,9 @@ class CCNN(Model):
               
 
     def forward(self,img_tensor):
-        if len(img_tensor.shape)==3: 
-            import numpy as np
-            img_tensor=torch.tensor(img_tensor[np.newaxis,:,:,:],dtype=torch.float)
+        # if len(img_tensor.shape)==3: 
+        #     import numpy as np
+        #     img_tensor=torch.tensor(img_tensor[np.newaxis,:,:,:],dtype=torch.float)
 
         # manager = multiprocessing.Manager()
         # return_dict = manager.dict()
