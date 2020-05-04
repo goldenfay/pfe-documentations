@@ -233,11 +233,11 @@ if __name__=="__main__":
     data_loader=getloader(loader_type,img_gtdm_paths)
     samplers=check_previous_loaders(loader_type,img_gtdm_paths,dict(batch_size=params['batch_size'],test_size=20))
     if samplers is None:
-        dataloaders=data_loader.load(save=True)
+        dataloaders=data_loader.load(batch_size=params['batch_size'],save=True)
         
     else:
         print('\t A previous version of the loader was found! Restoring samplers ...')
-        dataloaders=data_loader.load_from_samplers(samplers)    
+        dataloaders=data_loader.load_from_samplers(samplers,params=dict(batch_size=params['batch_size'],test_size=20))    
         
    
     
