@@ -19,7 +19,7 @@ class CCNN(Model):
     def build(self,weightsFlag):
         print("####### Building Net architecture...")
         
-        self.parallel_layer[
+        self.parallel_layer=[
             nn.Sequential(nn.Conv2d(3,10,9),nn.MaxPool2d(2)),
             nn.Sequential(nn.Conv2d(3,14,7),nn.MaxPool2d(2)),
             nn.Sequential(nn.Conv2d(3,16,5),nn.MaxPool2d(2))

@@ -356,19 +356,3 @@ class Model(NN.Module):
 
         utils.make_path(os.path.split(path)[0])
         utils.save_json(summary, path)
-
-import re
-def extract_number(path):
-    '''
-        Extract number from a pth (only the last occurence)
-    '''
-    return int(re.sub("[^0-9]+","",path[list(re.finditer("[\\\/]",path))[-1].start(0):]))
-
-x=['Train_49','Train_46','Train_19','Train_29','Train']
-
-train_dirs=re.findall('Train_[0-9]+',' '.join(x))
-if len(train_dirs)==0:
-            y = 'Train_1'
-else:
-            y='Train'+str(max(sorted([int(re.sub("[^0-9]+","",dirname)) for dirname in train_dirs])))
-print(y)            
