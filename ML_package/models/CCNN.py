@@ -48,6 +48,7 @@ class CCNN(Model):
         # for j in jobs:
         #     j.join()  
         a,b,c=self.parallel_layer[0](img_tensor),self.parallel_layer[1](img_tensor),self.parallel_layer[2](img_tensor)    
+        print(a.shape,b.shape,c.shape)
         x=torch.cat((a,b,c),1)
         x=self.backend(x)
         x=self.output_layer(x)
