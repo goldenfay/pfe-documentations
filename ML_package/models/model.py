@@ -107,7 +107,7 @@ class Model(NN.Module):
                 else:
                     raise RuntimeError('Couldn\'t push all files')
         self.to(device)
-        self.optimizer.to(device)
+       
         start_epoch += 1
 
             # Start Train
@@ -296,7 +296,7 @@ class Model(NN.Module):
         self.load_state_dict(chkpt['model_state_dict'])
         self.optimizer.load_state_dict(chkpt['optimizer_state_dict'])
         self.optimizer=self.migrate(self.optimizer,device)
-        
+
         return chkpt['loss'], chkpt['min_MAE'], chkpt['min_epoch']
 
     @staticmethod
