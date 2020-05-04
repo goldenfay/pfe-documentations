@@ -107,7 +107,8 @@ class Model(NN.Module):
                 else:
                     raise RuntimeError('Couldn\'t push all files')
         self.to(device)
-        for(module in self.modules):print('hello')
+        for module in self.modules(): 
+            print('hello')
         start_epoch += 1
 
             # Start Train
