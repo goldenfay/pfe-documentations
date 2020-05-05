@@ -231,7 +231,7 @@ class Model(NN.Module):
                 if i % 10 == 0:
                     # displays.display_comparaison(gt_dmap,est_dmap)
                     est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
-                    fig.add_subplot(int(i/10),cpt%2)
+                    fig.add_subplot(int(i/10),cpt%2,i)
                     print('Estimated crowd number :',est_dmap.sum(), 'Ground Truth number',gt_dmap.sum())
                     plt.imshow(est_dmap, cmap=CM.jet)
                     cpt+=1
