@@ -258,7 +258,7 @@ if __name__=="__main__":
     train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
     print(train_loss_list,test_error_list,min_epoch,min_MAE)
 
-    _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(utils.BASE_PATH , 'checkpoints2',model.__class__.__name__,'epoch_'+str(min_epoch)+'.pth'))
+    _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(model.checkpoints_dir,'epoch_'+str(min_epoch)+'.pth'))
     # Model.save(model)
     # gc.collect()
     print('Evaluation Results',model.eval_model(test_dataloader))
