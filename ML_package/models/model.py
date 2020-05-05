@@ -215,6 +215,7 @@ class Model(NN.Module):
         MSE = 0
         cpt = 0
         fig = plt.figure(figsize=(64, 64))
+        all=test_dataloader.__len__()
         with torch.no_grad():
             for i, (img, gt_dmap) in enumerate(test_dataloader):
                     # Transfer input and target to Device(GPU/CPU)
@@ -231,7 +232,7 @@ class Model(NN.Module):
                 if i % 10 == 0:
                     # displays.display_comparaison(gt_dmap,est_dmap)
                     est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
-                    fig.add_subplot(int(i/10),cpt%2,i)
+                    fig.add_subplot(all,2,i+1)
                     print('Estimated crowd number :',est_dmap.sum(), 'Ground Truth number',gt_dmap.sum())
                     plt.imshow(est_dmap, cmap=CM.jet)
                     cpt+=1
