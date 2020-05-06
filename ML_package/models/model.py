@@ -59,6 +59,7 @@ class Model(NN.Module):
         start_epoch = 0
 
         dirs=utils.list_dirs(self.checkpoints_dir)
+        print(dirs)
         train_dirs=re.findall('Train_[0-9]+',' '.join(dirs))
         if len(train_dirs)==0:
             print('empty')
