@@ -79,7 +79,7 @@ class Model(NN.Module):
             self.checkpoints_dir = os.path.join(self.checkpoints_dir, 'Train_'+str(last_train))
             params_hist = [utils.extract_number(file_path) for file_path in glob.glob(
                 os.path.join(os.path.join(self.checkpoints_dir), '*.pth'))]
-            sys.exit(0)
+            
             if len(params_hist) > 0:
                 print("\t Restore Checkpoints2 found! Resuming training...")
                 sorted_hist = sorted(params_hist)
