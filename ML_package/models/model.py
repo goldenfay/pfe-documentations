@@ -63,7 +63,7 @@ class Model(NN.Module):
         if len(train_dirs)==0:
             last_train=1#self.checkpoints_dir = os.path.join(self.checkpoints_dir,('Train_1'))
         else:
-            last_train=max(sorted([int(re.sub(dirname)) for dirname in train_dirs]))    
+            last_train=max(sorted([int(re.sub('Train_','',dirname)) for dirname in train_dirs]))    
         # If resume option is specified, restore state of model and resume training
         if not resume or new_train:
             if len(train_dirs)==0:
