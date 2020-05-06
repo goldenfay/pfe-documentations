@@ -271,7 +271,7 @@ if __name__=="__main__":
         # defining train params
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
         # Launch the train
-    train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=resume_flag)
+    train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=resume_flag,new_train=args['new_train'])
     print(train_loss_list,test_error_list,min_epoch,min_MAE)
 
     _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(model.checkpoints_dir,'epoch_'+str(min_epoch)+'.pth'))
