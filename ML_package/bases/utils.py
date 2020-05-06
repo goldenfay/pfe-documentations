@@ -18,7 +18,7 @@ def path_exists(path):
 
 def list_dirs(path):
     print(os.listdir(path))
-    return [el for el in os.listdir(path) if os.path.isdir(el)]
+    return [el for el in os.listdir(path) if not os.path.isfile(el)]
 
 
 def make_path(dir_path):
