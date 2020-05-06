@@ -61,13 +61,16 @@ class Model(NN.Module):
         dirs=utils.list_dirs(self.checkpoints_dir)
         train_dirs=re.findall('Train_[0-9]+',' '.join(dirs))
         if len(train_dirs)==0:
+            print('empty')
             last_train=1#self.checkpoints_dir = os.path.join(self.checkpoints_dir,('Train_1'))
         else:
-            last_train=max(sorted([int(re.sub('Train_','',dirname)) for dirname in train_dirs]))    
+            last_train=max(sorted([int(re.sub('Train_','',dirname)) for dirname in train_dirs]))  
+            print('not empty')  
         # If resume option is specified, restore state of model and resume training
-        if not resume or new_train:
+        if new_train or (not resume):
             if len(train_dirs)==0:
-                self.checkpoints_dir = os.path.join(self.checkpoints_dir,('Train_1'))
+                self.checkpoints_dir = os.path.join(self.checkpoints_dir,'Train_1')
+                print('Train 1')
             else:
                 self.checkpoints_dir = os.path.join(self.checkpoints_dir, 'Train_'+str(last_train+1) )  
 
@@ -75,7 +78,7 @@ class Model(NN.Module):
             self.checkpoints_dir = os.path.join(self.checkpoints_dir, 'Train_'+str(last_train))
             params_hist = [utils.extract_number(file_path) for file_path in glob.glob(
                 os.path.join(os.path.join(self.checkpoints_dir), '*.pth'))]
-
+            sys.exit(0)
             if len(params_hist) > 0:
                 print("\t Restore Checkpoints2 found! Resuming training...")
                 sorted_hist = sorted(params_hist)
