@@ -62,16 +62,16 @@ class Model(NN.Module):
         print(dirs)
         train_dirs=re.findall('Train_[0-9]+',' '.join(dirs))
         if len(train_dirs)==0:
-            print('empty')
+            
             last_train=1#self.checkpoints_dir = os.path.join(self.checkpoints_dir,('Train_1'))
         else:
             last_train=max(sorted([int(re.sub('Train_','',dirname)) for dirname in train_dirs]))  
-            print('not empty')  
+            
         # If resume option is specified, restore state of model and resume training
         if new_train or (not resume):
             if len(train_dirs)==0:
                 self.checkpoints_dir = os.path.join(self.checkpoints_dir,'Train_1')
-                print('Train 1')
+                
             else:
                 self.checkpoints_dir = os.path.join(self.checkpoints_dir, 'Train_'+str(last_train+1) )  
 
@@ -202,8 +202,8 @@ class Model(NN.Module):
         
             # Save training summary into disk
         self.make_summary(finished=True)
-        res = self.git_manager.push_files(
-                target_repo, files_to_push, 'checkpoints migration', branch=self.__class__.__name__,dir=os.path.basename(self.checkpoints_dir))
+        # res = self.git_manager.push_files(
+        #         target_repo, files_to_push, 'checkpoints migration', branch=self.__class__.__name__,dir=os.path.basename(self.checkpoints_dir))
         print('Training finished.')
         return (train_loss_list, test_error_list, self.min_epoch, self.min_MAE)
 
@@ -376,4 +376,3 @@ class Model(NN.Module):
         utils.make_path(os.path.split(path)[0])
         utils.save_json(summary, path)
 
-print(utils.list_dirs(parentdir))
