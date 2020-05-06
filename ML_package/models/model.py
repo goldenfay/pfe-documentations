@@ -36,7 +36,7 @@ class Model(NN.Module):
         '''
         pass
 
-    def train_model(self, train_dataloader, test_dataloader, train_params: TrainParams, resume=False):
+    def train_model(self, train_dataloader, test_dataloader, train_params: TrainParams, resume=False,new_train=False):
         '''
             Start training the model with specified parameters.
         '''
@@ -49,6 +49,7 @@ class Model(NN.Module):
         if not os.path.exists(self.checkpoints_dir):
             os.mkdir(self.checkpoints_dir)
 
+        target_repo = self.git_manager.get_repo('checkpoints')
             # Initialize training variables
         print("\t Initializing ", "...")
         self.min_MAE = 10000
@@ -64,7 +65,7 @@ class Model(NN.Module):
         else:
             last_train=max(sorted([int(re.sub(dirname)) for dirname in train_dirs]))    
         # If resume option is specified, restore state of model and resume training
-        if not resume:
+        if not resume or new_train:
             if len(train_dirs)==0:
                 self.checkpoints_dir = os.path.join(self.checkpoints_dir,('Train_1'))
             else:
@@ -87,7 +88,7 @@ class Model(NN.Module):
 
                 files_to_push = []
                 for epoch in sorted_hist:
-                    if epoch != self.min_epoch and epoch != start_epoch:
+                    if epoch != self.min_epoch and epoch != start_epoch and epoch!= train_params.maxEpochs:
                         path = glob.glob(os.path.join(os.path.join(
                             self.checkpoints_dir, 'epoch_'+str(epoch)+'.pth')))[0]
                         obj = torch.load(path, map_location=device)
@@ -97,12 +98,12 @@ class Model(NN.Module):
                             self.save_checkpoint(obj, path)
                             files_to_push.append(path)
 
-                target_repo = self.git_manager.get_repo('checkpoints')
-                res = self.git_manager.push_files(
-                    target_repo, files_to_push, 'checkpoints migration', branch=self.__class__.__name__)
-                if isinstance(res, int)and res == len(files_to_push):
-                    print(
-                        '\t Successfully comitted previous checkpoints(', res, ' files).')
+                if len(files_to_push)>0:
+                    res = self.git_manager.push_files(
+                        target_repo, files_to_push, 'checkpoints migration', branch=self.__class__.__name__,dir=os.path.basename(self.checkpoints_dir))
+                    if isinstance(res, int)and res == len(files_to_push):
+                        print(
+                            '\t Successfully comitted previous checkpoints(', res, ' files).')
 
                 else:
                     raise RuntimeError('Couldn\'t push all files')
@@ -111,7 +112,7 @@ class Model(NN.Module):
         start_epoch += 1
 
             # Start Train
-        for epoch in range(start_epoch, train_params.maxEpochs):
+        for epoch in range(start_epoch, train_params.maxEpochs+1):
             start = time.time()
                 # Set the Model on training mode
             self.train()
@@ -197,6 +198,8 @@ class Model(NN.Module):
         
             # Save training summary into disk
         self.make_summary(finished=True)
+        res = self.git_manager.push_files(
+                target_repo, files_to_push, 'checkpoints migration', branch=self.__class__.__name__,dir=os.path.basename(self.checkpoints_dir))
         print('Training finished.')
         return (train_loss_list, test_error_list, self.min_epoch, self.min_MAE)
 
@@ -232,8 +235,8 @@ class Model(NN.Module):
                 if i % 10 == 0:
                     # displays.display_comparaison(gt_dmap,est_dmap)
                     est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
-                    fig.add_subplot(all,2,i+1)
-                    print('Estimated crowd number :',est_dmap.sum(), 'Ground Truth number',gt_dmap.sum())
+                    fig.add_subplot(int(all/10/2),2,cpt+1)
+                    print('Estimated crowd number :',est_dmap.sum(), 'Ground Truth number',np.sum(gt_dmap))
                     plt.imshow(est_dmap, cmap=CM.jet)
                     cpt+=1
                 del img, gt_dmap, est_dmap
@@ -275,14 +278,15 @@ class Model(NN.Module):
                         files_to_push.append(path)
             print("\t Pushing checkpoints to github...")
 
-            target_repo = self.git_manager.get_repo('checkpoints')
-            res = self.git_manager.push_files(
-                target_repo, files_to_push, 'checkpoints migration', branch=self.__class__.__name__)
-            if isinstance(res, int)and res == len(files_to_push):
-                print('\t Successfully comitted previous checkpoints(', res, ' files).')
+            if len(files_to_push)>0:
+                target_repo = self.git_manager.get_repo('checkpoints')
+                res = self.git_manager.push_files(
+                    target_repo, files_to_push, 'checkpoints migration', branch=self.__class__.__name__,dir=os.path.basename(self.checkpoints_dir))
+                if isinstance(res, int)and res == len(files_to_push):
+                    print('\t Successfully comitted previous checkpoints(', res, ' files).')
 
-            else:
-                raise RuntimeError('Couldn\'t push all files')
+                else:
+                    raise RuntimeError('Couldn\'t push all files')
 
             torch.save(chkpt, path)
 

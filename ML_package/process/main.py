@@ -1,4 +1,5 @@
 import os,sys,inspect,glob,io,subprocess,re,gc
+import argparse
 def import_or_install(package,pipname):
     try:
         __import__(package) 
@@ -201,20 +202,34 @@ def show_plots(model):
 
     plots.showLineChart([(epochs,train_loss),(epochs,validations_loss)], ['Train loss','Validation loss'], title=model.__class__.__name__+' Errors Plot', x_title='Epochs', y_title='Error', special_points=[min_error_point,min_loss_point])
     
-
+ap = argparse.ArgumentParser()
+ap.add_argument("-r", "--root", required=True,
+	help="root path to DataSets location")
+ap.add_argument("-m", "--model-type",type=str, required=False,default="CSRNet",
+	help="Model Name (Case sensitive) {MCNN,CSRNet,SANet,CCNN}")
+ap.add_argument("-n", "--new-train", type=bool, default=False,nargs='?',const=True,
+	help="New train flag")
+ap.add_argument("-p", "--no-loss-plot", type=bool, default=False,nargs='?',const=True,
+	help="Choose to not show the loss/error plots")
+ap.add_argument("--no-resume", type=bool, default=False,nargs='?',const=True,
+	help="minimum probability to filter weak detections")
+ap.add_argument("-s", "--skip-frames", type=int, default=30,
+	help="# of skip frames between detections")
+args = vars(ap.parse_args())
 
 if __name__=="__main__":
-    if len(sys.argv)>1:
-        root = os.path.join(sys.argv[1],'ShanghaiTech')
+    if args['root'] is not None:
+        root = os.path.join(args['root'],'ShanghaiTech')
     else :
         root = 'C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech'
     dm_generator_type="knn_gaussian_kernal"
     dataset_names=["ShanghaiTech_partA","ShanghaiTech_partB"]
     dm_generator=None
     loader_type="GenericLoader"
-    model_type=sys.argv[2] if len(sys.argv)>2 else "CSRNet"
+    model_type=args['model_type']#sys.argv[2] if len(sys.argv)>2 else "CSRNet"
     model=None
     device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    resume_flag=not args['no_resume']
     # params={"lr":1e-6,
     #         "momentum":0.95,
     #         "maxEpochs":1000,
@@ -223,6 +238,7 @@ if __name__=="__main__":
     #         }
     params=getattr(trainsparams,model_type+'_PARAMS')
 
+    # print('Launching script with root=',args['root'],' model=',args['model_type'],'new train=',args['new_train'],' and resume=',resume_flag)
     if dm_generator_type=="knn_gaussian_kernal":
         dm_generator=KNN_Gaussian_Kernal_DMGenerator()
 
@@ -255,7 +271,7 @@ if __name__=="__main__":
         # defining train params
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
         # Launch the train
-    train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=True)
+    train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=resume_flag)
     print(train_loss_list,test_error_list,min_epoch,min_MAE)
 
     _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(model.checkpoints_dir,'epoch_'+str(min_epoch)+'.pth'))

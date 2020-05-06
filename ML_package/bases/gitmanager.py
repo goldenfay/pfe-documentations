@@ -3,6 +3,7 @@ from github import InputGitTreeElement
 from github import Github
 from github.Repository import Repository
 import base64
+from github.ContentFile import ContentFile
 class GitManager:
 
     def __init__(self,access_token=None,user=None,pwd=None):
@@ -12,14 +13,13 @@ class GitManager:
 
     def authentification(self):
     
-        x='707a725cc9ca67b0ee3c9662a65f02ab88e1b597'
         
         self.gth = Github(self.token) if self.token is not None else Github(self.user,self.pwd)
 
         return self.gth
 
     
-    def get_repo(self,repo_name):
+    def get_repo(self,repo_name) ->Repository:
         
         for repo in self.gth.get_user().get_repos():
             if repo.name==repo_name:
@@ -30,8 +30,8 @@ class GitManager:
     def get_repo_files(cls,repo:Repository):
         return [el.path for el in repo.get_contents('')]
 
-    def push_files(self,repo:Repository,files_list,push_msg,branch='master'):
-        
+    def push_files(self,repo:Repository,files_list,push_msg,branch='master',dir=''):
+        if dir!='': dir+='/'
         branch_ref = repo.get_git_ref('heads/'+branch)
         branch_sha = branch_ref.object.sha
         master_sha=repo.get_git_ref('heads/'+branch).object.sha
@@ -44,7 +44,7 @@ class GitManager:
                 data = base64.b64encode(data)
             block=data.decode("utf-8")    
             blob = repo.create_git_blob(block, "base64")    
-            element = InputGitTreeElement(os.path.basename(entry), '100644', 'blob', sha=blob.sha)
+            element = InputGitTreeElement(dir+os.path.basename(entry), '100644', 'blob', sha=blob.sha)
             element_list.append(element)  
         if len(element_list)!=0:
                   
@@ -54,14 +54,7 @@ class GitManager:
             
             branch_ref.edit(commit.sha)
             self.log_commit('commit.txt',files_list)
-            print('\t Done')
-        """ An egregious hack to change the PNG contents after the commit """
-        # for entry in files_list:
-        #     with open(entry, 'rb') as input_file:
-        #         data = input_file.read()
-        #     if entry.endswith('.pth'):
-        #         old_file = repo.get_contents(entry)
-        #         commit = repo.update_file('/' + entry, 'Update content', data, old_file.sha)
+            print('\t Done.')
         return len(element_list)    
     @classmethod
     def log_commit(cls,logfile_path,files_list):
