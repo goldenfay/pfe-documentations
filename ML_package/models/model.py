@@ -375,3 +375,5 @@ class Model(NN.Module):
 
         utils.make_path(os.path.split(path)[0])
         utils.save_json(summary, path)
+
+print(utils.list_dirs(parentdir))

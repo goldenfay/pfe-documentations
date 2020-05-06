@@ -17,6 +17,7 @@ def path_exists(path):
 
 
 def list_dirs(path):
+    print('passe path:',path)
     return [el for el in os.listdir(path) if os.path.isdir(el)]
 
 
