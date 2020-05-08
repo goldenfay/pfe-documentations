@@ -225,7 +225,7 @@ class Model(NN.Module):
         with torch.no_grad():
             for i, (img, gt_dmap) in enumerate(test_dataloader):
                     # Transfer input and target to Device(GPU/CPU)
-                img = img.to(device)
+                # img = img.to(device)
                 gt_dmap = gt_dmap.to(device)
 
                     # Forward propagation
