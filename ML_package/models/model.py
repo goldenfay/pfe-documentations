@@ -246,7 +246,8 @@ class Model(NN.Module):
 
                     ax1=fig.add_subplot(int(all/10),3,cpt+1)
                     ax1.title.set_text('Estimated crowd number :'+str(np.sum(np.asarray(est_dmap.cpu()))))
-                    est_dmap = est_dmap.squeeze(0).cpu().permute(1,2,0).numpy()
+                    est_dmap = est_dmap.squeeze(0)
+                    est_dmap=torch.stack([est_dmap,est_dmap,est_dmap],dim=0).cpu().permute(1,2,0).numpy()
                     plt.imshow(est_dmap, cmap=CM.jet)
 
                     ax2=fig.add_subplot(int(all/10),3,cpt+2)
