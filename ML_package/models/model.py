@@ -245,7 +245,7 @@ class Model(NN.Module):
                     ax2=fig.add_subplot(int(all/10/2),2,cpt+1)
                     ax2.title.set_text('Ground Truth number'+str(np.sum(np.asarray(gt_dmap.cpu()))))
                     gt_dmap=gt_dmap.squeeze(0).squeeze(0)
-                    gt_dmap = torch.stack([gt_dmap,gt_dmap,gt_dmap],dim=0).squeeze().cpu().numpy()
+                    gt_dmap = torch.stack([gt_dmap,gt_dmap,gt_dmap],dim=0).squeeze().cpu().permute(1,2,0).numpy()
                     plt.imshow(gt_dmap, cmap=CM.jet)
                     
                     cpt+=2
