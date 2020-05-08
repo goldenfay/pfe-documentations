@@ -233,9 +233,9 @@ class Model(NN.Module):
                 mae=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
                 MAE += mae
                 MSE += mae**2
-                print('Estimated ',est_dmap.data.sum(), 'Truth :',gt_dmap.data.sum() )
                 # Show the estimated density map via matplotlib
                 if i % 10 == 0:
+                    print('Estimated ',est_dmap.data.sum(), 'Truth :',gt_dmap.data.sum() )
                     # displays.display_comparaison(gt_dmap,est_dmap)
                     # print('Estimated crowd number :',est_dmap.data.sum(), 'Ground Truth number',np.sum(np.asarray(gt_dmap.cpu())))
                     ax1=fig.add_subplot(int(all/10),2,cpt)
