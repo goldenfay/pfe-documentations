@@ -229,11 +229,11 @@ class Model(NN.Module):
                 gt_dmap = gt_dmap.to(device)
 
                     # Forward propagation
-                est_dmap = self(img.squeeze(0))
+                est_dmap = self(img)
                 mae=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
                 MAE += mae
                 MSE += mae**2
-
+                print('Estimated ',est_dmap.data.sum(), 'Truth :',gt_dmap.data.sum() )
                 # Show the estimated density map via matplotlib
                 if i % 10 == 0:
                     # displays.display_comparaison(gt_dmap,est_dmap)
