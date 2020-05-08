@@ -240,10 +240,13 @@ class Model(NN.Module):
                     # print('Estimated crowd number :',np.sum(np.asarray(est_dmap.cpu())), 'Ground Truth number',np.sum(np.asarray(gt_dmap.cpu())))
                     ax1=fig.add_subplot(int(all/10/2),2,cpt)
                     ax1.title.set_text('Estimated crowd number :'+str(np.sum(np.asarray(est_dmap.cpu()))))
-                    ax2=fig.add_subplot(int(all/10/2),2,cpt+1)
-                    ax2.title.set_text('Ground Truth number'+str(np.sum(np.asarray(gt_dmap.cpu()))))
                     est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
                     plt.imshow(est_dmap, cmap=CM.jet)
+                    ax2=fig.add_subplot(int(all/10/2),2,cpt+1)
+                    ax2.title.set_text('Ground Truth number'+str(np.sum(np.asarray(gt_dmap.cpu()))))
+                    gt_dmap = gt_dmap.squeeze(0).squeeze(0).cpu().numpy()
+                    plt.imshow(gt_dmap, cmap=CM.jet)
+                    
                     cpt+=2
                 del img, gt_dmap, est_dmap
             plt.show()    
