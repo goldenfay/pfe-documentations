@@ -238,11 +238,11 @@ class Model(NN.Module):
                 if i % 10 == 0:
                     # displays.display_comparaison(gt_dmap,est_dmap)
                     # print('Estimated crowd number :',np.sum(np.asarray(est_dmap.cpu())), 'Ground Truth number',np.sum(np.asarray(gt_dmap.cpu())))
-                    ax1=fig.add_subplot(int(all/10/2),2,cpt)
+                    ax1=fig.add_subplot(int(all/10),2,cpt)
                     ax1.title.set_text('Estimated crowd number :'+str(np.sum(np.asarray(est_dmap.cpu()))))
                     est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
                     plt.imshow(est_dmap, cmap=CM.jet)
-                    ax2=fig.add_subplot(int(all/10/2),2,cpt+1)
+                    ax2=fig.add_subplot(int(all/10),2,cpt+1)
                     ax2.title.set_text('Ground Truth number'+str(np.sum(np.asarray(gt_dmap.cpu()))))
                     gt_dmap=gt_dmap.squeeze(0).squeeze(0)
                     gt_dmap = torch.stack([gt_dmap,gt_dmap,gt_dmap],dim=0).squeeze().cpu().permute(1,2,0).numpy()
