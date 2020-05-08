@@ -182,6 +182,9 @@ def get_best_model(min_epoch,className):
     return torch.load(os.path.join(utils.BASE_PATH , 'checkpoints2',className,'epoch_'+str(min_epoch)+'.pth'))
 
 def show_plots(model):
+    '''
+        Display error's evaluation during train and test phase via plots.
+    '''
     path=os.path.join(model.checkpoints_dir,'summary.json')
     if not os.path.exists(path):
         raise FileNotFoundError('Summary file for the model not found.')

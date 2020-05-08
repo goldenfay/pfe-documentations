@@ -10,8 +10,14 @@ class GitManager:
        self.token=access_token
        self.user=user
        self.pwd=pwd
+       
 
     def authentification(self):
+        '''
+            Authenticate user to github either by access token or by (username,password).
+            NOTE : Authentication via username/password is deprecated, We recommand using access token instead.
+             
+        '''
     
         
         self.gth = Github(self.token) if self.token is not None else Github(self.user,self.pwd)
@@ -20,17 +26,28 @@ class GitManager:
 
     
     def get_repo(self,repo_name) ->Repository:
+        '''
+            Returns a repository based on its name.
+        '''
         
         for repo in self.gth.get_user().get_repos():
             if repo.name==repo_name:
                 return repo
             
         return None
+
     @classmethod    
     def get_repo_files(cls,repo:Repository):
+        '''
+            Lists all the files in a specific repository.
+        '''
         return [el.path for el in repo.get_contents('')]
 
     def push_files(self,repo:Repository,files_list,push_msg,branch='master',dir=''):
+        '''
+            Push a list of files to a specific directory in a specific branch of a specific repository.
+
+        '''
         if dir!='': dir+='/'
         branch_ref = repo.get_git_ref('heads/'+branch)
         branch_sha = branch_ref.object.sha
@@ -54,9 +71,13 @@ class GitManager:
             
             branch_ref.edit(commit.sha)
             self.log_commit('commit.txt',files_list)
-            print('\t Done.')
-        return len(element_list)    
+            print('\t Done.',end=' ')
+        return len(element_list) 
+
     @classmethod
     def log_commit(cls,logfile_path,files_list):
+        '''
+            Log commited files into a log file.
+        '''
         with open(logfile_path,'a') as f:
             f.write('Commit :'+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+'\nList :'+','.join(files_list)+'\n')

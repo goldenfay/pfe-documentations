@@ -59,7 +59,6 @@ class Model(NN.Module):
         start_epoch = 0
 
         dirs=utils.list_dirs(self.checkpoints_dir)
-        print(dirs)
         train_dirs=re.findall('Train_[0-9]+',' '.join(dirs))
         if len(train_dirs)==0:
             
@@ -109,8 +108,8 @@ class Model(NN.Module):
                         print(
                             '\t Successfully comitted previous checkpoints(', res, ' files).')
 
-                else:
-                    raise RuntimeError('Couldn\'t push all files')
+                    else:
+                        raise RuntimeError('Couldn\'t push all files')
         self.to(device)
        
         start_epoch += 1
@@ -141,7 +140,7 @@ class Model(NN.Module):
                 loss.backward()
                 self.optimizer.step()
                 del img, gt_dmap, est_dmap
-            print("\t epoch:"+str(epoch)+"\n", "\t loss:",
+            print("\t epoch:"+str(epoch)+"\n", "\t\t loss:",
                   epoch_loss/len(train_dataloader))
             train_loss_list.append(epoch_loss/len(train_dataloader))      
 
@@ -170,7 +169,7 @@ class Model(NN.Module):
                 self.min_MAE = MAE
                 self.min_epoch = epoch
             test_error_list.append(MAE)
-            print("\t error:"+str(MAE)+" min_MAE:" +
+            print("\t\t error:"+str(MAE)+" min_MAE:" +
                   str(self.min_MAE)+" min_epoch:"+str(self.min_epoch))
 
             end = time.time()      

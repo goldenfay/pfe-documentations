@@ -17,7 +17,9 @@ def path_exists(path):
 
 
 def list_dirs(path):
-    print(os.listdir(path))
+    '''
+        Lists all child directories found in path
+    '''
     return [el for el in os.listdir(path) if not os.path.isfile(el)]
 
 
@@ -77,6 +79,9 @@ def extract_number(path):
 
 
 def parallel_processing(func,args,workers):
+    '''
+        Basic function for executing parallel process using same function for all workers.
+    '''
     with ProcessPoolExecutor(workers) as ex:
             res = ex.map(func, args)
     return list(res)
