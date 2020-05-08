@@ -235,12 +235,13 @@ class Model(NN.Module):
                 MSE += mae**2
                 # Show the estimated density map via matplotlib
                 if i % 10 == 0:
+                    print(img.shape,est_dmap.shape,gt_dmap.shape)
                     # print('Estimated ',est_dmap.data.sum(), 'Truth :',gt_dmap.data.sum() )
                     # displays.display_comparaison(gt_dmap,est_dmap)
                     # print('Estimated crowd number :',est_dmap.data.sum(), 'Ground Truth number',np.sum(np.asarray(gt_dmap.cpu())))
                     ax=fig.add_subplot(int(all/10),3,cpt)
                     ax.title.set_text('Original image')
-                    img = img.squeeze(0).squeeze(0).cpu().permute(1,2,0).numpy()
+                    img = img.squeeze().cpu().permute(1,2,0).numpy()
                     plt.imshow(img, cmap=CM.jet)
 
                     ax1=fig.add_subplot(int(all/10),3,cpt+1)
