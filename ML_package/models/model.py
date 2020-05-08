@@ -237,7 +237,7 @@ class Model(NN.Module):
                 # Show the estimated density map via matplotlib
                 if i % 10 == 0:
                     # displays.display_comparaison(gt_dmap,est_dmap)
-                    # print('Estimated crowd number :',np.sum(np.asarray(est_dmap.cpu())), 'Ground Truth number',np.sum(np.asarray(gt_dmap.cpu())))
+                    # print('Estimated crowd number :',est_dmap.data.sum(), 'Ground Truth number',np.sum(np.asarray(gt_dmap.cpu())))
                     ax1=fig.add_subplot(int(all/10),2,cpt)
                     ax1.title.set_text('Estimated crowd number :'+str(np.sum(np.asarray(est_dmap.cpu()))))
                     est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
