@@ -235,20 +235,26 @@ class Model(NN.Module):
                 MSE += mae**2
                 # Show the estimated density map via matplotlib
                 if i % 10 == 0:
-                    print('Estimated ',est_dmap.data.sum(), 'Truth :',gt_dmap.data.sum() )
+                    # print('Estimated ',est_dmap.data.sum(), 'Truth :',gt_dmap.data.sum() )
                     # displays.display_comparaison(gt_dmap,est_dmap)
                     # print('Estimated crowd number :',est_dmap.data.sum(), 'Ground Truth number',np.sum(np.asarray(gt_dmap.cpu())))
-                    ax1=fig.add_subplot(int(all/10),2,cpt)
+                    ax=fig.add_subplot(int(all/10),3,cpt)
+                    ax.title.set_text('Original image')
+                    img = img.squeeze(0).cpu().numpy()
+                    plt.imshow(img, cmap=CM.jet)
+
+                    ax1=fig.add_subplot(int(all/10),3,cpt+1)
                     ax1.title.set_text('Estimated crowd number :'+str(np.sum(np.asarray(est_dmap.cpu()))))
                     est_dmap = est_dmap.squeeze(0).squeeze(0).cpu().numpy()
                     plt.imshow(est_dmap, cmap=CM.jet)
-                    ax2=fig.add_subplot(int(all/10),2,cpt+1)
+
+                    ax2=fig.add_subplot(int(all/10),3,cpt+2)
                     ax2.title.set_text('Ground Truth number'+str(np.sum(np.asarray(gt_dmap.cpu()))))
                     gt_dmap=gt_dmap.squeeze(0).squeeze(0)
                     gt_dmap = torch.stack([gt_dmap,gt_dmap,gt_dmap],dim=0).squeeze().cpu().permute(1,2,0).numpy()
                     plt.imshow(gt_dmap, cmap=CM.jet)
                     
-                    cpt+=2
+                    cpt+=3
                 del img, gt_dmap, est_dmap
             plt.show()    
             MAE = MAE/len(test_dataloader)
