@@ -242,7 +242,7 @@ class Model(NN.Module):
                     ax=fig.add_subplot(int(all/10),3,cpt)
                     ax.title.set_text('Original image')
                     img = img.squeeze().cpu().permute(1,2,0).numpy()
-                    plt.imshow(img, cmap=CM.jet)
+                    plt.imshow(img)
 
                     ax1=fig.add_subplot(int(all/10),3,cpt+1)
                     ax1.title.set_text('Estimated crowd number :'+str(np.sum(np.asarray(est_dmap.cpu()))))
