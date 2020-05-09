@@ -65,9 +65,9 @@ class CrowdDataset(Dataset):
             gt_dmap=cv2.resize(gt_dmap,(ds_cols,ds_rows))
             gt_dmap=gt_dmap[np.newaxis,:,:]*self.gt_downsample*self.gt_downsample
     
-        img_tensor=torch.tensor(img,dtype=torch.float).permute((2,0,1))
+        img_tensor=torch.Tensor(img).permute((2,0,1))
         # img_tensor=torch.from_numpy(img).permute((2,0,1))
-        gt_dmap_tensor=torch.tensor(gt_dmap,dtype=torch.float)
+        gt_dmap_tensor=torch.Tensor(gt_dmap)
 
         return img_tensor,gt_dmap_tensor
         # return img,gt_dmap
@@ -79,10 +79,10 @@ if __name__=="__main__":
     gt_dmap_rootPath="C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech\\part_A\\train_data\\ground-truth"
     dataset=CrowdDataset(img_rootPath,gt_dmap_rootPath)
     for i,(img,gt_dmap) in enumerate(dataset):
-        plt.imshow(img)
-        plt.show()
-        plt.imshow(gt_dmap,cmap='jet')
-        plt.show()
+        # plt.imshow(img)
+        # plt.show()
+        # plt.imshow(gt_dmap,cmap='jet')
+        # plt.show()
         if i>5:
             break
         print(img.shape,gt_dmap.shape)
