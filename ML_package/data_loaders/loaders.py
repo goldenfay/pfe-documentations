@@ -29,7 +29,7 @@ class Loader:
                 train_set.append(features)
             for index, features in enumerate(test_loader):
                 test_set.append(features)
-
+        del train_loader, test_loader, features
         if shuffleFlag:
             np.random.shuffle(train_set)
             np.random.shuffle(test_set)
@@ -151,6 +151,7 @@ class GenericLoader(Loader):
                 if save:
                     samplers_list.append((train_sampler,test_sampler))
 
+                del dataset,train_sampler,test_sampler,train_loader,test_loader
 
         if save:
             utils.make_path(os.path.join(utils.BASE_PATH,'obj','loaders',self.__class__.__name__))
@@ -179,7 +180,7 @@ class GenericLoader(Loader):
 
             all_datasets.append((train_loader, test_loader))
 
-
+        del dataset,train_loader,test_loader
         return all_datasets    
 
 
