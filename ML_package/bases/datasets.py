@@ -49,23 +49,24 @@ class CrowdDataset(Dataset):
         img=Image.open(os.path.join(self.img_rootPath,img_name))
         if img.mode == 'L':
             img = img.convert('RGB')
-            print('converted to rgb')
+            
         img=np.asarray(img)    
         gt_dmap=np.load(os.path.join(self.gt_dmap_rootPath,img_name.replace('.jpg','.npy')))
-        temp=Image.fromarray(gt_dmap)
-        if temp.mode == 'L':
-            gt_dmap = np.asarray(temp.convert('RGB'))
-            print('converted to rgb')
+        # temp=Image.fromarray(gt_dmap)
+        # if temp.mode == 'L':
+        #     gt_dmap = np.asarray(temp.convert('RGB'))
+            
 
         if self.gt_downsample>1: # to downsample image and density-map to match deep-model.
             ds_rows=int(img.shape[0]//self.gt_downsample)
             ds_cols=int(img.shape[1]//self.gt_downsample)
             img = cv2.resize(img,(ds_cols*self.gt_downsample,ds_rows*self.gt_downsample))
-            # img=img.transpose((2,0,1)) # convert to order (channel,rows,cols)
+            img=img.transpose((2,0,1)) # convert to order (channel,rows,cols)
             gt_dmap=cv2.resize(gt_dmap,(ds_cols,ds_rows))
             gt_dmap=gt_dmap[np.newaxis,:,:]*self.gt_downsample*self.gt_downsample
     
-        img_tensor=torch.tensor(img,dtype=torch.float)
+        # img_tensor=torch.tensor(img,dtype=torch.float)
+        img_tensor=torch.from_numpy(img).permute((2,0,1))
         gt_dmap_tensor=torch.tensor(gt_dmap,dtype=torch.float)
 
         return img_tensor,gt_dmap_tensor
@@ -76,12 +77,12 @@ class CrowdDataset(Dataset):
 if __name__=="__main__":
     img_rootPath="C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech\\part_A\\train_data\\images"
     gt_dmap_rootPath="C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech\\part_A\\train_data\\ground-truth"
-    dataset=CrowdDataset(img_rootPath,gt_dmap_rootPath,gt_downsample=1)
+    dataset=CrowdDataset(img_rootPath,gt_dmap_rootPath)
     for i,(img,gt_dmap) in enumerate(dataset):
-        # plt.imshow(img)
-        # plt.show()
-        # plt.imshow(gt_dmap,cmap='jet')
-        # plt.show()
+        plt.imshow(img)
+        plt.show()
+        plt.imshow(gt_dmap,cmap='jet')
+        plt.show()
         if i>5:
             break
         print(img.shape,gt_dmap.shape)
