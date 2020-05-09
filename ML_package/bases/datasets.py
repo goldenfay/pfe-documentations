@@ -65,8 +65,8 @@ class CrowdDataset(Dataset):
             gt_dmap=cv2.resize(gt_dmap,(ds_cols,ds_rows))
             gt_dmap=gt_dmap[np.newaxis,:,:]*self.gt_downsample*self.gt_downsample
     
-        # img_tensor=torch.tensor(img,dtype=torch.float)
-        img_tensor=torch.from_numpy(img).permute((2,0,1))
+        img_tensor=torch.tensor(img,dtype=torch.float).permute((2,0,1))
+        # img_tensor=torch.from_numpy(img).permute((2,0,1))
         gt_dmap_tensor=torch.tensor(gt_dmap,dtype=torch.float)
 
         return img_tensor,gt_dmap_tensor
