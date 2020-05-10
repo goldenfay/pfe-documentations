@@ -245,7 +245,7 @@ class Model(NN.Module):
                     # print('Estimated crowd number :',est_dmap.data.sum(), 'Ground Truth number',np.sum(np.asarray(gt_dmap.cpu())))
                     ax=fig.add_subplot(int(all/10),3,cpt)
                     ax.title.set_text('Original image')
-                    img = img.squeeze().cpu().permute(1,2,0).numpy()
+                    img = img.squeeze().cpu().numpy()
                     plt.imshow(img)
 
                     ax1=fig.add_subplot(int(all/10),3,cpt+1)

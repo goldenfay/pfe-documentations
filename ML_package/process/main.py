@@ -248,7 +248,7 @@ ap.add_argument("-n", "--new-train", type=bool, default=False,nargs='?',const=Tr
 ap.add_argument("--no-loss-plot", type=bool, default=False,nargs='?',const=True,
 	help="Choose to not show the loss/error plots")
 ap.add_argument("--no-resume", type=bool, default=False,nargs='?',const=True,
-	help="minimum probability to filter weak detections")
+	help="Resume training flag")
 ap.add_argument("-s", "--skip-frames", type=int, default=30,
 	help="# of skip frames between detections")
 args = vars(ap.parse_args())
