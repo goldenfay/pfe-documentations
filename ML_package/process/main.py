@@ -321,6 +321,4 @@ if __name__=="__main__":
     if not args['no_loss_plot']:
         show_plots(model)
 
-
-
     
