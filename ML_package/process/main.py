@@ -56,7 +56,8 @@ def prepare_datasets(baseRootPath,datasets_list:list,dm_generator,resetFlag=Fals
         elif 'ShanghaiTech_partB'==dataset_name:
             paths_list.append(prepare_ShanghaiTech_dataset(baseRootPath,'B',dm_generator,resetFlag))   
         else:
-            print("nop")
+            paths_list.append(prepare_dataset(baseRootPath,dataset_name,dm_generator,resetFlag))   
+       
 
     
     return paths_list         
@@ -65,18 +66,13 @@ def prepare_datasets(baseRootPath,datasets_list:list,dm_generator,resetFlag=Fals
 def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
     root=os.path.join(root,"ShanghaiTech")
     paths_dict=dict()
+    print('Generating Density map for : ShanghaiTech',' :',end=' ')
         # generate the ShanghaiA's ground truth
     if not part=="A" and not part=="B": raise Exception("Invalide parts passed for shanghai ")
 
     train_path=os.path.join(root,'part_'+part,'train_data')
     test_path=os.path.join(root,'part_'+part,'test_data')
-    # part_A_train = os.path.join(root,'part_A\\train_data','images')
-    # part_A_test = os.path.join(root,'part_A\\test_data','images')
-    # part_A_train = os.path.join(root,'part_A\\train_data','images')
-    # part_A_test = os.path.join(root,'part_A\\test_data','images')
-    # part_B_train = os.path.join(root,'part_B_final/train_data','images')
-    # part_B_test = os.path.join(root,'part_B_final/test_data','images')
-    # path_sets = [part_A_train,part_A_test]
+
     
 
         # save both train and test paths
@@ -96,7 +92,7 @@ def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
         if os.path.exists(img_path.replace('.jpg','.npy').replace('images','ground-truth')) and not resetFlag:
             #print("\t Already exists.")
             continue
-        print('Generating Density map for : ',img_path[list(re.finditer("[\\\/]",img_path))[-1].start(0):]," :")
+        print('Generating Density map for : ',os.path.basename(img_path)," :",end=' ')
 
             # load matrix containing ground truth infos
         mat = io.loadmat(img_path.replace('.jpg','.mat').replace('images','ground-truth').replace('IMG_','GT_IMG_'))
@@ -106,12 +102,49 @@ def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
 
             # Generate the density map
         density_map = dm_generator.generate_densitymap(img,points)
-        # plt.imshow(k,cmap=CM.jet)
 
             # save density_map on disk
         np.save(img_path.replace('.jpg','.npy').replace('images','ground-truth'), density_map)
-
+    print('Done.')
     return paths_dict        
+
+def prepare_dataset(root,dirname,dm_generator,resetFlag=False):
+    root=os.path.join(root,dirname)
+    paths_dict=dict()
+    
+    print('\t #Preparing Dataset : ',dirname)
+        # save both train and test paths
+    paths_dict["images"]=os.path.join(root,'images')
+    paths_dict["ground-truth"]=os.path.join(root,'ground-truth')
+
+    path_sets = [paths_dict["images"],paths_dict["ground-truth"]]
+    
+    img_paths = []
+        # Grab all .jpg images paths
+    
+    for img_path in glob.glob(os.path.join(paths_dict["images"], '*.jpg')):
+        img_paths.append(img_path)
+
+            # Generate density map for each image
+    for img_path in img_paths:
+        if os.path.exists(img_path.replace('.jpg','.npy').replace('images','ground-truth')) and not resetFlag:
+            #print("\t Already exists.")
+            continue
+        print('\t\t Generating Density map for : ',os.path.basename(img_path)," :")
+
+            # load matrix containing ground truth infos
+        mat = io.loadmat(img_path.replace('.jpg','.mat').replace('images','ground-truth').replace('IMG_','GT_IMG_'))
+        img= plt.imread(img_path)#768行*1024列
+        density_map = np.zeros((img.shape[0],img.shape[1]))
+        points = mat["image_info"][0,0][0,0][0] #1546person*2(col,row)
+
+            # Generate the density map
+        density_map = dm_generator.generate_densitymap(img,points)
+
+            # save density_map on disk
+        np.save(img_path.replace('.jpg','.npy').replace('images','ground-truth'), density_map)
+    print('Done.')
+    return paths_dict
 
     
 def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
@@ -212,7 +245,7 @@ ap.add_argument("-m", "--model-type",type=str, required=False,default="CSRNet",
 	help="Model Name (Case sensitive) {MCNN,CSRNet,SANet,CCNN}")
 ap.add_argument("-n", "--new-train", type=bool, default=False,nargs='?',const=True,
 	help="New train flag")
-ap.add_argument("-p", "--no-loss-plot", type=bool, default=False,nargs='?',const=True,
+ap.add_argument("--no-loss-plot", type=bool, default=False,nargs='?',const=True,
 	help="Choose to not show the loss/error plots")
 ap.add_argument("--no-resume", type=bool, default=False,nargs='?',const=True,
 	help="minimum probability to filter weak detections")
@@ -226,7 +259,7 @@ if __name__=="__main__":
     else :
         root = 'C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech'
     dm_generator_type="knn_gaussian_kernal"
-    dataset_names=["ShanghaiTech_partA","ShanghaiTech_partB"]
+    dataset_names=["ShanghaiTech_partA","ShanghaiTech_partB","NWPU"]
     dm_generator=None
     loader_type="GenericLoader"
     model_type=args['model_type']#sys.argv[2] if len(sys.argv)>2 else "CSRNet"
@@ -285,8 +318,8 @@ if __name__=="__main__":
     # print('Evaluation Results',model.eval_model(test_dataloader))
 
         # Plots learning results
-
-    show_plots(model)
+    if not args['no_loss_plot']:
+        show_plots(model)
 
 
 
