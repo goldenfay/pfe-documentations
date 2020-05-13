@@ -52,9 +52,9 @@ def prepare_datasets(baseRootPath,datasets_list:list,dm_generator,resetFlag=Fals
     paths_list=[]
     for dataset_name in datasets_list:
         if 'ShanghaiTech_partA'==dataset_name:
-            paths_list.append(prepare_ShanghaiTech_dataset(baseRootPath,'A',dm_generator,resetFlag))
+            paths_list.append(prepare_ShanghaiTech_dataset(os.path.join(baseRootPath,'ShanghaiTech'),'A',dm_generator,resetFlag))
         elif 'ShanghaiTech_partB'==dataset_name:
-            paths_list.append(prepare_ShanghaiTech_dataset(baseRootPath,'B',dm_generator,resetFlag))   
+            paths_list.append(prepare_ShanghaiTech_dataset(os.path.join(baseRootPath,'ShanghaiTech'),'B',dm_generator,resetFlag))   
         else:
             paths_list.append(prepare_dataset(baseRootPath,dataset_name,dm_generator,resetFlag))   
        
@@ -255,7 +255,7 @@ args = vars(ap.parse_args())
 
 if __name__=="__main__":
     if args['root'] is not None:
-        root = os.path.join(args['root'],'ShanghaiTech')
+        root = args['root']
     else :
         root = 'C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech'
     dm_generator_type="knn_gaussian_kernal"
