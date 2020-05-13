@@ -136,7 +136,9 @@ def prepare_dataset(root,dirname,dm_generator,resetFlag=False):
         mat = io.loadmat(img_path.replace('.jpg','.mat').replace('images','ground-truth'))
         img= plt.imread(img_path)#768行*1024列
         density_map = np.zeros((img.shape[0],img.shape[1]))
-        points = mat["image_info"][0,0][0,0][0] #1546person*2(col,row)
+        # points = mat["image_info"][0,0][0,0][0] #1546person*2(col,row)
+        key=[el for el in list(mat) if el.lower().endswith('points')][0]
+        points = [tuple(el) for el in mat[key]] #1546person*2(col,row)
 
             # Generate the density map
         density_map = dm_generator.generate_densitymap(img,points)
