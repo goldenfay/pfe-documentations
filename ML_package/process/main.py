@@ -133,7 +133,7 @@ def prepare_dataset(root,dirname,dm_generator,resetFlag=False):
         print('\t\t Generating Density map for : ',os.path.basename(img_path)," :")
 
             # load matrix containing ground truth infos
-        mat = io.loadmat(img_path.replace('.jpg','.mat').replace('images','ground-truth').replace('IMG_','GT_IMG_'))
+        mat = io.loadmat(img_path.replace('.jpg','.mat').replace('images','ground-truth'))
         img= plt.imread(img_path)#768行*1024列
         density_map = np.zeros((img.shape[0],img.shape[1]))
         points = mat["image_info"][0,0][0,0][0] #1546person*2(col,row)
@@ -259,7 +259,7 @@ if __name__=="__main__":
     else :
         root = 'C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech'
     dm_generator_type="knn_gaussian_kernal"
-    dataset_names=["ShanghaiTech_partA","ShanghaiTech_partB"]
+    dataset_names=["ShanghaiTech_partA","ShanghaiTech_partB","NWPU"]
     dm_generator=None
     loader_type="GenericLoader"
     model_type=args['model_type']#sys.argv[2] if len(sys.argv)>2 else "CSRNet"
