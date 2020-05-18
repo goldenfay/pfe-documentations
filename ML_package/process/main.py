@@ -30,6 +30,7 @@ sys.path.append(os.path.join(parentdir , "configs"))
 
 from datasets import *
 from params import *
+import utils
 from dm_generator import *
 from knn_gaussian_kernal import *
 from loaders import *
@@ -37,7 +38,6 @@ from mcnn import *
 from CSRNet import *
 from SANet import *
 from CCNN import *
-import utils
 import plots
 import displays
 import trainsparams

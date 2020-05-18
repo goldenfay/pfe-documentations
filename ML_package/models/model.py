@@ -128,10 +128,10 @@ class Model(NN.Module):
                 est_dmap = self(img)
                 if not est_dmap.size() == gt_dmap.size():
 
-                    # est_dmap = F.interpolate(est_dmap, size=(
-                    #     gt_dmap.size()[2], gt_dmap.size()[3]), mode='bilinear')
                     est_dmap = F.interpolate(est_dmap, size=(
-                        gt_dmap.size()[1], gt_dmap.size()[2]), mode='bilinear')
+                        gt_dmap.size()[2], gt_dmap.size()[3]), mode='bilinear')
+                    # est_dmap = F.interpolate(est_dmap, size=(
+                    #     gt_dmap.size()[1], gt_dmap.size()[2]), mode='bilinear')
 
                     # calculate loss
                 loss = train_params.criterion(est_dmap, gt_dmap)
@@ -158,10 +158,10 @@ class Model(NN.Module):
                     # forward propagation
                 est_dmap = self(img)
                 if not est_dmap.size() == gt_dmap.size():
-                    # est_dmap = F.interpolate(est_dmap, size=(
-                    #     gt_dmap.size()[2], gt_dmap.size()[3]), mode='bilinear')
                     est_dmap = F.interpolate(est_dmap, size=(
-                        gt_dmap.size()[1], gt_dmap.size()[2]), mode='bilinear')
+                        gt_dmap.size()[2], gt_dmap.size()[3]), mode='bilinear')
+                    # est_dmap = F.interpolate(est_dmap, size=(
+                    #     gt_dmap.size()[1], gt_dmap.size()[2]), mode='bilinear')
                 mae=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
                 MAE += mae
                 MSE += mae**2
