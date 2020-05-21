@@ -77,9 +77,9 @@ class ModelManager:
     @staticmethod
     def load_external_model(model_name):
         try:
-            match_dict=getattr(equivalence,model_name+'_DICT_MATCH')
-            pretrained_dict = ModelManager.load_model(model_name)
-            
+            # match_dict=getattr(equivalence,model_name+'_DICT_MATCH')
+            # pretrained_dict = torch.load(os.path.join(ModelManager.FROZEN_MODELS_PATH,'external',model_name+'.pth'),map_location=ModelManager.device)
+            pretrained_dict,match_dict= equivalence.get_dict_match(model_name)
             model=ModelManager.get_instance(model_name)
             model_dict = model.state_dict()
 

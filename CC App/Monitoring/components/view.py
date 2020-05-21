@@ -49,13 +49,15 @@ def b64_to_numpy(string, to_scalar=True):
     return np_array
 
 
-def numpy_to_pil(array,jetMap=True):
-    if jetMap: array=cm.jet(array)
+def numpy_to_pil(array, jetMap=True):
+    if jetMap:
+        print('\t Converting to Jet color map')
+        array = cm.jet(array)
     return Image.fromarray(np.uint8(array*255))
 
 
-def numpy_to_b64(array,jetMap=True):
-    im_pil = numpy_to_pil(array,jetMap)
+def numpy_to_b64(array, jetMap=True):
+    im_pil = numpy_to_pil(array, jetMap)
     buff = _BytesIO()
     im_pil.save(buff, format="png")
     return base64.b64encode(buff.getvalue()).decode("utf-8")
@@ -108,6 +110,7 @@ def load_data(path):
 
     return data_dict
 
+
 def parse_contents(contents, filename):
     images_list.append(contents.encode("utf-8").split(b";base64,")[1])
     return html.Div(children=[
@@ -117,10 +120,11 @@ def parse_contents(contents, filename):
         # HTML images accept base64 encoded strings in the same format
         # that is supplied by the upload
         html.Img(src=contents, style={
-                    'maxWidth': '80%', 'minWidth': '80px'})
-      
+            'maxWidth': '80%', 'minWidth': '80px'})
+
     ],
-        className='col-md justify-content-center')
+        className='col-md justify-content-center "animate__animated animate__fadeInRight')
+
 
 class View(Component):
     layout = None
@@ -223,13 +227,13 @@ class View(Component):
                                         ),
                                         reusable.dropdown_control("Model type:", [
                                             {'label': 'Detection models:',
-                                             'value': 'MCNN','disabled':True},
+                                             'value': 'MCNN', 'disabled': True},
                                             {'label': 'Mobile SSD',
                                              'value': 'mobileSSD'},
                                             {'label': 'YOLO',
                                              'value': 'yolo'},
-                                             {'label': 'Density map based models:',
-                                             'value': 'MCNN','disabled':True},
+                                            {'label': 'Density map based models:',
+                                             'value': 'MCNN', 'disabled': True},
                                             {'label': 'MCNN',
                                              'value': 'MCNN'},
                                             {'label': 'CSRNet',
@@ -265,19 +269,6 @@ class View(Component):
 
 
                                         ),
-                                        reusable.dropdown_control("Model type:", [
-                                            {'label': 'MCNN',
-                                             'value': 'MCNN'},
-                                            {'label': 'CSRNet',
-                                             'value': 'CSRNet'},
-                                            {'label': 'SANet',
-                                             'value': 'SANet'},
-                                            {'label': 'CCNN',
-                                             'value': 'CCNN'}
-                                        ], "CSRNet",
-                                            id="dropdown-model-selection2"
-
-                                        ),
                                         reusable.dropdown_control("Video Display Mode:", [
                                             {'label': 'Normal Display',
                                              'value': 'normal'},
@@ -307,16 +298,16 @@ class View(Component):
             ]
         )
 
-       
+
 ##############################################################################################
 #           Dropdowns event handlers
 ##############################################################################################
-    
+
 # Switching layouts
 
 @app.callback([Output("switch-label", "children"),
-                Output('footage-container', 'children')],
-                [Input("mode-switch", "value")])
+               Output('footage-container', 'children')],
+              [Input("mode-switch", "value")])
 def toggle_display(value):
     if value:
         children = [
@@ -328,6 +319,7 @@ def toggle_display(value):
                             id='upload-image',
                             className='d-flex align-items-center justify-content-center',
                             children=html.Div(
+                                id='drop-div',
                                 className='align-self-center',
                                 children=[
                                     html.Div(['Drag and Drop']),
@@ -357,10 +349,9 @@ def toggle_display(value):
         children = static.default_footage_section()
     return ['Footage' if not value else 'Still images'], children
 
-
     # Footage Selection
 @app.callback(Output("video-display", "url"),
-                [Input('dropdown-footage-selection', 'value')])
+              [Input('dropdown-footage-selection', 'value')])
 def select_footage(footage):
     # Find desired footage and update player video
     # url = url_dict[footage]
@@ -368,28 +359,27 @@ def select_footage(footage):
 
     # Model selection
 @app.callback(Output("dummy-div", "style"),
-                [Input("dropdown-model-selection", "value")])
+              [Input("dropdown-model-selection", "value")])
 def change_model(model_type):
-    print('Loading model : ',model_type,' ...')
-    if model_type in ['mobileSSD','yolo']:
-        x=ModelManager.load_detection_model(model_type)
+    print('Loading model : ', model_type, ' ...')
+    if model_type in ['mobileSSD', 'yolo']:
+        x = ModelManager.load_detection_model(model_type)
         print(type(x))
-    else:    
+    else:
         try:
             ModelManager.load_external_model(model_type)
         except Exception as e:
             print('An error occured when loading model ',
-                model_type, end='\n\t')
+                  model_type, end='\n\t')
             traceback.print_exc()
             pass
-    print('Done.')    
+    print('Done.')
     return {"display": "none"}
-
 
 
     # Upload image
 @app.callback(Output('output-image-upload', 'children'),
-                [Input('upload-image', 'filename'), Input('upload-image', 'contents')])
+              [Input('upload-image', 'filename'), Input('upload-image', 'contents')])
 def update_output(list_of_names, list_of_contents):
     if list_of_contents is not None:
         print('uploading...')
@@ -402,21 +392,25 @@ def update_output(list_of_names, list_of_contents):
             id='process-imgs-button',
             n_clicks=0,
             className='btn btn-md btn-outline-success',
-            children=[ html.Span(className='fa fa-play')])],
+            children=[html.Span(className='fa fa-play')])],
             style={'font-weight': 'bold',
-                    'font-size': '13px'}
+                   'font-size': '13px',
+                   'min-width':'20px'}
         ),
-            html.Div(id='output-image-process',className='d-flex flex-row align-items-center', children=[''])
+            html.Div(id='output-image-process',
+                     className='d-flex flex-row align-items-center', children=[''])
         ]
 
         print('Done')
         return children
 
     # Start detection click
+
+
 @app.callback(Output("output-image-process", "children"),
-                [Input("process-imgs-button", "n_clicks")],
-                [State("dropdown-model-selection", "value"),
-                State("output-image-process", "children")])
+              [Input("process-imgs-button", "n_clicks")],
+              [State("dropdown-model-selection", "value"),
+               State("output-image-process", "children")])
 def start_detection(button_click, model_type, children):
     if button_click > 0:
         frames = [b64_to_numpy(el) for el in images_list]
@@ -427,34 +421,39 @@ def start_detection(button_click, model_type, children):
         #     print('Count : ', count)
         #     encoded_img = numpy_to_b64(img,model_type not in ['mobileSSD','yolo'])
         #     res_img_list.append(encoded_img)
-        
-        res_img_list=[]         
+
+        res_img_list = []
         for id, frame in enumerate(frames):
             print('Processing image :\n\t frame of shape : ', frame.shape)
             try:
-                
+
                 start = time.time()
                 dmap, count = ModelManager.process_frame(frame)
                 inference_time = time.time()-start
-                
+
                 print('\t Inference time : ', inference_time, 'count : ', count)
-                encoded_img = numpy_to_b64(dmap,model_type not in ['mobileSSD','yolo'])
-                res_img_list.append((id,encoded_img))
+                encoded_img = numpy_to_b64(
+                    dmap, model_type not in ['mobileSSD', 'yolo'])
+                res_img_list.append((id, HTML_IMG_SRC_PARAMETERS+encoded_img))
             except Exception as e:
                 print("An error occured while detecting ", end='\n\t')
                 traceback.print_exc()
 
-        return [html.Img(
-            id=f'img-{id}',
-            src=HTML_IMG_SRC_PARAMETERS + encoded_img,
-            width='100%'
-        ) for (id,encoded_img) in res_img_list]   
+        return [
+            html.Div(children=[
+                
+                html.Img(id='img-{}'.format(id),
+                    src=encoded_img, style={
+                     'maxWidth': '80%', 'minWidth': '80px'})
 
+            ],
+                className='col-md justify-content-center "animate__animated animate__fadeInRight')
+            for (id, encoded_img) in res_img_list]
 
 
 # Learn more popup
 @app.callback(Output("markdown", "style"),
-                [Input("learn-more-button", "n_clicks"), Input("markdown_close", "n_clicks")])
+              [Input("learn-more-button", "n_clicks"), Input("markdown_close", "n_clicks")])
 def update_click_output(button_click, close_click):
     if button_click > close_click:
         return {"display": "block"}
@@ -565,4 +564,3 @@ def update_click_output(button_click, close_click):
 #             return go.Figure(data=[pie], layout=layout)
 
 #     return go.Figure(data=[go.Pie()], layout=layout)  # Returns empty pie chart
-

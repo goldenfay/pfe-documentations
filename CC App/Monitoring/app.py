@@ -2,7 +2,9 @@ from textwrap import dedent
 import dash
 import dash_bootstrap_components as dbc
 import config
-import re,time,traceback
+import re
+import time
+import traceback
 
 # User's modules
 from modelmanager import ModelManager
@@ -28,7 +30,7 @@ external_scripts = [
     },
     {
         'src': 'assets/js/view-custom.js'
-        
+
     }
 
 ]
@@ -48,8 +50,12 @@ external_stylesheets = [
         'integrity': 'sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ',
         'crossorigin': 'anonymous'
     },
+    {
+        'href': "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.0.0/animate.min.css",
+        'rel': "stylesheet"
+    },
     'https://codepen.io/chriddyp/pen/bWLwgP.css',
-     dbc.themes.BOOTSTRAP
+    dbc.themes.BOOTSTRAP
 ]
 app = dash.Dash(__name__,
                 external_scripts == external_scripts,
@@ -64,10 +70,8 @@ app.config['suppress_callback_exceptions'] = True
 ModelManager.set_base_path(config.FROZEN_MODELS_BASE_PATH)
 # Running the server
 if __name__ == '__main__':
-    
+
     app.run_server(dev_tools_hot_reload=False,
                    debug=config.DEBUG, host='0.0.0.0')
-   
 
     # model=ModelManager.load_external_model('CSRNet')
-
