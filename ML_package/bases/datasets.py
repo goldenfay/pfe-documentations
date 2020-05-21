@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 from PIL import Image
-import os,cv2
+import os,cv2,piexif
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -46,7 +46,14 @@ class CrowdDataset(Dataset):
         # if len(img.shape)==2: # expand grayscale image to three channel.
         #     img=img[:,:,np.newaxis]
         #     img=np.concatenate((img,img,img),2)
-        img=Image.open(os.path.join(self.img_rootPath,img_name))
+        try:
+            img=Image.open(os.path.join(self.img_rootPath,img_name))
+             
+        except ValueError :
+            print('\t \t [Removing XIF infos from image ...] ')
+            x=None  
+            piexif.remove(img.__getexif(),x) 
+            img=Image.frombytes(x) 
         if img.mode == 'L':
             img = img.convert('RGB')
             

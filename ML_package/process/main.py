@@ -13,6 +13,8 @@ import_or_install("pydrive","Pydrive")
 import_or_install("github","PyGithub")
 import_or_install("plotly","plotly")
 import_or_install("chart_studio","chart-studio")
+import_or_install("piexif","piexif")
+import_or_install("psutil","psutil")
 
 import torch
 from torch import nn
