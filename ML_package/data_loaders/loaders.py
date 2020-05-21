@@ -1,4 +1,4 @@
-import os,sys,inspect
+import os,sys,inspect,psutil
 import numpy as np
 import torch
 from torch.utils.data.sampler import SubsetRandomSampler
@@ -86,7 +86,7 @@ class SimpleLoader(Loader):
 class GenericLoader(Loader):
 
     def __init__(self, img_gt_dmap_list, reset_samplers=False):
-        super(GenericLoader, self).__init__(reset_samplers)
+        super(Loader, self).__init__(reset_samplers)
         self.img_gt_dmap_list = img_gt_dmap_list
 
     def load(self,test_size=20,batch_size=1,shuffle_flag=True,save=False):
@@ -127,6 +127,8 @@ class GenericLoader(Loader):
         else:
             
             for img_root_path, dm_root_path in self.img_gt_dmap_list:
+                if psutil.virtual_memory().percent>=98:
+                    print('\t [Warning] Memory is about to overflow')
                 dataset = CrowdDataset(img_root_path, dm_root_path)
                 dataSet_size = len(dataset)
 
@@ -167,7 +169,7 @@ class GenericLoader(Loader):
 
     def load_from_samplers(self,samplers, params:dict={'test_size':20,'batch_size':1}):
         
-        print('\t Loading DataSets ...')
+        print('\t Loading DataSets from previous samplers...')
         all_datasets=[]
         for i in range(len(self.img_gt_dmap_list)):
             img_root_path, dm_root_path=self.img_gt_dmap_list[i]
