@@ -18,6 +18,41 @@ class BasicDataSet(Dataset):
         assert index <= len(self), 'index range error'
         return self.instances[index]
             
+class BasicCrowdDataSet(Dataset):
+    def __init__(self,paths_index):
+        self.paths_index=paths_index
+        self.n_instances=len(paths_index)
+
+    def __len__(self):
+        return self.n_instances
+
+    def __getitem__(self,index):
+        assert index <= len(self), 'index range error'
+        img_name=self.paths_index[index][0]
+        try:
+            img=Image.open(img_name)
+             
+        except ValueError :
+            print('\t \t [Removing XIF infos from image ...] ')
+            x=None  
+            piexif.remove(img.__getexif(),x) 
+            img=Image.frombytes(x) 
+        if img.mode == 'L':
+            img = img.convert('RGB')
+            
+        img=np.asarray(img)    
+        gt_dmap=np.load(os.path.join(self.paths_index[index][1]))
+        gt_dmap=(gt_dmap-np.min(gt_dmap))/(np.max(gt_dmap)-np.min(gt_dmap))
+        gt_dmap=gt_dmap[np.newaxis,:,:]
+        # print(np.min(gt_dmap),np.max(gt_dmap))
+        # img_tensor=torch.tensor(img,dtype=torch.float).permute((2,0,1))
+        img_tensor=transforms.Compose([transforms.ToTensor()])(img)
+        # gt_dmap_tensor=transforms.Compose([transforms.ToTensor()])(gt_dmap)
+        # img_tensor=torch.from_numpy(img).permute((2,0,1))
+        gt_dmap_tensor=torch.tensor(gt_dmap,dtype=torch.float)
+        
+        return img_tensor,gt_dmap_tensor
+        
 
 class CrowdDataset(Dataset):
     
@@ -71,8 +106,9 @@ class CrowdDataset(Dataset):
             img = cv2.resize(img,(ds_cols*self.gt_downsample,ds_rows*self.gt_downsample))
             img=img.transpose((2,0,1)) # convert to order (channel,rows,cols)
             gt_dmap=cv2.resize(gt_dmap,(ds_cols,ds_rows))
+        
         gt_dmap=gt_dmap[np.newaxis,:,:]
-    
+       
         # img_tensor=torch.tensor(img,dtype=torch.float).permute((2,0,1))
         img_tensor=transforms.Compose([transforms.ToTensor()])(img)
         # gt_dmap_tensor=transforms.Compose([transforms.ToTensor()])(gt_dmap)
@@ -90,7 +126,7 @@ if __name__=="__main__":
     gt_dmap_rootPath="C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech\\part_A\\train_data\\ground-truth"
     dataset=CrowdDataset(img_rootPath,gt_dmap_rootPath)
     for i,(img,gt_dmap) in enumerate(dataset):
-        print(gt_dmap)
+        # print(gt_dmap)
         # plt.imshow(np.asanyarray(img.permute(1,2,0),dtype=np.int) )
         # plt.show()
         # plt.imshow(gt_dmap,cmap='jet')

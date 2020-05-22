@@ -68,7 +68,7 @@ def prepare_datasets(baseRootPath,datasets_list:list,dm_generator,resetFlag=Fals
 def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
     root=os.path.join(root,"ShanghaiTech")
     paths_dict=dict()
-    print('Generating Density map for : ShanghaiTech',' :',end=' ')
+    print('\t  #Preparing Dataset : ShanghaiTech part ',part,' :')
         # generate the ShanghaiA's ground truth
     if not part=="A" and not part=="B": raise Exception("Invalide parts passed for shanghai ")
 
@@ -94,7 +94,7 @@ def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
         if os.path.exists(img_path.replace('.jpg','.npy').replace('images','ground-truth')) and not resetFlag:
             #print("\t Already exists.")
             continue
-        print('Generating Density map for : ',os.path.basename(img_path)," :",end=' ')
+        print('\t\t Generating Density map for : ',os.path.basename(img_path)," :",end=' ')
 
             # load matrix containing ground truth infos
         mat = io.loadmat(img_path.replace('.jpg','.mat').replace('images','ground-truth').replace('IMG_','GT_IMG_'))
@@ -150,6 +150,21 @@ def prepare_dataset(root,dirname,dm_generator,resetFlag=False):
     print('Done.')
     return paths_dict
 
+
+def create_samplers(dataSet_size,test_size=20,validation_size=10):
+   
+    indices = list(range(dataSet_size))
+    split = int(np.floor(test_size * dataSet_size/100))
+    val_split=int(np.floor(validation_size * split/100))
+    random_seed = 42
+
+    np.random.seed(random_seed)
+    np.random.shuffle(indices)
+    train_sampler = SubsetRandomSampler(list(indices[split:split+val_split]))
+    validation_sampler= SubsetRandomSampler(list(indices[split+val_split:]))
+    test_sampler = SubsetRandomSampler(list(indices[:split]))
+
+    return train_sampler,test_sampler
     
 def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
     '''
@@ -278,47 +293,61 @@ if __name__=="__main__":
     #         }
     params=getattr(trainsparams,model_type+'_PARAMS')
 
-    print('Launching script with root=',args['root'],' model=',args['model_type'],'new train=',args['new_train'],' and resume=',resume_flag)
+    # print('Launching script with root=',args['root'],' model=',args['model_type'],'new train=',args['new_train'],' and resume=',resume_flag)
     if dm_generator_type=="knn_gaussian_kernal":
         dm_generator=KNN_Gaussian_Kernal_DMGenerator()
 
     datasets_paths=prepare_datasets(root,dataset_names,dm_generator)
     img_gtdm_paths=[(el["images"],el["ground-truth"]) for el in datasets_paths]
 
+        # Modifications from here
+    concat_paths=[(os.path.join(root_img,fname),os.path.join(root_dm,fname.replace('.jpg','.npy'))) for fname in os.listdir(root_img) for (root_img,root_dm) in img_gtdm_paths ]
     
-    data_loader=getloader(loader_type,img_gtdm_paths)
-    samplers=check_previous_loaders(loader_type,img_gtdm_paths,dict(batch_size=params['batch_size'],test_size=20))
-    if samplers is None:
-        dataloaders=data_loader.load(batch_size=params['batch_size'],save=True)
+    dataset=BasicCrowdDataSet(concat_paths)
+    train_sampler,validation_sampler,test_sampler=create_samplers(len(dataset))
+
+    train_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
+                                                           sampler=train_sampler,num_workers=0)
+    validation_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
+                                                           sampler=validation_sampler,num_workers=0)
+    test_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
+                                                sampler=test_sampler,num_workers=0)
+    loader_backup=dict(paths_index=concat_paths,train_loader=train_loader,test_loader=test_loader,validation_loader=validation_loader)
+    torch.save(loader_backup,os.path.join(utils.BASE_PATH,'obj','loaders',loader_type+'2'))                                            
+    # data_loader=getloader(loader_type,img_gtdm_paths)
+    # samplers=check_previous_loaders(loader_type,img_gtdm_paths,dict(batch_size=params['batch_size'],test_size=20))
+    # if samplers is None:
+    #     dataloaders=data_loader.load(batch_size=params['batch_size'],save=True)
         
-    else:
-        print('\t A previous version of the loader was found! Restoring samplers ...')
-        dataloaders=data_loader.load_from_samplers(samplers,params=dict(batch_size=params['batch_size'],test_size=20))    
+    # else:
+    #     print('\t A previous version of the loader was found! Restoring samplers ...')
+    #     dataloaders=data_loader.load_from_samplers(samplers,params=dict(batch_size=params['batch_size'],test_size=20))    
         
    
     
 
-        # This loop is basically used in experimentations
-    # for train_loader,test_loader in dataloaders:
-    #     model.train_model(train_loader,test_loader,train_params)
+    #     # This loop is basically used in experimentations
+    # # for train_loader,test_loader in dataloaders:
+    # #     model.train_model(train_loader,test_loader,train_params)
 
-        # ToDo: use listDataSet
-    merged_train_dataset,merged_test_dataset=data_loader.merge_datasets(dataloaders)
-    train_dataloader=torch.utils.data.DataLoader(merged_train_dataset)
-    test_dataloader=torch.utils.data.DataLoader(merged_test_dataset)
+    #     # ToDo: use listDataSet
+    # merged_train_dataset,merged_test_dataset=data_loader.merge_datasets(dataloaders)
+    # train_dataloader=torch.utils.data.DataLoader(merged_train_dataset)
+    # test_dataloader=torch.utils.data.DataLoader(merged_test_dataset)
     
     model=getModel(model_type,load_saved=True)
         # defining train params
     train_params=TrainParams(device,model,params["lr"],params["momentum"],params["maxEpochs"],params["criterionMethode"],params["optimizationMethod"])
         # Launch the train
-    train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=resume_flag,new_train=args['new_train'])
+    # train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=resume_flag,new_train=args['new_train'])
+    train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(train_loader,validation_loader,train_params,resume=resume_flag,new_train=args['new_train'])
     print(train_loss_list,test_error_list,min_epoch,min_MAE)
 
     _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(model.checkpoints_dir,'epoch_'+str(min_epoch)+'.pth'))
     # Model.save(model)
     # gc.collect()
 
-    model.eval_model(test_dataloader)
+    model.eval_model(test_loader)
     # print('Evaluation Results',model.eval_model(test_dataloader))
 
         # Plots learning results
