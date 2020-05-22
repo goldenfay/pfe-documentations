@@ -183,6 +183,7 @@ class GenericLoader(Loader):
             all_datasets.append((train_loader, test_loader))
 
         del dataset,train_loader,test_loader
+        print('\t Done')
         return all_datasets    
 
 

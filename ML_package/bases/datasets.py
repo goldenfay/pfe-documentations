@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import Dataset
+from torchvision import transforms
 from PIL import Image
 import os,cv2,piexif
 import matplotlib.pyplot as plt
@@ -72,7 +73,9 @@ class CrowdDataset(Dataset):
             gt_dmap=cv2.resize(gt_dmap,(ds_cols,ds_rows))
         gt_dmap=gt_dmap[np.newaxis,:,:]
     
-        img_tensor=torch.tensor(img,dtype=torch.float).permute((2,0,1))
+        # img_tensor=torch.tensor(img,dtype=torch.float).permute((2,0,1))
+        img_tensor=transforms.Compose([transforms.ToTensor()])(img)
+        # gt_dmap_tensor=transforms.Compose([transforms.ToTensor()])(gt_dmap)
         # img_tensor=torch.from_numpy(img).permute((2,0,1))
         gt_dmap_tensor=torch.tensor(gt_dmap,dtype=torch.float)
         
@@ -87,11 +90,11 @@ if __name__=="__main__":
     gt_dmap_rootPath="C:\\Users\\PC\\Desktop\\PFE related\\existing works\\Zhang_Single-Image_Crowd_Counting_CVPR_2016_paper code sample\\MCNN-pytorch-master\\MCNN-pytorch-master\\ShanghaiTech\\part_A\\train_data\\ground-truth"
     dataset=CrowdDataset(img_rootPath,gt_dmap_rootPath)
     for i,(img,gt_dmap) in enumerate(dataset):
-        print(img[:,1:5,1:3])
-        plt.imshow(np.asanyarray(img.permute(1,2,0),dtype=np.int) )
-        plt.show()
-        plt.imshow(gt_dmap,cmap='jet')
-        plt.show()
+        print(gt_dmap)
+        # plt.imshow(np.asanyarray(img.permute(1,2,0),dtype=np.int) )
+        # plt.show()
+        # plt.imshow(gt_dmap,cmap='jet')
+        # plt.show()
         if i>5:
             break
-        print(img.shape,gt_dmap.shape)
+        print(torch.min(img),torch.min(gt_dmap),torch.max(img),torch.max(gt_dmap))

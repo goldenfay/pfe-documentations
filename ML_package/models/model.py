@@ -1,6 +1,7 @@
 import torch
 import torch.nn as NN
 import torch.nn.functional as F
+from torchvision import transforms
 import pickle
 import matplotlib.pyplot as plt
 import matplotlib.cm as CM
@@ -18,7 +19,7 @@ from params import *
 from gitmanager import *
 import storagemanager
 import displays
-
+mean_std = ([0.446139603853, 0.409515678883, 0.395083993673], [0.288205742836, 0.278144598007, 0.283502370119])
 class Model(NN.Module):
 
     def __init__(self):
