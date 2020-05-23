@@ -126,7 +126,13 @@ class Model(NN.Module):
                 img = img.to(device)
                 gt_dmap = gt_dmap.to(device)
                     # forward propagation
-                est_dmap = self(img)
+                try:
+                    est_dmap = self(img)
+                except RuntimeError as e:
+                    if 'out of memory' in str(e):
+                        torch.cuda.empty_cache()
+                        est_dmap = self(img)
+
                 if not est_dmap.size() == gt_dmap.size():
 
                     est_dmap = F.interpolate(est_dmap, size=(
@@ -145,7 +151,7 @@ class Model(NN.Module):
                 loss.backward()
                 self.optimizer.step()
                 del img, gt_dmap, est_dmap
-                torch.cuda.empty_cache()
+                
             print("\t epoch:"+str(epoch)+"\n", "\t\t loss:",
                   epoch_loss/len(train_dataloader))
             train_loss_list.append(epoch_loss/len(train_dataloader))      
@@ -160,7 +166,13 @@ class Model(NN.Module):
                 img = img.to(device)
                 gt_dmap = gt_dmap.to(device)
                     # forward propagation
-                est_dmap = self(img)
+                try:
+                    est_dmap = self(img)
+                except RuntimeError as e:
+                    if 'out of memory' in str(e):
+                        torch.cuda.empty_cache()
+                        est_dmap = self(img)
+
                 if not est_dmap.size() == gt_dmap.size():
                     est_dmap = F.interpolate(est_dmap, size=(
                         gt_dmap.size()[2], gt_dmap.size()[3]), mode='bilinear')
