@@ -332,7 +332,7 @@ if __name__=="__main__":
         torch.save(loader_backup,os.path.join(utils.BASE_PATH,'obj','loaders',loader_type,'saved2.pkl'))                                            
     else:
         print('\t A previous version of the loader was found! Restoring samplers ...')
-        train_loader,validation_lotrain_loader,test_lotrain_loader=restore['train_loader'],restore['validation_loader'],restore['test_loader']
+        train_loader,validation_loader,test_loader=restore['train_loader'],restore['validation_loader'],restore['test_loader']
         print('\t Done.')
       
 
