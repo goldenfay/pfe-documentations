@@ -156,7 +156,7 @@ def create_samplers(dataSet_size,test_size=20,validation_size=10):
    
     indices = list(range(dataSet_size))
     split = int(np.floor(test_size * dataSet_size/100))
-    val_split=int(np.floor(validation_size * split/100))
+    val_split=int(np.floor(validation_size * (dataSet_size-split)/100))
     random_seed = 42
 
     np.random.seed(random_seed)
@@ -164,7 +164,6 @@ def create_samplers(dataSet_size,test_size=20,validation_size=10):
     train_sampler = SubsetRandomSampler(list(indices[split:split+val_split]))
     validation_sampler= SubsetRandomSampler(list(indices[split+val_split:]))
     test_sampler = SubsetRandomSampler(list(indices[:split]))
-
     return train_sampler,validation_sampler,test_sampler
     
 def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
@@ -335,6 +334,7 @@ if __name__=="__main__":
         train_loader,validation_loader,test_loader=restore['train_loader'],restore['validation_loader'],restore['test_loader']
         print('\t Done.')
       
+        print('\t\t [Info] Dataset of {} instances, Train size is {} Validation size is {} and test size is {}'.format(len(train_loader),len(validation_loader),len(test_loader)))
 
     # data_loader=getloader(loader_type,img_gtdm_paths)
     # samplers=check_previous_loaders(loader_type,img_gtdm_paths,dict(batch_size=params['batch_size'],test_size=20))
