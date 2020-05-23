@@ -138,7 +138,7 @@ class Model(NN.Module):
                     # calculate loss
                 loss = train_params.criterion(est_dmap, gt_dmap)
                 epoch_loss += loss.item()
-                if i%5==0: print(est_dmap.data.sum(),gt_dmap.data.sum())
+                # if i%5==0: print(est_dmap.data.sum(),gt_dmap.data.sum())
                     # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
                 self.optimizer.zero_grad()
                     # Backpropagation
