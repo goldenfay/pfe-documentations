@@ -123,6 +123,7 @@ class Model(NN.Module):
             epoch_loss = 0
                 # Run training pass (feedforward,backpropagation,...) for each batch
             for i, (img, gt_dmap) in enumerate(train_dataloader):
+                
                 img = img.to(device)
                 gt_dmap = gt_dmap.to(device)
                     # forward propagation
@@ -145,6 +146,9 @@ class Model(NN.Module):
                 loss = train_params.criterion(est_dmap, gt_dmap)
                 epoch_loss += loss.item()
                 # if i%5==0: print(est_dmap.data.sum(),gt_dmap.data.sum())
+               
+                torch.cuda.empty_cache()
+                
                     # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
                 self.optimizer.zero_grad()
                     # Backpropagation
