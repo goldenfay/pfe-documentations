@@ -165,7 +165,7 @@ def create_samplers(dataSet_size,test_size=20,validation_size=10):
     validation_sampler= SubsetRandomSampler(list(indices[split+val_split:]))
     test_sampler = SubsetRandomSampler(list(indices[:split]))
 
-    return train_sampler,test_sampler
+    return train_sampler,validation_sampler,test_sampler
     
 def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
     '''
