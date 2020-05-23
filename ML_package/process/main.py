@@ -43,6 +43,7 @@ from CCNN import *
 import plots
 import displays
 import trainsparams
+from torch.utils.data.sampler import SubsetRandomSampler
 
 
 
@@ -107,7 +108,7 @@ def prepare_ShanghaiTech_dataset(root,part,dm_generator,resetFlag=False):
 
             # save density_map on disk
         np.save(img_path.replace('.jpg','.npy').replace('images','ground-truth'), density_map)
-    print('Done.')
+    print('\t Done.')
     return paths_dict        
 
 def prepare_dataset(root,dirname,dm_generator,resetFlag=False):
@@ -147,7 +148,7 @@ def prepare_dataset(root,dirname,dm_generator,resetFlag=False):
 
             # save density_map on disk
         np.save(img_path.replace('.jpg','.npy').replace('images','ground-truth'), density_map)
-    print('Done.')
+    print('\t Done.')
     return paths_dict
 
 
@@ -178,17 +179,30 @@ def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
         test_size=params['test_size']
         batch_size=params['batch_size']
     restore_path=os.path.join(utils.BASE_PATH,'obj','loaders',loader_type)    
+    # if not os.path.exists(restore_path) :
+    #     return None
+    # if len( glob.glob(restore_path) )==0:
+    #     return None
+
+    # saved_infos=utils.load_obj(os.path.join(restore_path,'saved.pkl'))
+    # if saved_infos['paths']!=img_gtdm_paths: return None
+    # if saved_infos['test_size']!=test_size: return None
+    # if saved_infos['batch_size']!=batch_size: return None
+
+    # return saved_infos['samplers']
     if not os.path.exists(restore_path) :
         return None
     if len( glob.glob(restore_path) )==0:
         return None
+    restored=torch.load(restore_path,map_location='cpu')
+    if not isinstance(restored,dict) or not 'paths_index' in restored: return None
+    for couple in restored['paths_index']:
+        if not couple in img_gtdm_paths:
+            return None
 
-    saved_infos=utils.load_obj(os.path.join(restore_path,'saved.pkl'))
-    if saved_infos['paths']!=img_gtdm_paths: return None
-    if saved_infos['test_size']!=test_size: return None
-    if saved_infos['batch_size']!=batch_size: return None
+    return restored        
 
-    return saved_infos['samplers']
+
 
 
 
@@ -301,19 +315,27 @@ if __name__=="__main__":
     img_gtdm_paths=[(el["images"],el["ground-truth"]) for el in datasets_paths]
 
         # Modifications from here
-    concat_paths=[(os.path.join(root_img,fname),os.path.join(root_dm,fname.replace('.jpg','.npy'))) for fname in os.listdir(root_img) for (root_img,root_dm) in img_gtdm_paths ]
+    concat_paths=[(os.path.join(root_img,fname),os.path.join(root_dm,fname.replace('.jpg','.npy'))) for (root_img,root_dm) in img_gtdm_paths for fname in os.listdir(root_img) ]
     
-    dataset=BasicCrowdDataSet(concat_paths)
-    train_sampler,validation_sampler,test_sampler=create_samplers(len(dataset))
+    restore=check_previous_loaders(loader_type,concat_paths,params)
+    if restore is None:
+        dataset=BasicCrowdDataSet(concat_paths)
+        train_sampler,validation_sampler,test_sampler=create_samplers(len(dataset))
 
-    train_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
-                                                           sampler=train_sampler,num_workers=0)
-    validation_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
-                                                           sampler=validation_sampler,num_workers=0)
-    test_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
-                                                sampler=test_sampler,num_workers=0)
-    loader_backup=dict(paths_index=concat_paths,train_loader=train_loader,test_loader=test_loader,validation_loader=validation_loader)
-    torch.save(loader_backup,os.path.join(utils.BASE_PATH,'obj','loaders',loader_type+'2'))                                            
+        train_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
+                                                            sampler=train_sampler,num_workers=0)
+        validation_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
+                                                            sampler=validation_sampler,num_workers=0)
+        test_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
+                                                    sampler=test_sampler,num_workers=0)
+        loader_backup=dict(paths_index=concat_paths,train_loader=train_loader,test_loader=test_loader,validation_loader=validation_loader)
+        torch.save(loader_backup,os.path.join(utils.BASE_PATH,'obj','loaders',loader_type+'2'))                                            
+    else:
+        print('\t A previous version of the loader was found! Restoring samplers ...')
+        train_loader,validation_lotrain_loader,test_lotrain_loader=restore['train_loader'],restore['validation_loader'],restore['test_loader']
+        print('\t Done.')
+      
+
     # data_loader=getloader(loader_type,img_gtdm_paths)
     # samplers=check_previous_loaders(loader_type,img_gtdm_paths,dict(batch_size=params['batch_size'],test_size=20))
     # if samplers is None:
