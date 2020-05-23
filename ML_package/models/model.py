@@ -133,11 +133,12 @@ class Model(NN.Module):
                         gt_dmap.size()[2], gt_dmap.size()[3]), mode='bilinear')
                     # est_dmap = F.interpolate(est_dmap, size=(
                     #     gt_dmap.size()[1], gt_dmap.size()[2]), mode='bilinear')
-                if torch.isnan(est_dmap): print('Estimated is nan')
-                if torch.isnan(gt_dmap): print('Ground truth is nan')
+                # if torch.isnan(est_dmap): print('Estimated is nan')
+                # if torch.isnan(gt_dmap): print('Ground truth is nan')
                     # calculate loss
                 loss = train_params.criterion(est_dmap, gt_dmap)
                 epoch_loss += loss.item()
+                print(est_dmap.data.sum(),gt_dmap.data.sum())
                     # Setting gradient to zero ,(only in pytorch , because of backward() that accumulate gradients)
                 self.optimizer.zero_grad()
                     # Backpropagation
