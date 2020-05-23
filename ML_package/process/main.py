@@ -193,7 +193,7 @@ def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
         return None
     if len( glob.glob(restore_path) )==0:
         return None
-    restored=torch.load(restore_path,map_location='cpu')
+    restored=torch.load(restore_path)
     if not isinstance(restored,dict) or not 'paths_index' in restored: return None
     for couple in restored['paths_index']:
         if not couple in img_gtdm_paths:
