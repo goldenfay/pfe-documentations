@@ -178,7 +178,7 @@ def check_previous_loaders(loader_type,img_gtdm_paths,params:dict=None):
     else:
         test_size=params['test_size']
         batch_size=params['batch_size']
-    restore_path=os.path.join(utils.BASE_PATH,'obj','loaders',loader_type)    
+    restore_path=os.path.join(utils.BASE_PATH,'obj','loaders',loader_type,'saved2.pkl')    
     # if not os.path.exists(restore_path) :
     #     return None
     # if len( glob.glob(restore_path) )==0:
@@ -329,7 +329,7 @@ if __name__=="__main__":
         test_loader = torch.utils.data.DataLoader(dataset, batch_size=params['batch_size'],
                                                     sampler=test_sampler,num_workers=0)
         loader_backup=dict(paths_index=concat_paths,train_loader=train_loader,test_loader=test_loader,validation_loader=validation_loader)
-        torch.save(loader_backup,os.path.join(utils.BASE_PATH,'obj','loaders',loader_type+'2'))                                            
+        torch.save(loader_backup,os.path.join(utils.BASE_PATH,'obj','loaders',loader_type,'saved2.pkl'))                                            
     else:
         print('\t A previous version of the loader was found! Restoring samplers ...')
         train_loader,validation_lotrain_loader,test_lotrain_loader=restore['train_loader'],restore['validation_loader'],restore['test_loader']
