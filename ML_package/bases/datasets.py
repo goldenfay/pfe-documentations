@@ -42,7 +42,7 @@ class BasicCrowdDataSet(Dataset):
             
         img=np.asarray(img)    
         gt_dmap=np.load(os.path.join(self.paths_index[index][1]))
-        gt_dmap=(gt_dmap-np.min(gt_dmap))/(np.max(gt_dmap)-np.min(gt_dmap))
+        # gt_dmap=(gt_dmap-np.min(gt_dmap))/(np.max(gt_dmap)-np.min(gt_dmap))
         gt_dmap=gt_dmap[np.newaxis,:,:]
         # print(np.min(gt_dmap),np.max(gt_dmap))
         # img_tensor=torch.tensor(img,dtype=torch.float).permute((2,0,1))
