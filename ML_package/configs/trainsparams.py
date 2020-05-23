@@ -23,6 +23,6 @@ CCNN_PARAMS={"lr":1e-6,
             "momentum":0.95,
             "maxEpochs":1000,
             "criterionMethode":'MSELoss',
-            "optimizationMethod":'SGD',
+            "optimizationMethod":'Adam',
             'batch_size': 1
             }

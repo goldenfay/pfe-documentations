@@ -145,6 +145,7 @@ class Model(NN.Module):
                 loss.backward()
                 self.optimizer.step()
                 del img, gt_dmap, est_dmap
+                torch.cuda.empty_cache()
             print("\t epoch:"+str(epoch)+"\n", "\t\t loss:",
                   epoch_loss/len(train_dataloader))
             train_loss_list.append(epoch_loss/len(train_dataloader))      
