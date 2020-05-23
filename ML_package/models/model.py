@@ -123,9 +123,9 @@ class Model(NN.Module):
             epoch_loss = 0
                 # Run training pass (feedforward,backpropagation,...) for each batch
             for i, (img, gt_dmap) in enumerate(train_dataloader):
-                
-                img = img.to(device)
-                gt_dmap = gt_dmap.to(device)
+                torch.cuda.empty_cache()
+                img = img.to(device).detach()
+                gt_dmap = gt_dmap.to(device).detach()
                     # forward propagation
                 try:
                     est_dmap = self(img)
