@@ -51,7 +51,7 @@ class BasicCrowdDataSet(Dataset):
         # img_tensor=torch.from_numpy(img).permute((2,0,1))
         gt_dmap_tensor=torch.tensor(gt_dmap,dtype=torch.float)
         
-        return img_tensor,gt_dmap_tensor
+        return img_tensor.detach(),gt_dmap_tensor.detach()
         
 
 class CrowdDataset(Dataset):
