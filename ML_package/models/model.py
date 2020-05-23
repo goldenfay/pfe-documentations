@@ -170,6 +170,7 @@ class Model(NN.Module):
                 MAE += mae
                 MSE += mae**2
                 del img, gt_dmap, est_dmap
+                torch.cuda.empty_cache()
             MAE = MAE/len(test_dataloader)
             MSE = np.math.sqrt(MSE/len(test_dataloader))
 
