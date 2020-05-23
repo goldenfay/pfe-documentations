@@ -334,7 +334,7 @@ if __name__=="__main__":
         train_loader,validation_loader,test_loader=restore['train_loader'],restore['validation_loader'],restore['test_loader']
         print('\t Done.')
       
-        print('\t\t [Info] Dataset of {} instances, Train size is {} Validation size is {} and test size is {}'.format(len(train_loader),len(validation_loader),len(test_loader)))
+        print('\t\t [Info] Dataset of {} instances, Train size is {0} Validation size is {1} and test size is {2}'.format(len(train_loader),len(validation_loader),len(test_loader)))
 
     # data_loader=getloader(loader_type,img_gtdm_paths)
     # samplers=check_previous_loaders(loader_type,img_gtdm_paths,dict(batch_size=params['batch_size'],test_size=20))
