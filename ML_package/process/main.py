@@ -317,7 +317,7 @@ if __name__=="__main__":
         # Modifications from here
     concat_paths=[(os.path.join(root_img,fname),os.path.join(root_dm,fname.replace('.jpg','.npy'))) for (root_img,root_dm) in img_gtdm_paths for fname in os.listdir(root_img) ]
     
-    restore=check_previous_loaders(loader_type,concat_paths,params)
+    restore=check_previous_loaders(loader_type,concat_paths,dict(batch_size=params['batch_size'],test_size=20))
     if restore is None:
         dataset=BasicCrowdDataSet(concat_paths)
         train_sampler,validation_sampler,test_sampler=create_samplers(len(dataset))
