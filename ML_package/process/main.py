@@ -335,7 +335,7 @@ if __name__=="__main__":
         print('\t Done.')
       
     print('\t\t [Info] Dataset of ',len(concat_paths),' instances, Train size is ',len(train_loader),' Validation size is ',len(validation_loader),'Test size is ',len(test_loader))
-
+    torch.cuda.empty_cache()
     # data_loader=getloader(loader_type,img_gtdm_paths)
     # samplers=check_previous_loaders(loader_type,img_gtdm_paths,dict(batch_size=params['batch_size'],test_size=20))
     # if samplers is None:
@@ -364,7 +364,7 @@ if __name__=="__main__":
     # train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(merged_train_dataset,merged_test_dataset,train_params,resume=resume_flag,new_train=args['new_train'])
     train_loss_list,test_error_list,min_epoch,min_MAE=model.train_model(train_loader,validation_loader,train_params,resume=resume_flag,new_train=args['new_train'])
     print(train_loss_list,test_error_list,min_epoch,min_MAE)
-
+    torch.cuda.empty_cache()
     _,model.min_MAE,model.min_epoch=model.load_chekpoint(os.path.join(model.checkpoints_dir,'epoch_'+str(min_epoch)+'.pth'))
     # Model.save(model)
     # gc.collect()
