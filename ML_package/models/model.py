@@ -254,7 +254,8 @@ class Model(NN.Module):
                 gt_dmap = gt_dmap.to(device)
 
                     # Forward propagation
-                est_dmap = self(img.squeeze(0))
+                est_dmap = self(img)
+                if i%50==0: print('\t\t (',est_dmap.data.sum(),gt_dmap.data.sum(),')')
                 mae=abs(est_dmap.data.sum()-gt_dmap.data.sum()).item()
                 MAE += mae
                 MSE += mae**2
