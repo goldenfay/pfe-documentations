@@ -4,20 +4,15 @@ import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 import dash_html_components as html
+from dash.dependencies import Input, Output, State
 import dash_player as player
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
-from dash.dependencies import Input, Output, State
 from matplotlib import cm
 from io import BytesIO as _BytesIO
 from PIL import Image
-import re
-import time
-import base64
-import sys
-import datetime
-import traceback
+import re,time,base64,sys,datetime,traceback
 # User's modules
 import components.static as static
 import components.reusable as reusable
@@ -434,21 +429,32 @@ def start_detection(button_click, model_type, children):
                 print('\t Inference time : ', inference_time, 'count : ', count)
                 encoded_img = numpy_to_b64(
                     dmap, model_type not in ['mobileSSD', 'yolo'])
-                res_img_list.append((id, HTML_IMG_SRC_PARAMETERS+encoded_img))
+                res_img_list.append((id, HTML_IMG_SRC_PARAMETERS+encoded_img,count))
             except Exception as e:
                 print("An error occured while detecting ", end='\n\t')
                 traceback.print_exc()
 
         return [
-            html.Div(children=[
-                
-                html.Img(id='img-{}'.format(id),
-                    src=encoded_img, style={
-                     'maxWidth': '80%', 'minWidth': '80px'})
+            html.Div(className='row',children=[
 
-            ],
-                className='col-md justify-content-center "animate__animated animate__fadeInRight')
-            for (id, encoded_img) in res_img_list]
+                html.Div(children=[
+                    html.Div(html.H4('Original',className='muted'),className="d-flex justify-content-center"),
+                    html.Img(id='img-org-{}'.format(id),
+                        src=HTML_IMG_SRC_PARAMETERS+(images_list[i].decode("utf-8")), style={
+                        'width':'100%'})
+
+                ],
+                    className='col-md justify-content-center animate__animated animate__fadeInRight'),
+                html.Div(children=[
+                    html.Div(html.H4('Estimated count : '+str(int((count+1)/100 ) ),className='muted'),className="d-flex justify-content-center"),
+                    html.Img(id='img-{}'.format(id),
+                        src=encoded_img, style={
+                        'width':'100%'})
+
+                ],
+                    className='col-md justify-content-center animate__animated animate__fadeInRight')
+            ])
+            for (i,(id, encoded_img,count)) in enumerate(res_img_list)]
 
 
 # Learn more popup

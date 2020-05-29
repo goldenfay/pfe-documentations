@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 import cv2
 from imutils.video import FPS
 
-
-from utils.detection_model import DetectionModel
+if __name__!='__main__':
+    from utils.detection_model import DetectionModel
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
@@ -135,13 +135,13 @@ def load_network(network_folder,tiny_version=False):
         exit()
     weights_name= "yolov3.weights" if not tiny_version else  "yolov3-tiny.weights"
     weightspath = os.path.sep.join([network_folder,weights_name])
-    download_if_not_present("https://pjreddie.com/media/files/yolov3.weights", weightspath)
+    download_if_not_present("https://pjreddie.com/media/files/"+weights_name, weightspath)
     if not os.path.isfile(weightspath):
         print("[ERROR] Network: Weights file \"{}\" not found.".format(weightspath))
         exit()
     config_name= "yolov3.cfg" if not tiny_version else  "yolov3-tiny.cfg"
     configpath = os.path.sep.join([network_folder, config_name])
-    download_if_not_present("https://github.com/pjreddie/darknet/blob/master/cfg/yolov3.cfg?raw=true", configpath)
+    download_if_not_present("https://github.com/pjreddie/darknet/blob/master/cfg/"+config_name+"?raw=true", configpath)
     if not os.path.isfile(configpath):
         print("[ERROR] Network: Configuration file \"{}\" not found.".format(configpath))
         exit()
@@ -310,113 +310,113 @@ def show_plots(data):
 
 
 if __name__ == '__main__':
-    pass
-    # # construct the argument parse and parse the arguments
-    # args = define_args()
-    # config = read_config(args["config"])
+    # pass
+    # construct the argument parse and parse the arguments
+    args = define_args()
+    config = read_config(args["config"])
 
-    # # Load the trained network
-    # (net, ln, LABELS) = load_network(config['NETWORK']['Path'],tiny_version=True)
+    # Load the trained network
+    (net, ln, LABELS) = load_network(config['NETWORK']['Path'],tiny_version=True)
 
-    # # Initialise video source
-    # webcam = (config['READER']['Webcam'] == "yes")
-    # if webcam:
-    #     cam_id = int(config['READER']['WebcamID'])
-    #     cam_width = int(config['READER']['Width'])
-    #     cam_height = int(config['READER']['Height'])
-    #     (cam, W, H) = get_webcamesource(cam_id, cam_width, cam_height)
-    # else:
-    #     (cam, cam_width, cam_height) = get_filesource(config['READER']['Filename'])
+    # Initialise video source
+    webcam = (config['READER']['Webcam'] == "yes")
+    if webcam:
+        cam_id = int(config['READER']['WebcamID'])
+        cam_width = int(config['READER']['Width'])
+        cam_height = int(config['READER']['Height'])
+        (cam, W, H) = get_webcamesource(cam_id, cam_width, cam_height)
+    else:
+        (cam, cam_width, cam_height) = get_filesource(config['READER']['Filename'])
 
-    # # determine if we need to show the enclosing boxes, etc
-    # network_path = config['NETWORK']['Path']
-    # webcam = (config['READER']['Webcam'] == "yes")
-    # showpeopleboxes = (config['OUTPUT']['ShowPeopleBoxes'] == "yes")
-    # showallboxes = (config['OUTPUT']['ShowAllBoxes'] == "yes")
-    # blurpeople = (config['OUTPUT']['BlurPeople'] == "yes")
-    # realspeed = (config['OUTPUT']['RealSpeed'] == "yes")
-    # nw_confidence = float(config['NETWORK']['Confidence'])
-    # nw_threshold = float(config['NETWORK']['Threshold'])
-    # countfile = config['OUTPUT']['Countfile']
-    # save_video = (config['OUTPUT']['SaveVideo'] == "yes")
-    # show_graphs = (config['OUTPUT']['ShowGraphs'] == "yes")
-    # print_ascii = (config['OUTPUT']['PrintAscii'] == "yes")
-    # SkipFrames = int(config['READER']['SkipFrames'])
-    # # initialize a list of colors to represent each possible class label
-    # np.random.seed(42)
-    # COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
+    # determine if we need to show the enclosing boxes, etc
+    network_path = config['NETWORK']['Path']
+    webcam = (config['READER']['Webcam'] == "yes")
+    showpeopleboxes = (config['OUTPUT']['ShowPeopleBoxes'] == "yes")
+    showallboxes = (config['OUTPUT']['ShowAllBoxes'] == "yes")
+    blurpeople = (config['OUTPUT']['BlurPeople'] == "yes")
+    realspeed = (config['OUTPUT']['RealSpeed'] == "yes")
+    nw_confidence = float(config['NETWORK']['Confidence'])
+    nw_threshold = float(config['NETWORK']['Threshold'])
+    countfile = config['OUTPUT']['Countfile']
+    save_video = (config['OUTPUT']['SaveVideo'] == "yes")
+    show_graphs = (config['OUTPUT']['ShowGraphs'] == "yes")
+    print_ascii = (config['OUTPUT']['PrintAscii'] == "yes")
+    SkipFrames = int(config['READER']['SkipFrames'])
+    # initialize a list of colors to represent each possible class label
+    np.random.seed(42)
+    COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
 
-    # # Initialise video ouptut writer
-    # if save_video:
-    #     (writer, fps) = get_videowriter(config['OUTPUT']['Filename'], cam_width, cam_height,
-    #                                     int(config['OUTPUT']['FPS']))
-    # else:
-    #     (writer, fps) = (None, 0)
+    # Initialise video ouptut writer
+    if save_video:
+        (writer, fps) = get_videowriter(config['OUTPUT']['Filename'], cam_width, cam_height,
+                                        int(config['OUTPUT']['FPS']))
+    else:
+        (writer, fps) = (None, 0)
 
-    # # Create output windows, but limit on 1440x810
-    # cv2.namedWindow('Video', cv2.WINDOW_NORMAL)
-    # cv2.resizeWindow('Video', min(cam_width, 1440), min(cam_height, 810))
-    # #cv2.resizeWindow('Video', min(cam_width, 640), min(cam_height, 360))
-    # cv2.moveWindow('Video', 0, 0)
-    # # Create plot
-    # if show_graphs:
-    #     plt.ion()
-    #     plt.figure(num=None, figsize=(8, 7), dpi=80, facecolor='w', edgecolor='k')
-    #     df = read_existing_data(countfile)
-    # else:
-    #     df = None
-    # fps = FPS().start()
-    # # loop while true
-    # while True:
-    #     start = time.time()
-    #     # read the next frame from the webcam
-    #     # make sure that buffer is empty by reading specified amount of frames
-    #     for _ in (0, SkipFrames):
-    #         (grabbed, frame) = cam.read()  # type: (bool, np.ndarray)
-    #     if not grabbed:
-    #         break
-    #     # Feed frame to network
-    #     layerOutputs = forward_detection(frame, net, ln)
-    #     # Obtain detected objects, including cof levels and bounding boxes
-    #     (idxs, classIDs, boxes, confidences) = get_detected_items(layerOutputs, nw_confidence, nw_threshold,
-    #                                                               cam_width, cam_height)
+    # Create output windows, but limit on 1440x810
+    cv2.namedWindow('Video', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('Video', min(cam_width, 1440), min(cam_height, 810))
+    #cv2.resizeWindow('Video', min(cam_width, 640), min(cam_height, 360))
+    cv2.moveWindow('Video', 0, 0)
+    # Create plot
+    if show_graphs:
+        plt.ion()
+        plt.figure(num=None, figsize=(8, 7), dpi=80, facecolor='w', edgecolor='k')
+        df = read_existing_data(countfile)
+    else:
+        df = None
+    fps = FPS().start()
+    # loop while true
+    while True:
+        start = time.time()
+        # read the next frame from the webcam
+        # make sure that buffer is empty by reading specified amount of frames
+        for _ in (0, SkipFrames):
+            (grabbed, frame) = cam.read()  # type: (bool, np.ndarray)
+        if not grabbed:
+            break
+        # Feed frame to network
+        layerOutputs = forward_detection(frame, net, ln)
+        # Obtain detected objects, including cof levels and bounding boxes
+        (idxs, classIDs, boxes, confidences) = get_detected_items(layerOutputs, nw_confidence, nw_threshold,
+                                                                  cam_width, cam_height)
 
-    #     # Update frame with recognised objects
-    #     frame, npeople = update_frame(frame, idxs, classIDs, boxes, confidences, COLORS, LABELS, showpeopleboxes,
-    #                                   blurpeople, showallboxes)
-    #     log_count(countfile, npeople)
+        # Update frame with recognised objects
+        frame, npeople = update_frame(frame, idxs, classIDs, boxes, confidences, COLORS, LABELS, showpeopleboxes,
+                                      blurpeople, showallboxes)
+        log_count(countfile, npeople)
 
-    #     # Show frame with bounding boxes on screen
-    #     cv2.imshow('Video', frame)
+        # Show frame with bounding boxes on screen
+        cv2.imshow('Video', frame)
 
-    #     if show_graphs:
-    #         # Add row to panda frame
-    #         new_row = pd.DataFrame([[npeople]], columns=["value"], index=[pd.to_datetime(datetime.datetime.now())])
-    #         df = pd.concat([df, pd.DataFrame(new_row)], ignore_index=False)
-    #         show_plots(df)
+        if show_graphs:
+            # Add row to panda frame
+            new_row = pd.DataFrame([[npeople]], columns=["value"], index=[pd.to_datetime(datetime.datetime.now())])
+            df = pd.concat([df, pd.DataFrame(new_row)], ignore_index=False)
+            show_plots(df)
 
-    #     # write the output frame to disk, repeat (time taken * 30 fps) in order to get a video at real speed
-    #     if save_video:
-    #         frame_cnt = int((time.time()-start)*fps) if webcam and realspeed else 1
-    #         save_frame(writer, frame, frame_cnt)
+        # write the output frame to disk, repeat (time taken * 30 fps) in order to get a video at real speed
+        if save_video:
+            frame_cnt = int((time.time()-start)*fps) if webcam and realspeed else 1
+            save_frame(writer, frame, frame_cnt)
 
-    #     end = time.time()
-    #     print("[INFO] Total handling  : %2.1f sec" % (end - start))
-    #     print("[INFO] People in frame : {}".format(npeople))
-    #     if print_ascii:
-    #         print_ascii_large(str(npeople)+ (" persons" if npeople > 1 else " person"))
-    #     # Check for exit
-    #     if cv2.waitKey(1) & 0xFF == ord('q'):
-    #         break
-    #     fps.update()
-    # # release the file pointers
-    # print("[INFO] cleaning up...")
-    # fps.stop()
-    # print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+        end = time.time()
+        print("[INFO] Total handling  : %2.1f sec" % (end - start))
+        print("[INFO] People in frame : {}".format(npeople))
+        if print_ascii:
+            print_ascii_large(str(npeople)+ (" persons" if npeople > 1 else " person"))
+        # Check for exit
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+        fps.update()
+    # release the file pointers
+    print("[INFO] cleaning up...")
+    fps.stop()
+    print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
 
-    # if save_video:
-    #     writer.release()
-    # cam.release()
+    if save_video:
+        writer.release()
+    cam.release()
 
 class YOLO(DetectionModel):
 

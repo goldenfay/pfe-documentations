@@ -12,13 +12,13 @@ import time
 import cv2
 import imutils
 import dlib
-from pyimagesearch.centroidtracker import CentroidTracker
-from pyimagesearch.trackableobject import TrackableObject
+from trackers.centroidtracker import CentroidTracker
+from trackers.trackableobject import TrackableObject
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 from utils.detection_model import DetectionModel
 
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 # initialize the list of class labels MobileNet SSD was trained to
 	# detect
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",

@@ -61,13 +61,14 @@ class ModelManager:
         if is_densitymap_model(cls.model):
             if not isinstance(frame,torch.Tensor):
                 frame=torch.Tensor(frame).permute((2,0,1))
-            cls.model.to(cls.device)   
-            frame.to(cls.device)
-            if len(frame.shape)==3:
-                frame=frame.unsqueeze(0) 
-            dmap=cls.model(frame)
+            with torch.no_grad():    
+                cls.model.to(cls.device)   
+                frame.to(cls.device)
+                if len(frame.shape)==3:
+                    frame=frame.unsqueeze(0) 
+                dmap=cls.model(frame)
 
-            return dmap.squeeze().detach().cpu().numpy(),dmap.data.sum()
+            return dmap.squeeze().detach().cpu().numpy(),dmap.data.sum().item()
         else: # It's a detection model
             return cls.model.forward(frame)
 
