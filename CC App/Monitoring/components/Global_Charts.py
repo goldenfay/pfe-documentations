@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 import plotly.express as px
 import json
+import components.reusable as reusable
 from components.base import Component
 
 class Global_Charts(Component):
@@ -11,7 +12,52 @@ class Global_Charts(Component):
     def __init__(self,app,charts_datafile):
         self.data_file=charts_datafile
         super(Global_Charts,self).__init__(app)
-
+           
+    def get_max_hour(self,data):
+        max_crowd = max(data['crowd_data']['crowd_number'])
+        hours = []
+        i = 0
+        for hour in data['crowd_data']['time']:
+            if max_crowd == data['crowd_data']['crowd_number'][i]:
+               hours.append(hour)
+            i = i + 1   
+        return hours
+    
+    def get_min_hour(self,data):
+        min_crowd = min(data['crowd_data']['crowd_number'])
+        hours = []
+        i = 0
+        for hour in data['crowd_data']['time']:
+            if min_crowd == data['crowd_data']['crowd_number'][i]:
+                hours.append(hour)
+            i = i + 1    
+        return hours
+    
+    def get_max_zone(data):
+        max_zone = max(data['crowd_data']['zones'])
+        '''max_zone is in the form of tuple (zone,crowd_nb,hour)'''
+        return max_zone
+    
+    def get_min_zone(data):
+        min_zone = min(data['crowd_data']['zones'])
+        '''min_zone is in the form of tuple (zone,crowd_nb,hour)'''
+        return min_zone
+    
+    def count_crowd_zone(self,data):
+        temp_zone = data['crowd_data']['zones']
+        temp_dict = {}
+        for element in temp_zone:
+            if element[0] in temp_dict:
+                temp_dict[element[0]] = temp_dict[element[0]] + element[1]
+            else:
+                temp_dict[element[0]] = element[1]
+        zone_list = []
+        total_crowd = []
+        for key in temp_dict.keys():
+            zone_list.append(key)
+            total_crowd.append(temp_dict[key])
+        return zone_list,total_crowd    
+    
     def initialize(self,app):
         '''Generated Pie Chart'''
 
@@ -23,27 +69,12 @@ class Global_Charts(Component):
             data_points = json.load(openfile)
 
         '''Creating some Cards'''
-
-        first_card = dbc.Card(
-            dbc.CardBody(
-                [
-                    html.H1("Paramètre", className="card-title"),
-                    html.P("Affichage du contenu de paramètre",className="h3"),
-                ]
-            )
-        )
-        second_card = dbc.Card(
-            dbc.CardBody(
-                [
-                    html.H1("Card title", className="card-title"),
-                    html.P(
-                        "This card also has some text content and not much else, but "
-                        "it is twice as wide as the first card.",className="h3"
-                    ),
-                    dbc.Button("Go somewhere", color="primary"),
-                ]
-            )
-        )
+        max_crowd = max(data_points['crowd_data']['crowd_number'])
+        min_crowd = min(data_points['crowd_data']['crowd_number'])
+        first_card = dbc.Card( reusable.params_card(self.get_max_hour(data_points),max_crowd,"Heure Max","Heure(s): ","Nombre de personnes: "))
+    
+        second_card = dbc.Card(reusable.params_card(self.get_min_hour(data_points),min_crowd,"Heure Min","Heure(s): ","Nombre de personnes: "), color="primary", inverse=True)
+        
         third_card = dbc.Card(
             dbc.CardBody(
                 [
@@ -73,16 +104,11 @@ class Global_Charts(Component):
 
         MyChart = html.Div(children=[
             html.H1(children='Graphe Statistique'),
-
-            html.Div(children='''
-                Simple exemple montre le nombre de la foule par heure.
-            '''),
-
             dcc.Graph(
                 id='example-graph1',
                 figure={
                     'data': [
-                        {'x': data_points['X'], 'y': data_points['Y'], 'type': 'line', 'name': 'Nombre de foule'}
+                        {'x': data_points['crowd_data']['time'], 'y': data_points['crowd_data']['crowd_number'], 'type': 'line', 'name': 'Nombre de foule'}
                     ],
                     'layout': {
                         'title': 'Nombre de la foule dans les différentes heures'
@@ -90,23 +116,22 @@ class Global_Charts(Component):
                 }
             )
         ])
-            
+        zones , total_crowd = self.count_crowd_zone(data_points)    
         BarChart = html.Div(children=[
-            html.H1(children='Hello Dash'),
+            html.H1(children='Bar Chart'),
 
             html.Div(children='''
-                Dash: A web application framework for Python.
+                Nombre total de la foule passé par la zone 'X'Dash Data Visualization.
             '''),
 
             dcc.Graph(
                 id='example-graph',
                 figure={
                     'data': [
-                        {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
-                        {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
+                        {'x': zones, 'y': total_crowd, 'type': 'bar', 'name': 'SF'},
                     ],
                     'layout': {
-                        'title': 'Dash Data Visualization'
+                        'title': 'Nombre total de la foule passé par la zone \'X\''
                     }
                 }
             )
@@ -131,14 +156,14 @@ class Global_Charts(Component):
 
         self.layout = html.Div(
             [
-                dbc.Row(
-                    [
-                        dbc.Col(html.Div(first_card), width=3),
-                        dbc.Col(html.Div(first_card), width=3),
-                        dbc.Col(html.Div(first_card), width=3),
-                        dbc.Col(html.Div(first_card), width=3),
+                
+                dbc.Row([
+                        dbc.Col(html.Div(first_card), lg=3),
+                        dbc.Col(html.Div(second_card), lg=3),
+                        dbc.Col(html.Div(first_card), lg=3),
+                        dbc.Col(html.Div(second_card), lg=3),
                     ],
-                    align="start",
+                    align="center"
                 ),
                 dbc.Row(
                     [
@@ -164,6 +189,5 @@ class Global_Charts(Component):
                     ]
                 ),
             ]
-        )    
-
-
+        )           
+    

@@ -17,8 +17,8 @@ def display_page(pathname):
 
     if pathname == '/global':
         # app.callback_map = default_callbacks
-        component = components.Global_Charts(app, 'ressources/sample.json')
-        return dbc.Container([html.Hr(), component.layout], fluid=True)
+        component = components.Global_Charts(app, 'ressources/dummy_data.json')
+        return dbc.Container([html.Hr(), component.layout],style={"display": "flex", "flex-direction": "column"}, fluid=True)
     elif pathname == '/mono':
         # app.callback_map = default_callbacks
         component = components.Mono_Chart(app)
