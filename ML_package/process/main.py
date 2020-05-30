@@ -286,6 +286,8 @@ ap.add_argument("-s", "--skip-frames", type=int, default=30,
 args = vars(ap.parse_args())
 
 if __name__=="__main__":
+    
+    sys.exit(0)
     if args['root'] is not None:
         root = args['root']
     else :
@@ -306,7 +308,8 @@ if __name__=="__main__":
     #         }
     params=getattr(trainsparams,model_type+'_PARAMS')
 
-    # print('Launching script with root=',args['root'],' model=',args['model_type'],'new train=',args['new_train'],' and resume=',resume_flag)
+    print('Launching script with root=',args['root'],' model=',args['model_type'],'new train=',args['new_train'],' and resume=',resume_flag)
+    
     if dm_generator_type=="knn_gaussian_kernal":
         dm_generator=KNN_Gaussian_Kernal_DMGenerator()
 

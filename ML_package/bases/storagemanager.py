@@ -61,7 +61,7 @@ def save_file(path,file_to_save,env,min_epoch,saver_module='torch',alternative=N
     
     quotion=int(infos['quotaBytesUsed'])/int(infos['quotaBytesTotal'])
     torch.save(file_to_save,path)
-    if not os.path.exists(path) and quotion>=0.99:
+    if not os.path.exists(path) or quotion>=0.99:
             print('\t [Alert] Maximum storage reached on Drive!','\n\t',' Migration of all checkpoints to github ...')
             print('\t\t Drive storage  : ',quotion*100,'%')
                 # Authentification to github
