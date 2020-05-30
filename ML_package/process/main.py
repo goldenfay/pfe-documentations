@@ -287,7 +287,7 @@ args = vars(ap.parse_args())
 
 if __name__=="__main__":
     
-    sys.exit(0)
+   
     if args['root'] is not None:
         root = args['root']
     else :
