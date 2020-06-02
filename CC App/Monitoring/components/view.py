@@ -341,7 +341,42 @@ def toggle_display(value):
                 ])
         ]
     else:
-        children = static.default_footage_section()
+        children = [
+            html.Div(
+                className='md-12 d-flex align-items-center flex-column',
+                children=[
+                    html.Div(
+                        children=[dcc.Upload(
+                            id='upload-video',
+                            className='d-flex align-items-center justify-content-center',
+                            children=html.Div(
+                                id='drop-div-video',
+                                className='align-self-center',
+                                children=[
+                                    html.Div(['Click here']),
+                                    html.Div(['to']),
+                                    html.Div([html.A('Select Video')])
+                                ]),
+                            style={
+                                'width': '500px',
+                                'height': '300px',
+                                'lineHeight': '60px',
+                                'borderWidth': '1px',
+                                'borderStyle': 'dashed',
+                                'borderRadius': '5px',
+                                'textAlign': 'center',
+
+                            },
+
+                            # Allow multiple files to be uploaded
+                            multiple=True
+                        )]
+                    ),
+                    html.Div(id='output-video-upload',
+                                className='row d-flex align-items-center justify-content-center flex-row')
+                ])
+        ]
+        #static.default_footage_section()
     return ['Footage' if not value else 'Still images'], children
 
     # Footage Selection
@@ -398,6 +433,19 @@ def update_output(list_of_names, list_of_contents):
 
         print('Done')
         return children
+
+        #Upload video
+
+@app.callback(
+    Output('output-video-upload', 'children'),
+    [Input("upload-video", "filename"), Input("upload-video", "contents")],
+)
+def update_output(uploaded_filenames, uploaded_file_contents):
+        #if uploaded_filenames is not None and uploaded_file_contents is not None:
+            var=""
+            if uploaded_filenames is not None :
+                var = uploaded_filenames[0]   
+                return html.Div(html.Video(id="myvideo",controls = True,src='http://127.0.0.1:8080/'+var, style={'width': '500px','height': '300px'}))     
 
     # Start detection click
 
