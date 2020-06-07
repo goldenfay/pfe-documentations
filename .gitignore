@@ -3,5 +3,6 @@
 **/.idea
 **/yolo-coco
 **/videos
-**/mobilenet_ssd
+**.prototxt
+**.caffemodel
 **.pth
