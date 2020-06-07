@@ -20,6 +20,10 @@ if __name__!='__main__':
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(currentdir)
+if not os.path.exists(os.path.join(currentdir,'yolo-coco')):
+	os.makedirs(os.path.join(currentdir,'yolo-coco'))
+if not os.path.exists(os.path.join(currentdir,'output')):
+	os.makedirs(os.path.join(currentdir,'output'))
 
 def define_args():
 

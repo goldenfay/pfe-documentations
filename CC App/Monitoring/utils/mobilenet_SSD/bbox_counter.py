@@ -20,6 +20,10 @@ from trackers.trackableobject import TrackableObject
 
 from utils.detection_model import DetectionModel
 
+if not os.path.exists(os.path.join(currentdir,'mobilenet_ssd')):
+	os.makedirs(os.path.join(currentdir,'mobilenet_ssd'))
+if not os.path.exists(os.path.join(currentdir,'output')):
+	os.makedirs(os.path.join(currentdir,'output'))
 
 # initialize the list of class labels MobileNet SSD was trained to
 	# detect

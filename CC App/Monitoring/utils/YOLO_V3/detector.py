@@ -15,8 +15,11 @@ if __name__!='__main__':
     from utils.detection_model import DetectionModel
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-
-
+if not os.path.exists(os.path.join(currentdir,'yolo-coco')):
+	os.makedirs(os.path.join(currentdir,'yolo-coco'))
+if not os.path.exists(os.path.join(currentdir,'output')):
+	os.makedirs(os.path.join(currentdir,'output'))
+    
 def define_args():
 
     ap = argparse.ArgumentParser()
