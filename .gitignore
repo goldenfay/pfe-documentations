@@ -1,0 +1,7 @@
+**/__pycache__
+**/.vscode
+**/.idea
+**/yolo-coco
+**/videos
+**/mobilenet_ssd
+**.pth
