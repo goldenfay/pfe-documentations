@@ -300,13 +300,7 @@ class MobileSSD(DetectionModel):
 		def forward(self,frames,confidence=0.4,show_bbox=True):
 			frames=np.array(frames*255,dtype='uint8')
 			img,count=process_frame(self.net,frames,show_bbox=show_bbox)
-			while True:
-				cv2.imshow("Frame", img)
-				key = cv2.waitKey(1) & 0xFF
-
-				# if the `q` key was pressed, break from the loop
-				if key == ord("q"):
-					break
+			
 			return img,count
 			jobs=[]
 			# queue=[None for _ in range(len(frames))]
