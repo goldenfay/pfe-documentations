@@ -9,8 +9,8 @@ sys.path.append('store')
 sys.path.append('utils/YOLO_V3')
 sys.path.append('utils/mobilenet_SSD')
 import store.models.equivalence as equivalence
-import utils.YOLO_V3.detector as yolo_detector 
-import utils.mobilenet_SSD.bbox_counter as ssd_detector
+import utils.YOLO_V3.yolo_detector as yolo_detector 
+import utils.mobilenet_SSD.ssd_detector as ssd_detector
 from utils.detection_model import DetectionModel
 
 def is_detection_model(model_name):

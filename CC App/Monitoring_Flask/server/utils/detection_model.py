@@ -1,11 +1,8 @@
 import numpy as np
 import imutils
-import time
 import dlib
 import cv2
-import sys
-sys.path.append('.')
-
+import time
 
 class DetectionModel:
     def __init__(self,model_name):
