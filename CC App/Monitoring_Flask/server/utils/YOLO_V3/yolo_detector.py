@@ -10,21 +10,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
 from imutils.video import FPS
-import dlib
-
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-sys.path.append(currentdir)
-from trackers.centroidtracker import CentroidTracker
-from trackers.trackableobject import TrackableObject
 
 if __name__!='__main__':
     from utils.detection_model import DetectionModel
 
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 if not os.path.exists(os.path.join(currentdir,'yolo-coco')):
 	os.makedirs(os.path.join(currentdir,'yolo-coco'))
 if not os.path.exists(os.path.join(currentdir,'output')):
 	os.makedirs(os.path.join(currentdir,'output'))
-
+    
 def define_args():
 
     ap = argparse.ArgumentParser()
@@ -241,7 +236,10 @@ def get_filesource(filename):
 
 def update_frame(image, people_indxs, class_ids, detected_boxes, conf_levels, colors, labels,
                  show_boxes, blur, box_all_objects):
-   
+    """
+    Add bounding boxes and counted number of people to the frame
+    Return frame and number of people
+    """
     # ensure at least one detection exists
     count_people = 0
     if len(people_indxs) >= 1:
@@ -315,7 +313,7 @@ def show_plots(data):
 
 
 if __name__ == '__main__':
-    
+    # pass
     # construct the argument parse and parse the arguments
     args = define_args()
     config = read_config(args["config"])
@@ -370,105 +368,21 @@ if __name__ == '__main__':
         df = read_existing_data(countfile)
     else:
         df = None
-    cent_tracker = CentroidTracker(maxDisappeared=50, maxDistance=90)    
     fps = FPS().start()
-  
-  
-
-    totalFrames=0
+    # loop while true
     while True:
-        
-        frame = cam.read()
-        frame = frame[1] if len(frame)>1 else frame
-        if frame is None:
-            break
-        (H, W) = frame.shape[:2]
-        trackers=[]
-        rects=[]
-        rgb_frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) 
-
         start = time.time()
+        # read the next frame from the webcam
+        # make sure that buffer is empty by reading specified amount of frames
+        for _ in (0, SkipFrames):
+            (grabbed, frame) = cam.read()  # type: (bool, np.ndarray)
+        if not grabbed:
+            break
         # Feed frame to network
         layerOutputs = forward_detection(frame, net, ln)
         # Obtain detected objects, including cof levels and bounding boxes
         (idxs, classIDs, boxes, confidences) = get_detected_items(layerOutputs, nw_confidence, nw_threshold,
-        
-                                                                 cam_width, cam_height)
-        if totalFrames % SkipFrames== 0:
-            for box in boxes:
-                tracker = dlib.correlation_tracker()
-                rect = dlib.rectangle(box[0], box[1], box[2], box[3])
-                try:
-                    tracker.start_track(rgb_frame, rect)
-                except:
-                    continue    
-                # add the tracker to our list of trackers 
-                trackers.append(tracker)
-        else:
-            print('[Infos] Will use low cost tracker')
-            for tracker in trackers:
-                
-
-                # update the tracker and grab the updated position
-                tracker.update(rgb_frame)
-                pos = tracker.get_position()
-
-                # get start point and both height and width
-                startX = int(pos.left())
-                startY = int(pos.top())
-                endX = int(pos.right())
-                endY = int(pos.bottom())
-
-                # add the bounding box coordinates to the rectangles list
-                rects.append((startX, startY, endX, endY))
-        objects = cent_tracker.update(rects) 
-        # loop over the tracked objects
-        for (objectID, centroid) in objects.items():
-           
- 
-            tracked_obj = trackableObjects.get(objectID, None)
-
-            # if there is no existing trackable object, create one
-            if tracked_obj is None:
-                tracked_obj = TrackableObject(objectID, centroid)
-
-            # else, use trackable object to determine direction
-            else:
-                # the difference between the y-coordinate of the *current*
-                # centroid and the mean of *previous* centroids will tell
-                # us in which direction the object is moving (negative for
-                # 'up' and positive for 'down')
-                y = [c[1] for c in tracked_obj.centroids]
-                direction = centroid[1] - np.mean(y)
-                tracked_obj.centroids.append(centroid)
-
-                # check to see if the object has been counted or not
-                if not tracked_obj.counted:
-                    # if the direction is negative (indicating the object
-                    # is moving up) AND the centroid is above the center
-                    # line, count the object
-                    if direction < 0 and centroid[1] < H // 2:
-                        # countUp += 1
-                        tracked_obj.counted = True
-
-                    # if the direction is positive (indicating the object
-                    # is moving down) AND the centroid is below the
-                    # center line, count the object
-                    elif direction > 0 and centroid[1] > H // 2:
-                        # countDown += 1
-                        tracked_obj.counted = True
-
-            # store the trackable object in our dictionary
-            trackableObjects[objectID] = tracked_obj
-
-            # draw both the ID of the object and the centroid of the
-            # object on the output frame
-            text = "ID {}".format(objectID)
-            cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
-            cv2.imshow("Video", frame)
-
+                                                                  cam_width, cam_height)
 
         # Update frame with recognised objects
         frame, npeople = update_frame(frame, idxs, classIDs, boxes, confidences, COLORS, LABELS, showpeopleboxes,
@@ -490,7 +404,6 @@ if __name__ == '__main__':
             save_frame(writer, frame, frame_cnt)
 
         end = time.time()
-        totalFrames+=1
         print("[INFO] Total handling  : %2.1f sec" % (end - start))
         print("[INFO] People in frame : {}".format(npeople))
         if print_ascii:
@@ -508,4 +421,39 @@ if __name__ == '__main__':
         writer.release()
     cam.release()
 
+class YOLO(DetectionModel):
+
+    def __init__(self, model_name):
+        self.net=YOLO.load_net()
+        self.init_params()
+
+    @classmethod
+    def load_net(cls):
+        cls.config = read_config(os.path.join(currentdir,'config.ini'))
+
+        # Load the trained network
+        (net, cls.ln, cls.LABELS) = load_network(os.path.join(currentdir,'yolo-coco'),tiny_version=False)
+        return net
+
+    def forward(self,frame):
+        frame=np.array(frame*255,dtype='uint8')
+        np.random.seed(42)
+        COLORS = np.random.randint(0, 255, size=(len(YOLO.LABELS), 3), dtype="uint8")
+         # Feed frame to network
+        layerOutputs = forward_detection(frame, self.net, YOLO.ln)
+        (H, W) = frame.shape[:2]
+        # Obtain detected objects, including cof levels and bounding boxes
+        (idxs, classIDs, boxes, confidences) = get_detected_items(layerOutputs, self.confidence, self.threshold,
+                                                                  W, H)
+
+        # Update frame with recognised objects
+        frame, npeople = update_frame(frame, idxs, classIDs, boxes, confidences, COLORS, YOLO.LABELS, True,
+                                      False, False)
+
+        return frame,npeople                              
+
+    def init_params(self):
+        self.confidence = float(YOLO.config['NETWORK']['Confidence'])
+        self.threshold = float(YOLO.config['NETWORK']['Threshold'])
+        print('Confidence : ',self.confidence,' Threshold : ',self.threshold)
 

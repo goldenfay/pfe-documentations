@@ -13,15 +13,19 @@ from matplotlib import cm
 from io import BytesIO as _BytesIO
 from PIL import Image
 import re,time,base64,sys,datetime,traceback
+
 # User's modules
 import components.static as static
 import components.reusable as reusable
-# from ... import modelmanager
+
 from modelmanager import ModelManager
 from components.base import Component
 from app import app
-global images_list
+
+
 images_list = []
+SERVER_URL=''
+ONLINE_MODE=False
 HTML_IMG_SRC_PARAMETERS = 'data:image/png;base64, '
 config = None
 
@@ -107,9 +111,10 @@ def load_data(path):
 
 
 def parse_contents(contents, filename):
+    global images_list
     images_list.append(contents.encode("utf-8").split(b";base64,")[1])
     return html.Div(children=[
-        html.H5(filename, style={'text-align': 'center'}),
+        html.H5(filename, style={'textAlign': 'center'}),
 
 
         # HTML images accept base64 encoded strings in the same format
@@ -168,7 +173,7 @@ class View(Component):
                             className='col-md-4',
                             style={
 
-                                'overflow-y': 'scroll',
+                                'overflowY': 'scroll',
 
                                 'backgroundColor': '#F9F9F9'
                             },
@@ -180,19 +185,43 @@ class View(Component):
                                             className='control-element',
                                             children=[
                                                 html.Div(
-                                                    children=["FPS (Frames/second):"], style={'width': '40%'}),
-                                                html.Div(dcc.Slider(
-                                                    id='slider-fps',
-                                                    min=10,
-                                                    max=70,
-                                                    marks={
-                                                        i: f'{i}' for i in range(10, 71, 10)},
-                                                    value=20,
-                                                    updatemode='drag'
+                                                    children=['Usage:'],
+                                                    style={
+                                                        'width': '40%'}
+                                                ),
+                                                html.Div(
+                                                    children=[daq.ToggleSwitch(
+                                                        id='usage-switch',
+                                                        value=False,
+                                                        color='#fa4f56'
+                                                    )
+                                                    ],
+                                                    style={
+                                                        'width': '20%'}
+                                                ),
+
+                                                html.Div(children=['Local'],
+                                                         id='usage-switch-label',
+                                                         style={
+                                                    'width': '40%',
+                                                    'textAlign': 'center'}
+                                                )
+                                            ]
+                                        ),
+                                        html.Div(
+                                            id="server-url-control",
+                                            className='control-element',
+                                            children=[
+                                                html.Div(
+                                                    children=["Server URL:"], style={'width': '40%'}),
+                                                html.Div(dcc.Input(
+                                                    id="server-url-input",
+                                                    type="text",
+                                                    placeholder="Server Url",
+                                                    style={'display':'inline-block'},
                                                 ), style={'width': '60%'})
                                             ]
                                         ),
-
                                         html.Div(
                                             className='control-element',
                                             children=[
@@ -216,8 +245,24 @@ class View(Component):
                                                          id='switch-label',
                                                          style={
                                                     'width': '40%',
-                                                    'text-align': 'center'}
+                                                    'text1lign': 'center'}
                                                 )
+                                            ]
+                                        ),
+                                        html.Div(
+                                            className='control-element',
+                                            children=[
+                                                html.Div(
+                                                    children=["FPS (Frames/second):"], style={'width': '40%'}),
+                                                html.Div(dcc.Slider(
+                                                    id='slider-fps',
+                                                    min=10,
+                                                    max=70,
+                                                    marks={
+                                                        i: f'{i}' for i in range(10, 71, 10)},
+                                                    value=20,
+                                                    updatemode='drag'
+                                                ), style={'width': '60%'})
                                             ]
                                         ),
                                         reusable.dropdown_control("Model type:", [
@@ -298,7 +343,38 @@ class View(Component):
 #           Dropdowns event handlers
 ##############################################################################################
 
+# Switching Usage mode (local/online)
+
+@app.callback([Output("usage-switch-label", "children"),
+                Output("server-url-control", "style"),
+                Output("usage-switch", "className")],
+              [Input("usage-switch", "value")],
+              [State("usage-switch", "className")])
+def toggle_usage(value,classname):
+    global ONLINE_MODE
+    ONLINE_MODE=value
+    if classname is None:
+        classname=''
+    if not value:  # Local usage
+        return ['Local'],{'display':'none'},classname.replace('toggled-on','') 
+    else:  # online usage
+        return ['Online'],{'display':'block'},classname+'toggled-on'
+
+# Handle server-url input
+@app.callback(
+    Output("server-url-control", "children"),
+    [Input("server-url-input", "value")],
+    [State("server-url-control", "children")]
+)
+def server_url_change(value,children):  
+    global SERVER_URL
+    if value!='':
+        SERVER_URL=value
+    return children    
+
+
 # Switching layouts
+
 
 @app.callback([Output("switch-label", "children"),
                Output('footage-container', 'children')],
@@ -329,6 +405,7 @@ def toggle_display(value):
                                 'borderStyle': 'dashed',
                                 'borderRadius': '5px',
                                 'textAlign': 'center',
+                                'fontWeight':'bold'
 
                             },
 
@@ -376,7 +453,7 @@ def toggle_display(value):
                                 className='row d-flex align-items-center justify-content-center flex-row')
                 ])
         ]
-        #static.default_footage_section()
+        # static.default_footage_section()
     return ['Footage' if not value else 'Still images'], children
 
     # Footage Selection
@@ -406,26 +483,27 @@ def change_model(model_type):
     print('Done.')
     return {"display": "none"}
 
-
     # Upload image
 @app.callback(Output('output-image-upload', 'children'),
               [Input('upload-image', 'filename'), Input('upload-image', 'contents')])
 def update_output(list_of_names, list_of_contents):
+    global ONLINE_MODE
+    
     if list_of_contents is not None:
         print('uploading...')
         children = []
         for i in range(len(list_of_contents)):
             children.append(parse_contents(
                 list_of_contents[i], list_of_names[i]))
-
         children += [html.Div(children=[html.Button(
-            id='process-imgs-button',
+            id='process-imgs-button' ,
             n_clicks=0,
-            className='btn btn-md btn-outline-success',
+            className='btn btn-md btn-outline-success '+ ('socket-btn' if ONLINE_MODE else ''),
             children=[html.Span(className='fa fa-play')])],
-            style={'font-weight': 'bold',
-                   'font-size': '13px',
-                   'min-width':'20px'}
+            style={'fontWeight': 'bold',
+                   'fontSize': '20px',
+                   'minWidth': '40px',
+                   'minHeight': '40px'}
         ),
             html.Div(id='output-image-process',
                      className='d-flex flex-row align-items-center', children=[''])
@@ -434,18 +512,19 @@ def update_output(list_of_names, list_of_contents):
         print('Done')
         return children
 
-        #Upload video
+        # Upload video
+
 
 @app.callback(
     Output('output-video-upload', 'children'),
     [Input("upload-video", "filename"), Input("upload-video", "contents")],
 )
 def update_output(uploaded_filenames, uploaded_file_contents):
-        #if uploaded_filenames is not None and uploaded_file_contents is not None:
-            var=""
-            if uploaded_filenames is not None :
-                var = uploaded_filenames[0]   
-                return html.Div(html.Video(id="myvideo",controls = True,src='http://127.0.0.1:8080/'+var, style={'width': '500px','height': '300px'}))     
+        # if uploaded_filenames is not None and uploaded_file_contents is not None:
+    var = ""
+    if uploaded_filenames is not None:
+        var = uploaded_filenames[0]
+        return html.Div(html.Video(id="myvideo", controls=True, src='http://127.0.0.1:8080/'+var, style={'width': '500px', 'height': '300px'}))
 
     # Start detection click
 
@@ -455,6 +534,8 @@ def update_output(uploaded_filenames, uploaded_file_contents):
               [State("dropdown-model-selection", "value"),
                State("output-image-process", "children")])
 def start_detection(button_click, model_type, children):
+    global images_list
+    return []
     if button_click > 0:
         frames = [b64_to_numpy(el) for el in images_list]
 
@@ -477,32 +558,35 @@ def start_detection(button_click, model_type, children):
                 print('\t Inference time : ', inference_time, 'count : ', count)
                 encoded_img = numpy_to_b64(
                     dmap, model_type not in ['mobileSSD', 'yolo'])
-                res_img_list.append((id, HTML_IMG_SRC_PARAMETERS+encoded_img,count))
+                res_img_list.append(
+                    (id, HTML_IMG_SRC_PARAMETERS+encoded_img, count))
             except Exception as e:
                 print("An error occured while detecting ", end='\n\t')
                 traceback.print_exc()
 
         return [
-            html.Div(className='row',children=[
+            html.Div(className='row', children=[
 
                 html.Div(children=[
-                    html.Div(html.H4('Original',className='muted'),className="d-flex justify-content-center"),
+                    html.Div(html.H4('Original', className='muted'),
+                             className="d-flex justify-content-center"),
                     html.Img(id='img-org-{}'.format(id),
-                        src=HTML_IMG_SRC_PARAMETERS+(images_list[i].decode("utf-8")), style={
-                        'width':'100%'})
+                             src=HTML_IMG_SRC_PARAMETERS+(images_list[i].decode("utf-8")), style={
+                        'width': '100%'})
 
                 ],
                     className='col-md justify-content-center animate__animated animate__fadeInRight'),
                 html.Div(children=[
-                    html.Div(html.H4('Estimated count : '+str(int((count+1)/100 ) ),className='muted'),className="d-flex justify-content-center"),
+                    html.Div(html.H4('Estimated count : '+str(int((count+1)/100)),
+                                     className='muted'), className="d-flex justify-content-center"),
                     html.Img(id='img-{}'.format(id),
-                        src=encoded_img, style={
-                        'width':'100%'})
+                             src=encoded_img, style={
+                        'width': '100%'})
 
                 ],
                     className='col-md justify-content-center animate__animated animate__fadeInRight')
             ])
-            for (i,(id, encoded_img,count)) in enumerate(res_img_list)]
+            for (i, (id, encoded_img, count)) in enumerate(res_img_list)]
 
 
 # Learn more popup
