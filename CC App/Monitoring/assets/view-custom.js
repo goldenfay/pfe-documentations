@@ -1,7 +1,7 @@
  // Options for the observer (which mutations to observe)
  const config = { attributes: true, childList: true, subtree: true };
-
- // Callback function to execute when mutations are observed
+ var socket = null
+     // Callback function to execute when mutations are observed
  const callback = function(mutationsList, observer) {
      // Use traditional 'for loops' for IE 11
      for (let mutation of mutationsList) {
@@ -33,34 +33,50 @@
  const send_to_server = function() {
      var url_input = $('#server-url-control input')
      if (url_input) {
-         if (url_input.val()) {
-
-             console.log('Value : ', url_input.val())
-             var imgs = document.querySelector('#output-image-upload img')
-             if (imgs.nodeType === 1) { // just one image
-                 console.log('It is a node')
-                 var socket = io.connect(url_input.val(), {
+         if (url_input.val()) { // If server URL is provided
+             var imgList = Array();
+             // If socket not initialized yet, connect and create handlers.
+             if (socket === null) {
+                 socket = io.connect(url_input.val(), {
                      reconnection: false
-                 });
-                 //socket.eio.pingTimeout = 180000;
-                 socket.emit('image-upload', {
-                     id: imgs.id,
-                     index: 0,
-                     data: imgs.src
                  });
                  socket.on('connect',
                      function() {
                          console.log('initSocketIO')
                      });
                  socket.on("send-image", processImageResponse);
-             } else { // It's an array of images
+             }
 
+
+             var imgs = document.querySelector('#output-image-upload img')
+
+             if (imgs.nodeType === 1) { // just one image
+                 console.log('It is a node')
+                 imgList.push({
+                     id: imgs.id,
+                     index: 0,
+                     data: imgs.src
+                 });
+
+             } else { // It's an array of images
+                 var index = 0;
                  for (let img in imgs) {
                      console.log('Image length :', img)
-
+                     imgList.push({
+                         id: img.id,
+                         index: index,
+                         data: img.src
+                     });
+                     index++;
                  }
              }
-         } else {
+
+             socket.emit('image-upload', {
+                 model_type: '',
+                 images: imgList
+             });
+
+         } else { // Output error showing that must type server URL.
              url_input.addClass('border border-danger  animate__animated animate__shakeX')
              setTimeout(() => url_input.removeClass('border border-danger  animate__animated animate__shakeX'), 10000)
 

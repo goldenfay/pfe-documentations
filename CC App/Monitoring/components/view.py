@@ -12,7 +12,7 @@ import plotly.graph_objs as go
 from matplotlib import cm
 from io import BytesIO as _BytesIO
 from PIL import Image
-import re,time,base64,sys,datetime,traceback
+import re,time,base64,os,sys,glob,datetime,traceback
 
 # User's modules
 import components.static as static
@@ -21,14 +21,15 @@ import components.reusable as reusable
 from modelmanager import ModelManager
 from components.base import Component
 from app import app
+import multiprocessing
 
 
 images_list = []
-SERVER_URL=''
-ONLINE_MODE=False
-HTML_IMG_SRC_PARAMETERS = 'data:image/png;base64, '
+SERVER_URL = ''
+ONLINE_MODE = False
+HTML_IMG_SRC_PREFIX = 'data:image/png;base64, '
 config = None
-
+server=None
 
 def b64_to_pil(string):
     decoded = base64.b64decode(string)
@@ -71,10 +72,6 @@ def pil_to_b64(im, enc_format='png', verbose=False, **kwargs):
 
 
 def load_data(path):
-    """Load data about a specific footage (given by the path). It returns a dictionary of useful variables such as
-    the dataframe containing all the detection and bounds localization, the number of classes inside that footage,
-    the matrix of all the classes in string, the given class with padding, and the root of the number of classes,
-    rounded."""
 
     # Load the dataframe containing all the processed object detections inside the video
     video_info_df = pd.read_csv(path)
@@ -134,6 +131,8 @@ class View(Component):
         super(View, self).__init__(app)
 
     def initialize(self, app):
+        list_vidoes = list(glob.glob(os.path.join(
+            self.config.VIDEOS_DIR_PATH, '*.mp4')))
 
         # Main Layout
         self.layout = html.Div(
@@ -182,6 +181,18 @@ class View(Component):
                                     className='control-section d-flex flex-column',
                                     children=[
                                         html.Div(
+                                            className='row',
+                                            children=[
+                                                html.Div(
+                                                    className='col-md-12 d-flex justify-content-center',
+                                                    children=[
+                                                        html.H4(
+                                                            'General Settings', className='muted')
+                                                    ]
+                                                )
+                                            ]
+                                        ),
+                                        html.Div(
                                             className='control-element',
                                             children=[
                                                 html.Div(
@@ -218,8 +229,21 @@ class View(Component):
                                                     id="server-url-input",
                                                     type="text",
                                                     placeholder="Server Url",
-                                                    style={'display':'inline-block'},
+                                                    style={
+                                                        'display': 'inline-block'},
                                                 ), style={'width': '60%'})
+                                            ]
+                                        ),
+                                        html.Div(
+                                            className='row',
+                                            children=[
+                                                html.Div(
+                                                    className='col-md-12 d-flex justify-content-center',
+                                                    children=[
+                                                        html.H4(
+                                                            'advanced Settings', className='muted')
+                                                    ]
+                                                )
                                             ]
                                         ),
                                         html.Div(
@@ -249,21 +273,21 @@ class View(Component):
                                                 )
                                             ]
                                         ),
-                                        html.Div(
-                                            className='control-element',
-                                            children=[
-                                                html.Div(
-                                                    children=["FPS (Frames/second):"], style={'width': '40%'}),
-                                                html.Div(dcc.Slider(
-                                                    id='slider-fps',
-                                                    min=10,
-                                                    max=70,
-                                                    marks={
-                                                        i: f'{i}' for i in range(10, 71, 10)},
-                                                    value=20,
-                                                    updatemode='drag'
-                                                ), style={'width': '60%'})
-                                            ]
+                                        html.Div(style={'display': 'none'},
+                                                 className='control-element',
+                                                 children=[
+                                            html.Div(
+                                                children=["FPS (Frames/second):"], style={'width': '40%'}),
+                                            html.Div(dcc.Slider(
+                                                id='slider-fps',
+                                                min=10,
+                                                max=70,
+                                                marks={
+                                                    i: f'{i}' for i in range(10, 71, 10)},
+                                                value=20,
+                                                updatemode='drag'
+                                            ), style={'width': '60%'})
+                                        ]
                                         ),
                                         reusable.dropdown_control("Model type:", [
                                             {'label': 'Detection models:',
@@ -286,28 +310,17 @@ class View(Component):
                                             id="dropdown-model-selection"
 
                                         ),
-                                        reusable.dropdown_control("Footage Selection:", [
-                                            {'label': 'Drone recording of canal festival',
-                                             'value': 'DroneCanalFestival'},
-                                            {'label': 'Drone recording of car festival',
-                                             'value': 'car_show_drone'},
-                                            {'label': 'Drone recording of car festival #2',
-                                             'value': 'DroneCarFestival2'},
-                                            {'label': 'Drone recording of a farm',
-                                             'value': 'FarmDrone'},
-                                            {'label': 'Lion fighting Zebras',
-                                             'value': 'zebra'},
-                                            {'label': 'Man caught by a CCTV',
-                                             'value': 'ManCCTV'},
-                                            {'label': 'Man driving expensive car',
-                                             'value': 'car_footage'},
-                                            {'label': 'Restaurant Robbery',
-                                             'value': 'RestaurantHoldup'}
+                                        html.Div(children=reusable.dropdown_control("Footage Selection:", [
+                                            {'label': os.path.basename(
+                                                el), 'value': el}
+                                            for el in list_vidoes
                                         ],
-                                            'car_show_drone',
+                                            list_vidoes[0],
                                             id="dropdown-footage-selection"
 
 
+                                        ),
+                                            id='footage-selection-control'
                                         ),
                                         reusable.dropdown_control("Video Display Mode:", [
                                             {'label': 'Normal Display',
@@ -346,38 +359,41 @@ class View(Component):
 # Switching Usage mode (local/online)
 
 @app.callback([Output("usage-switch-label", "children"),
-                Output("server-url-control", "style"),
-                Output("usage-switch", "className")],
+               Output("server-url-control", "style"),
+               Output("usage-switch", "className")],
               [Input("usage-switch", "value")],
               [State("usage-switch", "className")])
-def toggle_usage(value,classname):
+def toggle_usage(value, classname):
     global ONLINE_MODE
-    ONLINE_MODE=value
+    ONLINE_MODE = value
     if classname is None:
-        classname=''
+        classname = ''
     if not value:  # Local usage
-        return ['Local'],{'display':'none'},classname.replace('toggled-on','') 
+        return ['Local'], {'display': 'none'}, classname.replace('toggled-on', '')
     else:  # online usage
-        return ['Online'],{'display':'block'},classname+'toggled-on'
+        return ['Online'], {'display': 'block'}, classname+'toggled-on'
 
 # Handle server-url input
+
+
 @app.callback(
     Output("server-url-control", "children"),
     [Input("server-url-input", "value")],
     [State("server-url-control", "children")]
 )
-def server_url_change(value,children):  
+def server_url_change(value, children):
     global SERVER_URL
-    if value!='':
-        SERVER_URL=value
-    return children    
+    if value != '':
+        SERVER_URL = value
+    return children
 
 
 # Switching layouts
 
 
 @app.callback([Output("switch-label", "children"),
-               Output('footage-container', 'children')],
+               Output('footage-container', 'children'),
+               Output('footage-selection-control', 'style')],
               [Input("mode-switch", "value")])
 def toggle_display(value):
     if value:
@@ -385,76 +401,55 @@ def toggle_display(value):
             html.Div(
                 className='md-12 d-flex align-items-center flex-column',
                 children=[
-                    html.Div(
-                        children=[dcc.Upload(
-                            id='upload-image',
-                            className='d-flex align-items-center justify-content-center',
-                            children=html.Div(
-                                id='drop-div',
-                                className='align-self-center',
-                                children=[
-                                    html.Div(['Drag and Drop']),
-                                    html.Div(['or']),
-                                    html.Div([html.A('Select Files')])
-                                ]),
-                            style={
-                                'width': '500px',
-                                'height': '300px',
-                                'lineHeight': '60px',
-                                'borderWidth': '1px',
-                                'borderStyle': 'dashed',
-                                'borderRadius': '5px',
-                                'textAlign': 'center',
-                                'fontWeight':'bold'
-
-                            },
-
-                            # Allow multiple files to be uploaded
-                            multiple=True
-                        )]
-                    ),
+                    reusable.drag_drop_container('upload-image', 'drop-div', ['Drag and Drop', 'or', 'Select Files']
+                                                 ),
                     html.Div(id='output-image-upload',
                                 className='row d-flex align-items-center justify-content-center flex-row')
                 ])
         ]
     else:
+        # children = [
+        #     html.Div( style={"display":"none"}, #remove this later
+        #         className='md-12 d-flex align-items-center flex-column',
+        #         children=[
+        #             reusable.drag_drop_container('upload-video','drop-div-video',['Click here','to','select a video']
+        #             ),
+        #             html.Div(id='output-video-upload',
+        #                         className='row d-flex align-items-center justify-content-center flex-row')
+        #         ])
+        # ]
         children = [
             html.Div(
                 className='md-12 d-flex align-items-center flex-column',
                 children=[
                     html.Div(
-                        children=[dcc.Upload(
-                            id='upload-video',
-                            className='d-flex align-items-center justify-content-center',
-                            children=html.Div(
-                                id='drop-div-video',
-                                className='align-self-center',
-                                children=[
-                                    html.Div(['Click here']),
-                                    html.Div(['to']),
-                                    html.Div([html.A('Select Video')])
-                                ]),
-                            style={
-                                'width': '500px',
-                                'height': '300px',
-                                'lineHeight': '60px',
-                                'borderWidth': '1px',
-                                'borderStyle': 'dashed',
-                                'borderRadius': '5px',
-                                'textAlign': 'center',
+                        id='',
+                        className='d-flex align-items-center justify-content-center',
+                        children=[
+                            html.Button(
+                                id='process-video-button',
+                                n_clicks=0,
+                                className='btn btn-lg btn-outline-success',
+                                children=[html.Span('Start processing video',className='mr-2'), html.Span(
+                                    className='fa fa-play')],
+                                style={'fontWeight': 'bold',
+                                       'fontSize': '26px',
+                                       'minWidth': '100px',
+                                       'minHeight': '60px'}
 
-                            },
-
-                            # Allow multiple files to be uploaded
-                            multiple=True
-                        )]
+                            )
+                        ],
+                        style={
+                            'width': '500px',
+                            'height': '300px',
+                        }
                     ),
-                    html.Div(id='output-video-upload',
+                    html.Div(id='output-video-process',
                                 className='row d-flex align-items-center justify-content-center flex-row')
                 ])
         ]
         # static.default_footage_section()
-    return ['Footage' if not value else 'Still images'], children
+    return ['Footage' if not value else 'Still images'], children, {'display': 'block'} if not value else {'display': 'none'}
 
     # Footage Selection
 @app.callback(Output("video-display", "url"),
@@ -488,7 +483,7 @@ def change_model(model_type):
               [Input('upload-image', 'filename'), Input('upload-image', 'contents')])
 def update_output(list_of_names, list_of_contents):
     global ONLINE_MODE
-    
+
     if list_of_contents is not None:
         print('uploading...')
         children = []
@@ -496,9 +491,10 @@ def update_output(list_of_names, list_of_contents):
             children.append(parse_contents(
                 list_of_contents[i], list_of_names[i]))
         children += [html.Div(children=[html.Button(
-            id='process-imgs-button' ,
+            id='process-imgs-button',
             n_clicks=0,
-            className='btn btn-md btn-outline-success '+ ('socket-btn' if ONLINE_MODE else ''),
+            className='btn btn-md btn-outline-success ' +
+            ('socket-btn' if ONLINE_MODE else ''),
             children=[html.Span(className='fa fa-play')])],
             style={'fontWeight': 'bold',
                    'fontSize': '20px',
@@ -527,6 +523,7 @@ def update_output(uploaded_filenames, uploaded_file_contents):
         return html.Div(html.Video(id="myvideo", controls=True, src='http://127.0.0.1:8080/'+var, style={'width': '500px', 'height': '300px'}))
 
     # Start detection click
+
 
 
 @app.callback(Output("output-image-process", "children"),
@@ -559,7 +556,7 @@ def start_detection(button_click, model_type, children):
                 encoded_img = numpy_to_b64(
                     dmap, model_type not in ['mobileSSD', 'yolo'])
                 res_img_list.append(
-                    (id, HTML_IMG_SRC_PARAMETERS+encoded_img, count))
+                    (id, HTML_IMG_SRC_PREFIX+encoded_img, count))
             except Exception as e:
                 print("An error occured while detecting ", end='\n\t')
                 traceback.print_exc()
@@ -571,7 +568,7 @@ def start_detection(button_click, model_type, children):
                     html.Div(html.H4('Original', className='muted'),
                              className="d-flex justify-content-center"),
                     html.Img(id='img-org-{}'.format(id),
-                             src=HTML_IMG_SRC_PARAMETERS+(images_list[i].decode("utf-8")), style={
+                             src=HTML_IMG_SRC_PREFIX+(images_list[i].decode("utf-8")), style={
                         'width': '100%'})
 
                 ],
@@ -587,6 +584,25 @@ def start_detection(button_click, model_type, children):
                     className='col-md justify-content-center animate__animated animate__fadeInRight')
             ])
             for (i, (id, encoded_img, count)) in enumerate(res_img_list)]
+
+    # Process video button click
+@app.callback(Output("output-video-process", "children"),
+              [Input("process-video-button", "n_clicks")],
+              [State("dropdown-model-selection", "value"),
+               State("dropdown-footage-selection", "value")])
+def process_video(button_click, model_type, video_path):
+    global server
+    if button_click > 0:
+      
+        ModelManager.process_video(video_path)
+
+            # run=lambda :server.run(port=4000)
+            # multiprocessing.Process(target=run).start()
+
+        return [
+            html.Img(src='http://localhost:4000/video_feed')
+
+        ]
 
 
 # Learn more popup
@@ -702,3 +718,8 @@ def update_click_output(button_click, close_click):
 #             return go.Figure(data=[pie], layout=layout)
 
 #     return go.Figure(data=[go.Pie()], layout=layout)  # Returns empty pie chart
+
+# @server.route('/video_feed')
+# def video_feed():
+#     return Response(gen(VideoCamera()),
+#                     mimetype='multipart/x-mixed-replace; boundary=frame')

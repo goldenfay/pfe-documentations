@@ -15,6 +15,7 @@ import store.models.equivalence as equivalence
 import utils.YOLO_V3.detector as yolo_detector 
 import utils.mobilenet_SSD.bbox_counter as ssd_detector
 from utils.detection_model import DetectionModel
+import cv2
 
 def is_detection_model(model_name):
     return model_name in ['mobileSSD','yolo']
@@ -71,6 +72,25 @@ class ModelManager:
             return dmap.squeeze().detach().cpu().numpy(),dmap.data.sum().item()
         else: # It's a detection model
             return cls.model.forward(frame)
+    @classmethod
+    def process_video(cls,video_path):
+            #If the current model is a density map based model
+        if is_densitymap_model(cls.model):
+            pass # Implemented soon
+            
+        else: # It's a detection model
+            args={
+                'input': video_path,
+                'silent': True,
+                'write_output':True,
+
+            }
+            cls.model.forward_video(args)
+            # for x in cls.model.forward_video(args):
+            #     encoded=cv2.imencode('.jpg', x)[1].tobytes()
+            #     yield (b'--frame\r\n'
+			# 	b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
+
 
            
 

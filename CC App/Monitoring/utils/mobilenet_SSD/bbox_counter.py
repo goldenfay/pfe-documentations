@@ -3,15 +3,17 @@
 import os,sys,glob,inspect
 import multiprocessing
 from multiprocessing import Queue
-
+import pathos
+from pathos.multiprocessing import ProcessingPool as Pool
 from imutils.video import VideoStream
 from imutils.video import FPS
 import numpy as np
-import argparse
-import time
+import argparse,time,datetime
 import cv2
 import imutils
 import dlib
+from werkzeug.serving import run_simple
+from flask import Flask, Response
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(currentdir)
@@ -32,7 +34,7 @@ CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 		"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 		"sofa", "train", "tvmonitor"]
 
-
+server=None
 def load_network():
 	# load our serialized model from disk
 	print("[INFO] loading model...")
@@ -104,7 +106,7 @@ def process_frame(net,frame,min_conf=0.4,show_bbox=True):
 	return frame,detections.shape[2]
 
 
-def process_video(net,vs,write_output=False,skip_frames=10,silent=False):
+def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,silent=False):
 	
 	ct = CentroidTracker(maxDisappeared=40, maxDistance=50)
 	trackers = []
@@ -122,8 +124,8 @@ def process_video(net,vs,write_output=False,skip_frames=10,silent=False):
 	(H, W) = frame.shape[:2]
 	writer=None
 	if write_output:
-		fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-		writer = cv2.VideoWriter(args["output"], fourcc, 30,
+		fourcc = cv2.VideoWriter_fourcc(*"MP4V")
+		writer = cv2.VideoWriter(os.path.join(currentdir,'output','output.mp4'), fourcc, 30,
 			(W, H), True)
 
 	fps = FPS().start()
@@ -134,136 +136,103 @@ def process_video(net,vs,write_output=False,skip_frames=10,silent=False):
 		rgb_frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 		(H, W) = frame.shape[:2]
 		rects=[]
-
-		if totalFrames % skip_frames== 0:
+		frame=rgb_frame
+		print('processing frame n° ',totalFrames)
+		if totalFrames % skip_frames== 0: # Use model detection, expensive process
 				
 				trackers = []
 
-				# convert the frame to a blob and pass the blob through the
-				# network and obtain the detections
+					# convert the frame to a blob and pass it through the net
+			
 				blob = cv2.dnn.blobFromImage(frame, 0.007843, (W, H), 127.5)
 				net.setInput(blob)
 				detections = net.forward()
-				if detections.shape[2]>0: print('Found detections')
-				else:
-					print('No detection found')
-				# loop over the detections
+		
+					# loop over the detections
 				for i in np.arange(0, detections.shape[2]):
-					# extract the confidence (i.e., probability) associated
-					# with the prediction
+						# extract the confidence (i.e., probability) associated
+						# with the prediction
 					confidence = detections[0, 0, i, 2]
-					print(confidence)
-					# filter out weak detections by requiring a minimum
-					# confidence
-					if confidence > 0.4:
-						# extract the index of the class label from the
-						# detections list
+						# filter detections  under minimum confidence
+					if confidence > min_confidence:
+							# extract the index of the class label from the detection
 						idx = int(detections[0, 0, i, 1])
 
-						# if the class label is not a person, ignore it
 						if CLASSES[idx] != "person":
 							continue
 						print('person found')
-						# compute the (x, y)-coordinates of the bounding box
-						# for the object
+							# compute the coordinates of the bounding box of the object
 						box = detections[0, 0, i, 3:7] * np.array([W, H, W, H])
 						(startX, startY, endX, endY) = box.astype("int")
 						(startX, startY, endX, endY) = (
 							int(startX), int(startY), int(endX), int(endY))
-						# construct a dlib rectangle object from the bounding
-						# box coordinates and then start the dlib correlation
-						# tracker
+							# construct a dlib rectangle object from the bbox and start tracking
+							
 						tracker = dlib.correlation_tracker()
 						rect = dlib.rectangle(startX, startY, endX, endY)
 						tracker.start_track(rgb_frame, rect)
 
-						# add the tracker to our list of trackers so we can
-						# utilize it during skip frames
 						trackers.append(tracker)
 
-			# otherwise, we should utilize our object *trackers* rather than
-			# object *detectors* to obtain a higher frame processing throughput
-		else:
-				# loop over the trackers
+		
+		else:	# Else  use tracking to get new positions of detected objects 
+					# loop over the trackers
 				for tracker in trackers:
-					# set the status of our system to be 'tracking' rather
-					# than 'waiting' or 'detecting'
-					status = "Tracking"
+				
 
-					# update the tracker and grab the updated position
+						# update the tracker and get the updated position
 					tracker.update(rgb_frame)
 					pos = tracker.get_position()
 
-					# unpack the position object
 					startX = int(pos.left())
 					startY = int(pos.top())
 					endX = int(pos.right())
 					endY = int(pos.bottom())
 
-					# add the bounding box coordinates to the rectangles list
 					rects.append((startX, startY, endX, endY))
 
 
-		# use the centroid tracker to associate the (1) old object
-		# centroids with (2) the newly computed object centroids
+			# updates tracked objects list
 		objects = ct.update(rects)
-		cv2.putText(frame, 'TEST TEST', (50, 50),
-				cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-		# loop over the tracked objects
+			# loop over the tracked objects
 		for (objectID, centroid) in objects.items():
-			# check to see if a trackable object exists for the current
-			# object ID
+				# check to see if the trackable object with this ID already exists 
 			tracked_obj = trackableObjects.get(objectID, None)
 
-			# if there is no existing trackable object, create one
+				# if there is no existing trackable object, create one
 			if tracked_obj is None:
 				tracked_obj = TrackableObject(objectID, centroid)
 
-			# otherwise, there is a trackable object so we can utilize it
-			# to determine direction
 			else:
-				# the difference between the y-coordinate of the *current*
-				# centroid and the mean of *previous* centroids will tell
-				# us in which direction the object is moving (negative for
-				# 'up' and positive for 'down')
+					# get the object(person) direction the difference between the y-coordinate of the current
+					# object and the mean of it previous centroids
 				y = [c[1] for c in tracked_obj.centroids]
 				direction = centroid[1] - np.mean(y)
 				tracked_obj.centroids.append(centroid)
 
-				# check to see if the object has been counted or not
+				
 				if not tracked_obj.counted:
-					# if the direction is negative (indicating the object
-					# is moving up) AND the centroid is above the center
-					# line, count the object
 					if direction < 0 and centroid[1] < H // 2:
 						countUp += 1
 						tracked_obj.counted = True
-
-					# if the direction is positive (indicating the object
-					# is moving down) AND the centroid is below the
-					# center line, count the object
 					elif direction > 0 and centroid[1] > H // 2:
 						countDown += 1
 						tracked_obj.counted = True
-
-			# store the trackable object in our dictionary
 			trackableObjects[objectID] = tracked_obj
 
 			# draw both the ID of the object and the centroid of the
-			# object on the output frame
-			text = "ID {}".format(objectID)
+			text = "Person {}".format(objectID)
 			cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
 				cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 			cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
-			cv2.imshow("Frame", frame)
+			#cv2.imshow("Frame", frame)
 
 		info = [
 		("Up", countUp),
-		("Down", countDown),
-		("Status", status),
+		("Down", countDown)
 	]
 
-		# loop over the info tuples and draw them on our frame
+			# lShow infos on he frame
 		for (i, (k, v)) in enumerate(info):
 			text = "{}: {}".format(k, v)
 			cv2.putText(frame, text, (10, H - ((i * 20) + 20)),
@@ -272,19 +241,63 @@ def process_video(net,vs,write_output=False,skip_frames=10,silent=False):
 		if  writer is not None:
 			writer.write(frame)
 
-		if not silent:	
-			cv2.imshow("Frame", frame)
 		key = cv2.waitKey(1) & 0xFF
 
-		# if the `q` key was pressed, break from the loop
 		if key == ord("q"):
 			break
 
 		totalFrames+=1
 		fps.update()
+		if silent:	
+			encoded=cv2.imencode('.jpg', frame)[1].tobytes()
+			yield (b'--frame\r\n'
+				b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
+		else:	
+			cv2.imshow("Frame", frame)
+
+	fps.stop()
+	print("[INFO] elapsed time: {:.2f}".format(fps.elapsed()))
+	print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+
+	
+	if writer is not None:
+		writer.release()
 
 def process_to_queue(net,frame,conf,bbox_flag,index,queue):
 	queue.put({'idx':str(index),'val':process_frame(net,frame,conf,bbox_flag)})
+
+def stream_video(args):
+		
+		# load SSD model from disk
+	print("[INFO] loading model...")
+	if not args.get("prototxt",False)  or  not args.get("model",False):
+		net=load_network()
+	else:
+		net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
+
+		
+	if not args.get("input", False):
+		video_path='ressources/videos/example_02.mp4'
+		print("[INFO] Opening webcam...")
+		# vs = VideoStream(src=0).start()
+		vs = cv2.VideoCapture(video_path)
+		
+	else:
+		print("[INFO] opening video file...")
+		vs = cv2.VideoCapture(args["input"])
+
+	process_video(net,vs,write_output=args['write_output'],silent=args['silent'])
+
+		# If it's a video capture
+	if not args.get("input", False):
+		vs.stop()
+
+	else: # it's a webcam video stream
+		vs.release()
+
+	if not args.get("silent", False):
+			# close any open windows
+		cv2.destroyAllWindows()	
 
 class MobileSSD(DetectionModel):
 
@@ -330,24 +343,58 @@ class MobileSSD(DetectionModel):
 			print(results_tab)		
 			return results_tab	
 
+		def forward_video(self,args):
+			
+			global server
+			if not args.get("input", False):
+				video_path='ressources/videos/example_02.mp4'
+				print("[INFO] Opening webcam...")
+				vs = cv2.VideoCapture(video_path)
+				
+			else:
+				print("[INFO] opening video file...")
+				vs = cv2.VideoCapture(args["input"])
+			
+			if server is None:
+				
+				server=Flask(__name__)
+				@server.route('/video_feed')
+				def video_feed():
+					return Response(process_video(self.net,vs,write_output=args['write_output'],silent=args['silent']),
+									mimetype='multipart/x-mixed-replace; boundary=frame')
+				run_simple('localhost',4000,server,use_reloader=True)
+				# pool=Pool(1)
+				# pool.map(lambda :server.run(port=4000,threaded=True),[])
+				# multiprocessing.Process(target=lambda :server.run(port=4000,threaded=True)).start()
+				print('lkgjdflkgjdklfjgkjflkgjdflkj')
+
+				# If it's a video capture
+			if not args.get("input", False):
+				vs.stop()
+
+			else: # it's a webcam video stream
+				vs.release()
+
+			
 
 
 if __name__=='__main__':
+	pass
 	# construct the argument parse and parse the arguments
-	ap = argparse.ArgumentParser()
-	ap.add_argument("-p", "--prototxt", required=True,
-		help="path to Caffe 'deploy' prototxt file")
-	ap.add_argument("-m", "--model", required=True,
-		help="path to Caffe pre-trained model")
-	ap.add_argument("-i", "--input", type=str,
-		help="path to optional input video file")
-	ap.add_argument("-o", "--output", type=str,
-		help="path to optional output video file")
-	ap.add_argument("-c", "--confidence", type=float, default=0.4,
-		help="minimum probability to filter weak detections")
-	ap.add_argument("-s", "--skip-frames", type=int, default=30,
-		help="# of skip frames between detections")
-	args = vars(ap.parse_args())
+	# ap = argparse.ArgumentParser()
+	# ap.add_argument("-p", "--prototxt", required=True,
+	# 	help="path to Caffe 'deploy' prototxt file")
+	# ap.add_argument("-m", "--model", required=True,
+	# 	help="path to Caffe pre-trained model")
+	# ap.add_argument("-i", "--input", type=str,
+	# 	help="path to optional input video file")
+	# ap.add_argument("-o", "--output", type=str,
+	# 	help="path to optional output video file")
+	# ap.add_argument("-c", "--confidence", type=float, default=0.4,
+	# 	help="minimum probability to filter weak detections")
+	# ap.add_argument("-s", "--skip-frames", type=int, default=30,
+	# 	help="# of skip frames between detections")
+	# args = vars(ap.parse_args())
 
 	
 

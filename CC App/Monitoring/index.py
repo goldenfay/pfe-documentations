@@ -5,6 +5,8 @@ import grasia_dash_components as gdc
 import dash_defer_js_import as dji
 from dash.dependencies import Input, Output
 
+    # User's modules
+import config
 from app import app
 import components
 
@@ -18,18 +20,15 @@ app.layout = html.Div([
 def display_page(pathname):
 
     if pathname == '/global':
-        # app.callback_map = default_callbacks
         component = components.Global_Charts(app, 'ressources/dummy_data.json')
         return dbc.Container([html.Hr(), component.layout],style={"display": "flex", "flex-direction": "column"}, fluid=True)
     elif pathname == '/mono':
-        # app.callback_map = default_callbacks
         component = components.Mono_Chart(app)
         return dbc.Container([component.layout], fluid=True, style={"height": "500px", })
     elif pathname == '/view':
         # app.callback_map = default_callbacks
-        component = components.View(app, None)
+        component = components.View(app, config)
         # app.callback_map = component.app.callback_map.copy()
-        print('getting')
         
         import_js=dji.Import(src="test.js")
         return dbc.Container([component.layout,import_js], fluid=True, style={"height": "500px", })

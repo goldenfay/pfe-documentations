@@ -23,3 +23,6 @@ class DetectionModel:
         #    self.net=ssd_module.MobileSSD.forward(frame)
         # else:
         #    self.net= yolo_module.YOLO.load_net()
+    
+    def forward_video(self,args):
+        pass

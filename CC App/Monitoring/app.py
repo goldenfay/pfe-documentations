@@ -1,12 +1,10 @@
-from textwrap import dedent
+
 import dash
 import dash_bootstrap_components as dbc
-import config
-import re
-import time
-import traceback
+from flask import Flask, Response
 
 # User's modules
+import config
 from modelmanager import ModelManager
 
 
@@ -37,12 +35,14 @@ external_stylesheets = [
     'https://codepen.io/chriddyp/pen/bWLwgP.css',
     dbc.themes.BOOTSTRAP
 ]
+
 app = dash.Dash(__name__,
                 external_scripts == external_scripts,
                 external_stylesheets=external_stylesheets,
                 suppress_callback_exceptions=True)
 server = app.server
-
+# server=Flask(__name__)
+# server.run(port=4000)
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 

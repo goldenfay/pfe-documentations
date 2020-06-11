@@ -28,6 +28,35 @@ def dropdown_control(label,dropdown_options,value,**kargs):
                                             ]
                                         )
 
+def drag_drop_container(id,children_id,dragdrop_labels):
+    return html.Div(
+                        children=[dcc.Upload(
+                            id=id,
+                            className='d-flex align-items-center justify-content-center',
+                            children=html.Div(
+                                id=children_id,
+                                className='align-self-center',
+                                children=[
+                                    html.Div([dragdrop_labels[0]]),
+                                    html.Div([dragdrop_labels[1]]),
+                                    html.Div([html.A(dragdrop_labels[2])])
+                                ]),
+                            style={
+                                'width': '500px',
+                                'height': '300px',
+                                'lineHeight': '60px',
+                                'borderWidth': '1px',
+                                'borderStyle': 'dashed',
+                                'borderRadius': '5px',
+                                'textAlign': 'center',
+                                'fontWeight':'bold'
+
+                            },
+
+                            # Allow multiple files to be uploaded
+                            multiple=True
+                        )]
+                    )
 def params_card(hours,crowd_number,param_name,title1,title2):
     card_content = [html.H1(param_name, className="card-title")]
     string = ""
