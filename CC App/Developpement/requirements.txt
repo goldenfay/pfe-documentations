@@ -8,4 +8,4 @@ dash-daq
 dash-html-components
 dash-player
 Flask
-"python-socketio[asyncio_client]"
+python-socketio[asyncio_client]
