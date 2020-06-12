@@ -1,16 +1,17 @@
 
-#!C:\\ProgramData\\Anaconda3\\envs\\opencv-env\\python
+
 import os,sys,glob,inspect
 import multiprocessing
 from multiprocessing import Queue
 import pathos
 from pathos.multiprocessing import ProcessingPool as Pool
+import imutils
 from imutils.video import VideoStream
 from imutils.video import FPS
 import numpy as np
 import argparse,time,datetime
+import requests
 import cv2
-import imutils
 import dlib
 from werkzeug.serving import run_simple
 from flask import Flask, Response
@@ -21,22 +22,52 @@ from trackers.centroidtracker import CentroidTracker
 from trackers.trackableobject import TrackableObject
 
 from utils.detection_model import DetectionModel
-
-if not os.path.exists(os.path.join(currentdir,'mobilenet_ssd')):
-	os.makedirs(os.path.join(currentdir,'mobilenet_ssd'))
+modelfolder=os.path.join(currentdir,'mobilenet_ssd')
+if not os.path.exists(modelfolder):
+	os.makedirs(modelfolder)
 if not os.path.exists(os.path.join(currentdir,'output')):
 	os.makedirs(os.path.join(currentdir,'output'))
 
-# initialize the list of class labels MobileNet SSD was trained to
-	# detect
+# initialize the MobilenetSSD list of class labels 
 CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 		"bottle", "bus", "car", "cat", "chair", "cow", "diningtable",
 		"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 		"sofa", "train", "tvmonitor"]
 
 server=None
+
+def download_if_not_present(url, file_name):
+
+    if not os.path.exists(file_name):
+        with open(file_name, "wb") as f:
+            response = requests.get(url, stream=True)
+            total_length = response.headers.get('content-length')
+            if total_length is None:
+                # no content length header
+                f.write(response.content)
+            else:
+                print_file_name = "..." + file_name[-17:] if len(file_name) > 20 else file_name
+                print_file_name = "{:<20}".format(print_file_name)
+                downloaded = 0
+                total_length = int(total_length)
+                for data in response.iter_content(chunk_size=4096):
+                    downloaded += len(data)
+                    f.write(data)
+                    percentage = min(int(100 * downloaded / total_length), 100)
+                    progress = min(int(50 * downloaded / total_length), 50)
+                    sys.stdout.write("\rDownloading {} [{} {}] {}%".format(print_file_name, '=' * progress,
+                                                                           ' ' * (50-progress), percentage))
+                    sys.stdout.flush()
+                sys.stdout.write("\n")
+                sys.stdout.flush()
+
 def load_network():
-	# load our serialized model from disk
+		# Check if required files (.prototxt and .caffemodel) exists. If not download them
+	caffepath = os.path.sep.join([modelfolder, "MobileNetSSD_deploy.caffemodel"])
+	download_if_not_present("https://github.com/djmv/MobilNet_SSD_opencv/blob/master/MobileNetSSD_deploy.caffemodel?raw=true", caffepath)
+	protopath = os.path.sep.join([modelfolder, "MobileNetSSD_deploy.prototxt"])
+	download_if_not_present("https://github.com/djmv/MobilNet_SSD_opencv/blob/master/MobileNetSSD_deploy.prototxt?raw=true", protopath)
+		# load our serialized model from disk
 	print("[INFO] loading model...")
 	protopath=os.path.join(currentdir,'mobilenet_ssd','MobileNetSSD_deploy.prototxt')
 	caffepath=os.path.join(currentdir,'mobilenet_ssd','MobileNetSSD_deploy.caffemodel')
@@ -44,13 +75,13 @@ def load_network():
 
 
 def get_capture(video_path=None, webcam=False):
-	# if a video path was not supplied, grab a reference to the webcam
+		
 	if webcam:
 		print("[INFO] starting video stream...")
 		vs = VideoStream(src=0).start()
 		time.sleep(2.0)
 
-	# otherwise, grab a reference to the video file
+		
 	else:
 		print("[INFO] opening video file...")
 		vs = cv2.VideoCapture(video_path)
@@ -63,33 +94,28 @@ def process_frame(net,frame,min_conf=0.4,show_bbox=True):
 	rgb_frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 	(H, W) = frame.shape[:2]
 	count=0
-	# convert the frame to a blob and pass the blob through the
-	# network and obtain the detections
+		# convert the frame to a blob and pass the blob through the
+		# network and obtain the detections
 	blob = cv2.dnn.blobFromImage(frame, 0.007843, (W, H), 127.5)
 	net.setInput(blob)
 	detections = net.forward()
 	if detections.shape[2]>0: print('Found detections')
 	else:
 		print('No detection found')
-	# loop over the detections
+		# loop over the detections
 	for i in np.arange(0, detections.shape[2]):
-		# extract the confidence (i.e., probability) associated
-		# with the prediction
+		
 		confidence = detections[0, 0, i, 2]
 		if CLASSES[int(detections[0, 0, i, 1])] == "person": count+=1
-		# filter out weak detections by requiring a minimum
-		# confidence
+			# filter weak detection (those under min confidence)
 		if confidence > min_conf:
-			# extract the index of the class label from the
-			# detections list
+				# extract the index of the class label 
 			idx = int(detections[0, 0, i, 1])
 
-			# if the class label is not a person, ignore it
 			if CLASSES[idx] != "person":
 				continue
 			print('person found')
-			# compute the (x, y)-coordinates of the bounding box
-			# for the object
+				# compute coordinates of the bounding box
 			box = detections[0, 0, i, 3:7] * np.array([W, H, W, H])
 			(startX, startY, endX, endY) = box.astype("int")
 			(startX, startY, endX, endY) = (
@@ -220,7 +246,7 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 						tracked_obj.counted = True
 			trackableObjects[objectID] = tracked_obj
 
-			# draw both the ID of the object and the centroid of the
+				# draw both the ID of the object and the centroid of the
 			text = "Person {}".format(objectID)
 			cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
 				cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
