@@ -1,0 +1,11 @@
+numpy
+pandas
+plotly
+dash
+dash-core-components
+dash-bootstrap-components
+dash-daq
+dash-html-components
+dash-player
+Flask
+"python-socketio[asyncio_client]"
