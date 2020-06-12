@@ -9,3 +9,5 @@ dash-html-components
 dash-player
 Flask
 python-socketio[asyncio_client]
+dill
+pathos
