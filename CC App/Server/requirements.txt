@@ -3,4 +3,4 @@ flask-socketio
 eventlet==0.17.4
 gunicorn==18.0.0
 numpy
-"python-socketio[asyncio_client]"
+python-socketio[asyncio_client]
