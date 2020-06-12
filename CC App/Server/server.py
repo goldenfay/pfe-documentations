@@ -48,7 +48,7 @@ def imageUpload(data):
     print('[image-upload] Converting images to arrays ...')
 
     for image in images_list:
-        image['data']=process_functions.b64_to_numpy(image['data'])
+        image['data']=process_functions.b64_to_numpy(image['data'].encode("utf-8").split(b";base64,")[1])
         
     errors=[]
     print('[image-upload] Processing images ...')
