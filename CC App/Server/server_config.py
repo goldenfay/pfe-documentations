@@ -1,3 +1,3 @@
 import os,inspect
 currentdir=os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-BASIC_TOOLS_ROOT_PATH=os.path.join(currentdir,'Developpement')
+BASIC_TOOLS_ROOT_PATH=os.path.join(os.path.dirname(currentdir),'Developpement')
