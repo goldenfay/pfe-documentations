@@ -45,6 +45,19 @@ def imageUpload(data):
     print('[image-upload] Socket data Received')
     model_type=data['model_type']
     images_list=data['images']
+    print('[image-upload] Loading model ',model_type,' ...')
+
+    if model_type in ['mobileSSD', 'yolo']:
+        x = ModelManager.load_detection_model(model_type)
+    else:
+        try:
+            ModelManager.load_external_model(model_type)
+        except Exception as e:
+            print('[image-upload] An error occured when loading model ',
+                  model_type, end='\n\t')
+            traceback.print_exc()
+            pass
+    print('Done.')
     print('[image-upload] Converting images to arrays ...')
 
     for image in images_list:
