@@ -38,29 +38,29 @@ server=None
 
 def download_if_not_present(url, file_name):
 
-    if not os.path.exists(file_name):
-        with open(file_name, "wb") as f:
-            response = requests.get(url, stream=True)
-            total_length = response.headers.get('content-length')
-            if total_length is None:
-                # no content length header
-                f.write(response.content)
-            else:
-                print_file_name = "..." + os.path.basename(file_name) 
-                print_file_name = "{:<20}".format(print_file_name)
-                downloaded = 0
-                total_length = int(total_length)
-                for data in response.iter_content(chunk_size=4096):
-                    downloaded += len(data)
-                    f.write(data)
-                    percentage = min(int(100 * downloaded / total_length), 100)
-                    progress = min(int(50 * downloaded / total_length), 50)
-                    sys.stdout.write("\rDownloading {} [{} {}] {}%".format(print_file_name, '=' * progress,
-                                                                           ' ' * (50-progress), percentage))
-                    sys.stdout.flush()
-                sys.stdout.write("\n")
-                sys.stdout.flush()
-		print('Download finished.')
+	if not os.path.exists(file_name):
+		with open(file_name, "wb") as f:
+			response = requests.get(url, stream=True)
+			total_length = response.headers.get('content-length')
+			if total_length is None:
+				# no content length header
+				f.write(response.content)
+			else:
+				print_file_name = "..." + os.path.basename(file_name) 
+				print_file_name = "{:<20}".format(print_file_name)
+				downloaded = 0
+				total_length = int(total_length)
+				for data in response.iter_content(chunk_size=4096):
+					downloaded += len(data)
+					f.write(data)
+					percentage = min(int(100 * downloaded / total_length), 100)
+					progress = min(int(50 * downloaded / total_length), 50)
+					sys.stdout.write("\rDownloading {} [{} {}] {}%".format(print_file_name, '=' * progress,
+																			' ' * (50-progress), percentage))
+					sys.stdout.flush()
+				sys.stdout.write("\n")
+				sys.stdout.flush()
+	print('Download finished.')
 
 def load_network():
 		# Check if required files (.prototxt and .caffemodel) exists. If not download them
