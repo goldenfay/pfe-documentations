@@ -57,7 +57,7 @@ def imageUpload(data):
         print('[image-upload] An error occured when loading model ',
                 model_type, end='\n\t')
         traceback.print_exc()
-        emit('server-error',{'message':sys.exc_info()[1]})
+        emit('server-error',{'message':str(e)})
         print('error sent')
         return
     print('Done.')
