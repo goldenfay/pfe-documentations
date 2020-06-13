@@ -62,7 +62,7 @@ def imageUpload(data):
 
     for image in images_list:
         image['data']=process_functions.b64_to_numpy(image['data'].encode("utf-8").split(b";base64,")[1])
-        
+    print(images_list[:2])    
     errors=[]
     print('[image-upload] Processing images ...')
     for id, frame in enumerate(images_list):
@@ -79,7 +79,8 @@ def imageUpload(data):
                 data={
                     'id':frame['id'],
                     'index': frame['index'],
-                    'data': encoded_img
+                    'data': encoded_img,
+                    'time':inference_time
                 }    
                 emit('send-image', data, broadcast = True)
             except Exception as e:
@@ -87,8 +88,8 @@ def imageUpload(data):
                 traceback.print_exc()
                 errors.append((frame['id'],list(sys.exc_info())))
                 continue
-    print('Processing is done'+('with erros' if len(errors)>0 else ''),'.')  
-    emit('process-done',errors,broadcast = True)         
+    print('Processing is done'+('with errors' if len(errors)>0 else ''),'.')  
+    emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
 
     # result_img=process_functions.numpy_to_b64(np.zeros((250,250,3)),False)
     # print('sending result ...')

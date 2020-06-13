@@ -1,5 +1,6 @@
 /* Remove Undo
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
+
 ._dash-undo-redo {
     display: none;
 }
@@ -20,40 +21,55 @@ p {
     font-size: 16px;
     font-weight: 300;
 }
-#right-side-column{
+
+#right-side-column {
     background-color: #F9F9F9;
     height: 100vh;
 }
-#upload-image{
+
+#upload-image {
     position: relative;
 }
-#upload-loading{
-    position:absolute;
-    top:0;
-    bottom:0;
-    right:0;
-    left:0;
-    height:100%;
-    width:100%;
-    z-index:100;
 
+#upload-loading {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 100;
 }
 
+
 /*.four.columns {*/
-    /*width: 32.6666666667% !important;*/
+
+
+/*width: 32.6666666667% !important;*/
+
+
 /*}*/
 
 .model {
-    display: block; /*Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
+    display: block;
+    /*Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1000;
+    /* Sit on top */
     left: 0;
     top: 0;
-    width: 100vw; /* Full width */
-    height: 100vh; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0, 0, 0); /* Fallback color */
-    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+    width: 100vw;
+    /* Full width */
+    height: 100vh;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0);
+    /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
 }
 
 .markdown-container {
@@ -77,7 +93,6 @@ p {
     padding: 0px 10px;
 }
 
-
 .closeButton {
     padding: 0 15px;
     font-weight: normal;
@@ -86,7 +101,8 @@ p {
 }
 
 .closeButton:hover {
-    color: red; !important
+    color: red;
+    !important
 }
 
 #header-section {
@@ -132,29 +148,31 @@ p {
     padding: 10px;
     display: flex;
     width: 100%
-    
 }
-.control-element .Select-value-label:disabled{
+
+.control-element .Select-value-label:disabled {
     padding-left: 10px;
 }
-.control-element .dropdown-toggle{
-    width:100%;
+
+.control-element .dropdown-toggle {
+    width: 100%;
     background-color: transparent;
-    color:#4e555b;
+    color: #4e555b;
     border: 1px inset 4e555b;
-   
 }
-.control-element .dropdown-toggle:active{
-    border-color:--primary;
+
+.control-element .dropdown-toggle:active {
+    border-color: --primary;
     border-width: 1px;
     background-color: transparent;
-    color:#4e555b;
+    color: #4e555b;
 }
-.control-element .dropdown-toggle::after{
-    position:absolute;
+
+.control-element .dropdown-toggle::after {
+    position: absolute;
     right: 5%;
     top: 40%;
-    bottom:40%;
+    bottom: 40%;
 }
 
 .Select-control {
@@ -165,7 +183,8 @@ p {
     position: relative;
 }
 
-.has-value.Select--single > .Select-control .Select-value .Select-value-label, .has-value.is-pseudo-focused.Select--single > .Select-control .Select-value .Select-value-label {
+.has-value.Select--single>.Select-control .Select-value .Select-value-label,
+.has-value.is-pseudo-focused.Select--single>.Select-control .Select-value .Select-value-label {
     color: #606060;
 }
 
@@ -173,7 +192,9 @@ p {
     background-color: #fa4f56;
 }
 
-.rc-slider-dot-active, .rc-slider-dot, .rc-slider-handle {
+.rc-slider-dot-active,
+.rc-slider-dot,
+.rc-slider-handle {
     border-color: #fa4f56;
 }
 
@@ -192,4 +213,10 @@ p {
     margin-left: 5%;
     margin-bottom: 0px;
     font-weight: 500;
+}
+
+.error-container {
+    position: absolute;
+    right: 0;
+    bottom: 10;
 }

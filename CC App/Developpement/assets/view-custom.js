@@ -1,6 +1,19 @@
  // Options for the observer (which mutations to observe)
  const config = { attributes: true, childList: true, subtree: true };
  var socket = null
+
+ const error_alert = function(errorTitle, errorMessage) {
+         return `<div class="error-container">
+            <div class="alert alert-danger" role="alert"  data-toggle="collapse" data-target="#collapseMessage" aria-expanded="false" aria-controls="collapseMessage">
+            ${errorTitle}
+            </div>
+            <div class="card card-body" id ="collapseMessage">
+                <span class="fa fa-times-circle text-danger"></span> ${errorMessage}  
+            </div>
+            </div>
+        
+        `
+     }
      // Callback function to execute when mutations are observed
  const callback = function(mutationsList, observer) {
      // Use traditional 'for loops' for IE 11
@@ -44,7 +57,27 @@
                      function() {
                          console.log('initSocketIO')
                      });
+                 socket.on('server-error',
+                     function(data) {
+                         $(document).append(error_alert('An error occured on the server.', data['message']))
+
+                     });
+                 socket.on('process-done',
+                     function(data) {
+                         errors = data['errors']
+                         if (errors && errors[0]) {
+
+                             $(document).append(error_alert('An error occured on the server.', errors))
+                         }
+
+                     });
                  socket.on("send-image", processImageResponse);
+             }
+             if (!socket.connected) {
+                 socket = io.connect(url_input.val(), {
+                     reconnection: false
+                 });
+
              }
 
 
@@ -72,7 +105,7 @@
              }
 
              socket.emit('image-upload', {
-                 model_type: '',
+                 model_type: $('#dropdown-model-selection span[aria-selected="true"]').html(),
                  images: imgList
              });
 
