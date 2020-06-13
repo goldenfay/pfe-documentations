@@ -62,7 +62,7 @@ def imageUpload(data):
 
     for image in images_list:
         image['data']=process_functions.b64_to_numpy(image['data'].encode("utf-8").split(b";base64,")[1])
-    print(images_list[:2])    
+      
     errors=[]
     print('[image-upload] Processing images ...')
     for id, frame in enumerate(images_list):
@@ -86,7 +86,7 @@ def imageUpload(data):
             except Exception as e:
                 print("An error occured while detecting ", end='\n\t')
                 traceback.print_exc()
-                errors.append((frame['id'],list(sys.exc_info())))
+                errors.append((frame['id'],sys.exc_info()[1]))
                 continue
     print('[image-upload] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
     # emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         

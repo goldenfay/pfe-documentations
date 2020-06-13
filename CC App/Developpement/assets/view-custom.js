@@ -84,7 +84,7 @@
              var imgs = document.querySelector('#output-image-upload img')
 
              if (imgs.nodeType === 1) { // just one image
-                 console.log('It is a node')
+                 console.log('Found only a single node')
                  imgList.push({
                      id: imgs.id,
                      index: 0,
