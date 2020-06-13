@@ -88,8 +88,8 @@ def imageUpload(data):
                 traceback.print_exc()
                 errors.append((frame['id'],list(sys.exc_info())))
                 continue
-    print('Processing is done'+('with errors' if len(errors)>0 else ''),'.')  
-    emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
+    print('[image-upload] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
+    # emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
 
     # result_img=process_functions.numpy_to_b64(np.zeros((250,250,3)),False)
     # print('sending result ...')
