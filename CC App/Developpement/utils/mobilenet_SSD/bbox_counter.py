@@ -60,7 +60,7 @@ def download_if_not_present(url, file_name):
                     sys.stdout.flush()
                 sys.stdout.write("\n")
                 sys.stdout.flush()
-		print('Download finished.')		
+		print('Download finished.')
 
 def load_network():
 		# Check if required files (.prototxt and .caffemodel) exists. If not download them
