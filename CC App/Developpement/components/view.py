@@ -272,7 +272,8 @@ class View(Component):
 
                                         ),
                                         html.Div(id="div-visual-mode"),
-                                        html.Div(id="div-detection-mode")
+                                        html.Div(id="div-detection-mode"),
+                                        html.Div(id="socket-errors-div")
                                     ]
                                 )]),
                         static.markdown_popup(),
@@ -461,7 +462,8 @@ def update_output(uploaded_filenames, uploaded_file_contents):
     # Start detection click
 
 
-@app.callback(Output("output-image-process", "children"),
+@app.callback([Output("output-image-process", "children"),
+                Output("socket-errors-div", "children")],
               [Input("process-imgs-button", "n_clicks")],
               [State("dropdown-model-selection", "value"),
                State("output-image-process", "children")])
@@ -482,10 +484,15 @@ def launch_counting(button_click, model_type, children):
 
         if ONLINE_MODE: # Proceed images to server and wait for results
             received=False
+            server_error=False
             def response_received(data):
                 received=True
+            def server_error_response(data):
+                    error_msg=data['message']
+                    server_error=True
             if CLIENT_SOCKET is None:
                 CLIENT_SOCKET=ClientSocket(reconnection=False)
+                CLIENT_SOCKET.on('server-error',handler=server_error_response)
                 CLIENT_SOCKET.on('send-image',handler=append_res_img)
                 CLIENT_SOCKET.on('process-done',handler=response_received)
             if not CLIENT_SOCKET.connected:
@@ -505,9 +512,21 @@ def launch_counting(button_click, model_type, children):
             print('[INFO] Sending images to server ...')
             CLIENT_SOCKET.emit('image-upload',data)
             print('[INFO] Done.')
-            while not received:
+            while not received and not server_error:
                 time.sleep(1)
-
+            if server_error:
+                return [],[
+                    dbc.Alert(children=['An error occured on the server.'],
+                    n_clicks=0,
+                    color="danger",
+                    id="socket-error-title"
+                    ),
+                    dbc.Collapse(children=[
+                        dbc.Card(dbc.CardBody(error_msg))],
+                        id="collapse",
+                    ),
+                    
+                ]
 
         else:
             for id, frame in enumerate(frames):
@@ -530,7 +549,7 @@ def launch_counting(button_click, model_type, children):
         return reusable.count_results_grid([
             HTML_IMG_SRC_PREFIX+(el.decode("utf-8"))
             for el in images_list
-        ],res_img_list)
+        ],res_img_list),[]
 
     # Process video button click
 @app.callback(Output("output-video-process", "children"),
@@ -551,8 +570,18 @@ def process_video(button_click, model_type, video_path):
 
         ]
 
+    # Sockets errors collapsing handler
+@app.callback(
+    Output("collapse", "is_open"),
+    [Input("socket-error-title", "n_clicks")],
+    [State("collapse", "is_open")],
+)
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open 
 
-# Learn more popup
+    # Learn more popup
 @app.callback(Output("markdown", "style"),
               [Input("learn-more-button", "n_clicks"), Input("markdown_close", "n_clicks")])
 def update_click_output(button_click, close_click):
