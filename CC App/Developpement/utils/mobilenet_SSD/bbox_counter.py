@@ -46,7 +46,7 @@ def download_if_not_present(url, file_name):
                 # no content length header
                 f.write(response.content)
             else:
-                print_file_name = "..." + file_name[-17:] if len(file_name) > 20 else file_name
+                print_file_name = "..." + os.path.basename(file_name) 
                 print_file_name = "{:<20}".format(print_file_name)
                 downloaded = 0
                 total_length = int(total_length)
@@ -60,6 +60,7 @@ def download_if_not_present(url, file_name):
                     sys.stdout.flush()
                 sys.stdout.write("\n")
                 sys.stdout.flush()
+		print('Download finished.')		
 
 def load_network():
 		# Check if required files (.prototxt and .caffemodel) exists. If not download them
