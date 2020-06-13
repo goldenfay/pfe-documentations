@@ -61,7 +61,7 @@ def imageUpload(data):
     print('[image-upload] Converting images to arrays ...')
 
     for image in images_list:
-        image['data']=process_functions.b64_to_numpy(image['data'].encode("utf-8").split(b";base64,")[1])
+        image['data']=process_functions.b64_to_numpy(image['data'])
       
     errors=[]
     print('[image-upload] Processing images ...')
@@ -80,6 +80,7 @@ def imageUpload(data):
                     'id':frame['id'],
                     'index': frame['index'],
                     'data': encoded_img,
+                    'count': count,
                     'time':inference_time
                 }    
                 emit('send-image', data, broadcast = True)

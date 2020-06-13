@@ -63,14 +63,12 @@ def download_if_not_present(url, file_name):
 
 def load_network():
 		# Check if required files (.prototxt and .caffemodel) exists. If not download them
-	caffepath = os.path.sep.join([modelfolder, "MobileNetSSD_deploy.caffemodel"])
+	caffepath = os.path.join(modelfolder, "MobileNetSSD_deploy.caffemodel")
 	download_if_not_present("https://github.com/djmv/MobilNet_SSD_opencv/blob/master/MobileNetSSD_deploy.caffemodel?raw=true", caffepath)
-	protopath = os.path.sep.join([modelfolder, "MobileNetSSD_deploy.prototxt"])
+	protopath = os.path.join(modelfolder, "MobileNetSSD_deploy.prototxt")
 	download_if_not_present("https://github.com/djmv/MobilNet_SSD_opencv/blob/master/MobileNetSSD_deploy.prototxt?raw=true", protopath)
 		# load our serialized model from disk
 	print("[INFO] loading model...")
-	protopath=os.path.join(currentdir,'mobilenet_ssd','MobileNetSSD_deploy.prototxt')
-	caffepath=os.path.join(currentdir,'mobilenet_ssd','MobileNetSSD_deploy.caffemodel')
 	return cv2.dnn.readNetFromCaffe(protopath, caffepath)
 
 

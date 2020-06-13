@@ -13,7 +13,7 @@ from matplotlib import cm
 from io import BytesIO as _BytesIO
 from PIL import Image
 import re,time,base64,os,sys,glob,datetime,traceback,inspect
-import multiprocessing
+
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(currentdir)
@@ -22,18 +22,21 @@ import components.static as static
 import components.reusable as reusable
 
 from modelmanager import ModelManager
+from sockets import ClientSocket
 from components.base import Component
 from app import app
 import functions
 
 
 images_list = []
-SERVER_URL = ''
-ONLINE_MODE = False
+res_img_list = []
+
 HTML_IMG_SRC_PREFIX = 'data:image/png;base64, '
 config = None
+ONLINE_MODE = False
 server=None
-
+SERVER_URL = ''
+CLIENT_SOCKET=None
 
 
 def parse_contents(contents, filename):
@@ -462,9 +465,9 @@ def update_output(uploaded_filenames, uploaded_file_contents):
               [Input("process-imgs-button", "n_clicks")],
               [State("dropdown-model-selection", "value"),
                State("output-image-process", "children")])
-def start_detection(button_click, model_type, children):
-    global images_list
-    return []
+def launch_counting(button_click, model_type, children):
+    global images_list,res_img_list,CLIENT_SOCKET
+    
     if button_click > 0:
         frames = [functions.b64_to_numpy(el) for el in images_list]
 
@@ -475,47 +478,59 @@ def start_detection(button_click, model_type, children):
         #     encoded_img = numpy_to_b64(img,model_type not in ['mobileSSD','yolo'])
         #     res_img_list.append(encoded_img)
 
-        res_img_list = []
-        for id, frame in enumerate(frames):
-            print('Processing image :\n\t frame of shape : ', frame.shape)
-            try:
+        
 
-                start = time.time()
-                dmap, count = ModelManager.process_frame(frame)
-                inference_time = time.time()-start
+        if ONLINE_MODE: # Proceed images to server and wait for results
+            received=False
+            def response_received(data):
+                received=True
+            if CLIENT_SOCKET is None:
+                CLIENT_SOCKET=ClientSocket(reconnection=False)
+                CLIENT_SOCKET.on('send-image',handler=append_res_img)
+                CLIENT_SOCKET.on('process-done',handler=response_received)
+            if not CLIENT_SOCKET.connected:
+                CLIENT_SOCKET.connect(SERVER_URL)
+            
+            images=[{
+                'id':'img'+str(id),
+                'index':id,
+                'data':images_list
+            }
+            for id, frame in enumerate(frames)
+            ]
+            data={
+                'model_type':model_type,
+                'images':images
+            }
+            print('[INFO] Sending images to server ...')
+            CLIENT_SOCKET.emit('image-upload',data)
+            print('[INFO] Done.')
+            while not received:
+                time.sleep(1)
 
-                print('\t Inference time : ', inference_time, 'count : ', count)
-                encoded_img = functions.numpy_to_b64(
-                    dmap, model_type not in ['mobileSSD', 'yolo'])
-                res_img_list.append(
-                    (id, HTML_IMG_SRC_PREFIX+encoded_img, count))
-            except Exception as e:
-                print("An error occured while detecting ", end='\n\t')
-                traceback.print_exc()
 
-        return [
-            html.Div(className='row', children=[
+        else:
+            for id, frame in enumerate(frames):
+                print('Processing image :\n\t frame of shape : ', frame.shape)
+                try:
 
-                html.Div(children=[
-                    html.Div(html.H4('Original', className='muted'),
-                             className="d-flex justify-content-center"),
-                    html.Img(id='img-org-{}'.format(id),
-                             src=HTML_IMG_SRC_PREFIX+(images_list[i].decode("utf-8")), style={
-                        'width': '100%'})
+                    start = time.time()
+                    dmap, count = ModelManager.process_frame(frame)
+                    inference_time = time.time()-start
 
-                ],
-                    className='col-md justify-content-center animate__animated animate__fadeInRight'),
-                html.Div(children=[
-                    html.Div(html.H4('Estimated count : '+str(int((count+1)/100)),
-                                     className='muted'), className="d-flex justify-content-center"),
-                    html.Img(id='img-{}'.format(id),
-                             src=encoded_img, style={
-                        'width': '100%'})
+                    print('\t Inference time : ', inference_time, 'count : ', count)
+                    encoded_img = functions.numpy_to_b64(
+                        dmap, model_type not in ['mobileSSD', 'yolo'])
+                    res_img_list.append(
+                        (id, HTML_IMG_SRC_PREFIX+encoded_img, count))
+                except Exception as e:
+                    print("An error occured while detecting ", end='\n\t')
+                    traceback.print_exc()
 
-                ],
-                    className='col-md justify-content-center animate__animated animate__fadeInRight')
-            ])
-            for (i, (id, encoded_img, count)) in enumerate(res_img_list)]
+        return reusable.count_results_grid([
+            HTML_IMG_SRC_PREFIX+(el.decode("utf-8"))
+            for el in images_list
+        ],res_img_list)
 
     # Process video button click
 @app.callback(Output("output-video-process", "children"),
@@ -546,112 +561,144 @@ def update_click_output(button_click, close_click):
     else:
         return {"display": "none"}
 
-# Updating Figures
+if False:
+    pass
+    # Updating Figures
 
-# @app.callback(Output("count-evolution-graph", "figure"),
-#                 [Input("interval-detection-mode", "n_intervals")],
-#                 [State("video-display", "currentTime"),
-#                 State('dropdown-footage-selection', 'value'),
-#                 State('slider-fps', 'value')])
-# def update_score_bar(n, current_time, footage, threshold):
-#     layout = go.Layout(
-#         showlegend=False,
-#         paper_bgcolor='rgb(249,249,249)',
-#         plot_bgcolor='rgb(249,249,249)',
-#         xaxis={
-#             'automargin': True,
-#         },
-#         yaxis={
-#             'title': 'Score',
-#             'automargin': True,
-#             'range': [0, 1]
-#         }
-#     )
+    # @app.callback(Output("count-evolution-graph", "figure"),
+    #                 [Input("interval-detection-mode", "n_intervals")],
+    #                 [State("video-display", "currentTime"),
+    #                 State('dropdown-footage-selection', 'value'),
+    #                 State('slider-fps', 'value')])
+    # def update_score_bar(n, current_time, footage, threshold):
+    #     layout = go.Layout(
+    #         showlegend=False,
+    #         paper_bgcolor='rgb(249,249,249)',
+    #         plot_bgcolor='rgb(249,249,249)',
+    #         xaxis={
+    #             'automargin': True,
+    #         },
+    #         yaxis={
+    #             'title': 'Score',
+    #             'automargin': True,
+    #             'range': [0, 1]
+    #         }
+    #     )
 
-#     if current_time is not None:
-#         current_frame = round(current_time * config.FRAMERATE)
+    #     if current_time is not None:
+    #         current_frame = round(current_time * config.FRAMERATE)
 
-#         if n > 0 and current_frame > 0:
-#             pass
+    #         if n > 0 and current_frame > 0:
+    #             pass
 
-#             figure = go.Figure({
-#                 'data': [{'hoverinfo': 'x+text',
-#                           'name': 'Detection Scores',
-#                           'text': y_text,
-#                           'type': 'bar',
-#                           'x': objects_wc,
-#                           'marker': {'color': colors},
-#                           'y': frame_df["score"].tolist()}],
-#                 'layout': {'showlegend': False,
-#                            'autosize': False,
-#                            'paper_bgcolor': 'rgb(249,249,249)',
-#                            'plot_bgcolor': 'rgb(249,249,249)',
-#                            'xaxis': {'automargin': True, 'tickangle': -45},
-#                            'yaxis': {'automargin': True, 'range': [0, 1], 'title': {'text': 'Score'}}}
-#                 }
-#             )
-#             return figure
+    #             figure = go.Figure({
+    #                 'data': [{'hoverinfo': 'x+text',
+    #                           'name': 'Detection Scores',
+    #                           'text': y_text,
+    #                           'type': 'bar',
+    #                           'x': objects_wc,
+    #                           'marker': {'color': colors},
+    #                           'y': frame_df["score"].tolist()}],
+    #                 'layout': {'showlegend': False,
+    #                            'autosize': False,
+    #                            'paper_bgcolor': 'rgb(249,249,249)',
+    #                            'plot_bgcolor': 'rgb(249,249,249)',
+    #                            'xaxis': {'automargin': True, 'tickangle': -45},
+    #                            'yaxis': {'automargin': True, 'range': [0, 1], 'title': {'text': 'Score'}}}
+    #                 }
+    #             )
+    #             return figure
 
-#     # Returns empty bar
-#     return go.Figure(data=[go.Bar()], layout=layout)
+    #     # Returns empty bar
+    #     return go.Figure(data=[go.Bar()], layout=layout)
 
-# @app.callback(Output("pie-object-count", "figure"),
-#               [Input("interval-visual-mode", "n_intervals")],
-#               [State("video-display", "currentTime"),
-#                State('dropdown-footage-selection', 'value'),
-#                State('slider-fps', 'value')])
-# def update_object_count_pie(n, current_time, footage, threshold):
-#     layout = go.Layout(
-#         showlegend=True,
-#         paper_bgcolor='rgb(249,249,249)',
-#         plot_bgcolor='rgb(249,249,249)',
-#         autosize=False,
-#         margin=go.layout.Margin(
-#             l=10,
-#             r=10,
-#             t=15,
-#             b=15
-#         )
-#     )
+    # @app.callback(Output("pie-object-count", "figure"),
+    #               [Input("interval-visual-mode", "n_intervals")],
+    #               [State("video-display", "currentTime"),
+    #                State('dropdown-footage-selection', 'value'),
+    #                State('slider-fps', 'value')])
+    # def update_object_count_pie(n, current_time, footage, threshold):
+    #     layout = go.Layout(
+    #         showlegend=True,
+    #         paper_bgcolor='rgb(249,249,249)',
+    #         plot_bgcolor='rgb(249,249,249)',
+    #         autosize=False,
+    #         margin=go.layout.Margin(
+    #             l=10,
+    #             r=10,
+    #             t=15,
+    #             b=15
+    #         )
+    #     )
 
-#     if current_time is not None:
-#         current_frame = round(current_time * FRAMERATE)
+    #     if current_time is not None:
+    #         current_frame = round(current_time * FRAMERATE)
 
-#         if n > 0 and current_frame > 0:
-#             video_info_df = data_dict[footage]["video_info_df"]
+    #         if n > 0 and current_frame > 0:
+    #             video_info_df = data_dict[footage]["video_info_df"]
 
-#             # Select the subset of the dataset that correspond to the current frame
-#             frame_df = video_info_df[video_info_df["frame"] == current_frame]
+    #             # Select the subset of the dataset that correspond to the current frame
+    #             frame_df = video_info_df[video_info_df["frame"] == current_frame]
 
-#             # Select only the frames above the threshold
-#             threshold_dec = threshold / 100  # Threshold in decimal
-#             frame_df = frame_df[frame_df["score"] > threshold_dec]
+    #             # Select only the frames above the threshold
+    #             threshold_dec = threshold / 100  # Threshold in decimal
+    #             frame_df = frame_df[frame_df["score"] > threshold_dec]
 
-#             # Get the count of each object class
-#             class_counts = frame_df["class_str"].value_counts()
+    #             # Get the count of each object class
+    #             class_counts = frame_df["class_str"].value_counts()
 
-#             classes = class_counts.index.tolist()  # List of each class
-#             counts = class_counts.tolist()  # List of each count
+    #             classes = class_counts.index.tolist()  # List of each class
+    #             counts = class_counts.tolist()  # List of each count
 
-#             text = [f"{count} detected" for count in counts]
+    #             text = [f"{count} detected" for count in counts]
 
-#             # Set colorscale to piechart
-#             colorscale = ['#fa4f56', '#fe6767', '#ff7c79', '#ff908b', '#ffa39d', '#ffb6b0', '#ffc8c3', '#ffdbd7',
-#                           '#ffedeb', '#ffffff']
+    #             # Set colorscale to piechart
+    #             colorscale = ['#fa4f56', '#fe6767', '#ff7c79', '#ff908b', '#ffa39d', '#ffb6b0', '#ffc8c3', '#ffdbd7',
+    #                           '#ffedeb', '#ffffff']
 
-#             pie = go.Pie(
-#                 labels=classes,
-#                 values=counts,
-#                 text=text,
-#                 hoverinfo="text+percent",
-#                 textinfo="label+percent",
-#                 marker={'colors': colorscale[:len(classes)]}
-#             )
-#             return go.Figure(data=[pie], layout=layout)
+    #             pie = go.Pie(
+    #                 labels=classes,
+    #                 values=counts,
+    #                 text=text,
+    #                 hoverinfo="text+percent",
+    #                 textinfo="label+percent",
+    #                 marker={'colors': colorscale[:len(classes)]}
+    #             )
+    #             return go.Figure(data=[pie], layout=layout)
 
-#     return go.Figure(data=[go.Pie()], layout=layout)  # Returns empty pie chart
+    #     return go.Figure(data=[go.Pie()], layout=layout)  # Returns empty pie chart
 
-# @server.route('/video_feed')
-# def video_feed():
-#     return Response(gen(VideoCamera()),
-#                     mimetype='multipart/x-mixed-replace; boundary=frame')
+##############################################################################################################
+##############################################################################################################
+############################################SOCKETS HANDLERS #################################################
+##############################################################################################################
+##############################################################################################################
+
+def append_res_img(data):
+    global res_img_list
+    print('[INFO] A result received from server.')
+    res_img_list.append(
+                    (data['id'], data['data'], data['count']))
+
+def receive_result_image(data):
+    return html.Div(className='row', children=[
+
+                html.Div(children=[
+                    html.Div(html.H4('Original', className='muted'),
+                             className="d-flex justify-content-center"),
+                    html.Img(id='img-org-{}'.format(id),
+                             src=HTML_IMG_SRC_PREFIX+(images_list[i].decode("utf-8")), style={
+                        'width': '100%'})
+
+                ],
+                    className='col-md justify-content-center animate__animated animate__fadeInRight'),
+                html.Div(children=[
+                    html.Div(html.H4('Estimated count : '+str(int((count+1)/100)),
+                                     className='muted'), className="d-flex justify-content-center"),
+                    html.Img(id='img-{}'.format(id),
+                             src=encoded_img, style={
+                        'width': '100%'})
+
+                ],
+                    className='col-md justify-content-center animate__animated animate__fadeInRight')
+            ])

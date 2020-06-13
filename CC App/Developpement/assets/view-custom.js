@@ -31,7 +31,7 @@
                      processbtn.click(function(e) {
                          if ($('#usage-switch').hasClass('toggled-on')) {
                              console.log('Clicked')
-                             send_to_server();
+                                 //  send_to_server();
                          }
 
                      });
