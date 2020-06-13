@@ -273,7 +273,7 @@ class View(Component):
                                         ),
                                         html.Div(id="div-visual-mode"),
                                         html.Div(id="div-detection-mode"),
-                                        html.Div(id="socket-errors-div")
+                                        html.Div(id="socket-errors-div",children=[])
                                     ]
                                 )]),
                         static.markdown_popup(),
@@ -470,7 +470,9 @@ def update_output(uploaded_filenames, uploaded_file_contents):
 def launch_counting(button_click, model_type, children):
     global images_list,res_img_list,CLIENT_SOCKET
     
-    if button_click > 0:
+    if button_click == 0:
+        return [],[]
+    else:    
         frames = [functions.b64_to_numpy(el) for el in images_list]
 
         # results=ModelManager.process_frame(frames)
@@ -513,6 +515,7 @@ def launch_counting(button_click, model_type, children):
             CLIENT_SOCKET.emit('image-upload',data)
             print('[INFO] Done.')
             while not received and not server_error:
+                print('waiting ...')
                 time.sleep(1)
             if server_error:
                 return [],[

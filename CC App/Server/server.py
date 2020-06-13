@@ -57,6 +57,7 @@ def imageUpload(data):
                   model_type, end='\n\t')
             traceback.print_exc()
             emit('server-error',{'message':sys.exc_info()[1]})
+            print('error sent')
             return
     print('Done.')
     print('[image-upload] Converting images to arrays ...')
