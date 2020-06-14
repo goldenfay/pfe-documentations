@@ -501,11 +501,11 @@ def launch_counting(button_click, model_type, children):
                 CLIENT_SOCKET.connect(SERVER_URL)
             
             images=[{
-                'id':'img'+str(id),
-                'index':id,
-                'data':images_list
+                'id':'img'+str(idx),
+                'index':idx,
+                'data':images_list[idx]
             }
-            for id, frame in enumerate(frames)
+            for idx, frame in enumerate(frames)
             ]
             data={
                 'model_type':model_type,
@@ -514,7 +514,9 @@ def launch_counting(button_click, model_type, children):
             print('[INFO] Sending images to server ...')
             CLIENT_SOCKET.emit('image-upload',data)
             print('[INFO] Done.')
-            while not received and not server_error:
+            while True:
+                if  received or server_error:
+                    break
                 print('waiting ...')
                 time.sleep(1)
             if server_error:
