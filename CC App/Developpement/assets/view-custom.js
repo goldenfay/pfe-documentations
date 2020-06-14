@@ -31,7 +31,7 @@
                      processbtn.click(function(e) {
                          if ($('#usage-switch').hasClass('toggled-on')) {
                              console.log('Clicked')
-                                 //  send_to_server();
+                             send_to_server();
                          }
 
                      });
@@ -55,11 +55,12 @@
                  });
                  socket.on('connect',
                      function() {
-                         console.log('initSocketIO')
+                         console.log('Socket connected.');
                      });
                  socket.on('server-error',
                      function(data) {
-                         $(document).append(error_alert('An error occured on the server.', data['message']))
+                         $(document).append(error_alert('An error occured on the server.', data['message']));
+                         this.disconnect();
 
                      });
                  socket.on('process-done',
@@ -98,14 +99,36 @@
                      imgList.push({
                          id: img.id,
                          index: index,
-                         data: img.src
+                         data: unescape(encodeURIComponent(img.src)).split(";base64,")[1]
                      });
                      index++;
                  }
              }
+             var model_type = $('#dropdown-model-selection span[aria-selected="true"]').html()
+             switch (model_type) {
 
+                 case ('Mobile SSD'):
+                     model_type = 'mobileSSD';
+                     break;
+                 case ('YOLO'):
+                     model_type = 'yolo';
+                     break;
+                 case ('MCNN'):
+                     model_type = 'MCNN';
+                     break;
+                 case ('CSRNet'):
+                     model_type = 'CSRNet';
+                     break;
+                 case ('SANet'):
+                     model_type = 'SANet';
+                     break;
+                 case ('CCNN'):
+                     model_type = 'CCNN';
+                     break;
+             }
+             console.log(model_type)
              socket.emit('image-upload', {
-                 model_type: $('#dropdown-model-selection span[aria-selected="true"]').html(),
+                 model_type: model_type,
                  images: imgList
              });
 

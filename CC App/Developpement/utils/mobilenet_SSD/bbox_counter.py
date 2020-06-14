@@ -4,7 +4,8 @@ import os,sys,glob,inspect
 import multiprocessing
 from multiprocessing import Queue
 import pathos
-from pathos.multiprocessing import ProcessingPool as Pool
+# from pathos.multiprocessing import ProcessingPool as Pool
+from multiprocessing.pool import ThreadPool as Pool
 import imutils
 from imutils.video import VideoStream
 from imutils.video import FPS
@@ -21,7 +22,10 @@ sys.path.append(currentdir)
 from trackers.centroidtracker import CentroidTracker
 from trackers.trackableobject import TrackableObject
 
-from utils.detection_model import DetectionModel
+try:
+	from utils.detection_model import DetectionModel
+except:
+	pass	
 modelfolder=os.path.join(currentdir,'mobilenet_ssd')
 if not os.path.exists(modelfolder):
 	os.makedirs(modelfolder)
@@ -120,7 +124,6 @@ def process_frame(net,frame,min_conf=0.4,show_bbox=True):
 			(startX, startY, endX, endY) = (
 				int(startX), int(startY), int(endX), int(endY))
 			
-			rect = dlib.rectangle(startX, startY, endX, endY)
 
 			if show_bbox:
 				cv2.rectangle(frame,(startX,startY),(endX,endY),(255,0,0),thickness=4)
@@ -162,7 +165,6 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 		(H, W) = frame.shape[:2]
 		rects=[]
 		frame=rgb_frame
-		print('processing frame n° ',totalFrames)
 		if totalFrames % skip_frames== 0: # Use model detection, expensive process
 				
 				trackers = []
@@ -279,6 +281,11 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 				b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
 		else:	
 			cv2.imshow("Frame", frame)
+		frame = vs.read()
+			#VideoStream returns a frame, VideoCapture returns a tuple
+		frame = frame[1] if len(frame)>1 else frame
+		if frame is None:
+			break	
 
 	fps.stop()
 	print("[INFO] elapsed time: {:.2f}".format(fps.elapsed()))
@@ -335,11 +342,12 @@ class MobileSSD(DetectionModel):
 			return  load_network()
 
 		
-		def forward(self,frames,confidence=0.4,show_bbox=True):
-			frames=np.array(frames*255,dtype='uint8')
-			img,count=process_frame(self.net,frames,show_bbox=show_bbox)
+		def forward(self,image,confidence=0.4,show_bbox=True):
+			image=np.array(image*255,dtype='uint8')
+			img,count=process_frame(self.net,image,show_bbox=show_bbox)
 			
 			return img,count
+
 			jobs=[]
 			# queue=[None for _ in range(len(frames))]
 			queue=Queue()
@@ -347,7 +355,7 @@ class MobileSSD(DetectionModel):
 
 			process_fcn=lambda net,frame,conf,bbox_flag,index,tab:tab.insert(index,process_frame(net,frame,conf,bbox_flag) )
 			
-			for i,frame in enumerate(frames):
+			for i,frame in enumerate(image):
 				frame=np.array(frame*255,dtype='uint8')
 				# print(type(frame), frame[3:5,2:4,1])
 				
@@ -390,9 +398,9 @@ class MobileSSD(DetectionModel):
 				# pool=multiprocessing.Pool(1)
 				# p=pool.apply_async(run_simple,('localhost',4000,server,))
 				# p.get()
-				run_simple('localhost',4000,server,use_reloader=False,threaded=True)
-				# pool=Pool(1)
-				# pool.map(lambda :server.run(port=4000,threaded=True),[])
+				run_simple('localhost',4000,server,use_reloader=False,threaded=True,use_debugger=False)
+				pool=Pool(1)
+				pool.map(lambda :server.run(port=4000,threaded=True),[])
 				# multiprocessing.Process(target=lambda :server.run(port=4000,threaded=True)).start()
 				print('lkgjdflkgjdklfjgkjflkgjdflkj')
 
@@ -407,22 +415,40 @@ class MobileSSD(DetectionModel):
 
 
 if __name__=='__main__':
-	pass
+	
 	# construct the argument parse and parse the arguments
-	# ap = argparse.ArgumentParser()
-	# ap.add_argument("-p", "--prototxt", required=True,
-	# 	help="path to Caffe 'deploy' prototxt file")
-	# ap.add_argument("-m", "--model", required=True,
-	# 	help="path to Caffe pre-trained model")
-	# ap.add_argument("-i", "--input", type=str,
-	# 	help="path to optional input video file")
-	# ap.add_argument("-o", "--output", type=str,
-	# 	help="path to optional output video file")
-	# ap.add_argument("-c", "--confidence", type=float, default=0.4,
-	# 	help="minimum probability to filter weak detections")
-	# ap.add_argument("-s", "--skip-frames", type=int, default=30,
-	# 	help="# of skip frames between detections")
-	# args = vars(ap.parse_args())
+	ap = argparse.ArgumentParser()
+	ap.add_argument("-p", "--prototxt",
+		help="path to Caffe 'deploy' prototxt file")
+	ap.add_argument("-m", "--model",
+		help="path to Caffe pre-trained model")
+	ap.add_argument("-i", "--input", type=str,
+		help="path to optional input video file")
+	ap.add_argument("-o", "--output", type=str,
+		help="path to optional output video file")
+	ap.add_argument("-c", "--confidence", type=float, default=0.4,
+		help="minimum probability to filter weak detections")
+	ap.add_argument("-s", "--skip-frames", type=int, default=30,
+		help="# of skip frames between detections")
+	args = vars(ap.parse_args())
+
+	if not args.get("input", False):
+				video_path='ressources/videos/example_02.mp4'
+				print("[INFO] Opening webcam...")
+				vs = cv2.VideoCapture(video_path)
+				
+	else:
+		print("[INFO] opening video file...")
+		vs = cv2.VideoCapture(args["input"])
+
+	net=load_network()		
+	process_video(net,vs,write_output=False,silent=False)	
+	if not args.get("input", False):
+				vs.stop()
+
+	else: # it's a webcam video stream
+		vs.release()	
+
 
 	
 

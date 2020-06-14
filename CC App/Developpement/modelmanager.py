@@ -65,8 +65,12 @@ class ModelManager:
                 if len(frame.shape)==3:
                     frame=frame.unsqueeze(0) 
                 dmap=cls.model(frame)
+                count=dmap.data.sum().item()
+                if cls.model.__class__.__name__=='SANet':
+                    count=count//100
 
-            return dmap.squeeze().detach().cpu().numpy(),dmap.data.sum().item()
+
+            return dmap.squeeze().detach().cpu().numpy(),count
         else: # It's a detection model
             return cls.model.forward(frame)
     @classmethod

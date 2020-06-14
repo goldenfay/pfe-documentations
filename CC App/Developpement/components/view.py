@@ -469,9 +469,9 @@ def update_output(uploaded_filenames, uploaded_file_contents):
                State("output-image-process", "children")])
 def launch_counting(button_click, model_type, children):
     global images_list,res_img_list,CLIENT_SOCKET
-    
+   
     if button_click == 0:
-        return [],[]
+        return [],[]    
     else:    
         frames = [functions.b64_to_numpy(el) for el in images_list]
 
