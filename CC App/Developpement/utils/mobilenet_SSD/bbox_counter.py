@@ -388,21 +388,22 @@ class MobileSSD(DetectionModel):
 				print("[INFO] opening video file...")
 				vs = cv2.VideoCapture(args["input"])
 			
-			if server is None:
+			for f in process_video(self.net,vs,write_output=args['write_output'],silent=args['silent']):
+				yield f
+			# if server is None:
 				
-				server=Flask(__name__)
-				@server.route('/video_feed')
-				def video_feed():
-					return Response(process_video(self.net,vs,write_output=args['write_output'],silent=args['silent']),
-									mimetype='multipart/x-mixed-replace; boundary=frame')
+				# server=Flask(__name__)
+				# @server.route('/video_feed')
+				# def video_feed():
+				# 	return Response(process_video(self.net,vs,write_output=args['write_output'],silent=args['silent']),
+				# 					mimetype='multipart/x-mixed-replace; boundary=frame')
 				# pool=multiprocessing.Pool(1)
 				# p=pool.apply_async(run_simple,('localhost',4000,server,))
 				# p.get()
-				run_simple('localhost',4000,server,use_reloader=False,threaded=True,use_debugger=False)
-				pool=Pool(1)
-				pool.map(lambda :server.run(port=4000,threaded=True),[])
+				# run_simple('localhost',4000,server,use_reloader=False,threaded=True,use_debugger=False)
+				# pool=Pool(1)
+				# pool.map(lambda :server.run(port=4000,threaded=True),[])
 				# multiprocessing.Process(target=lambda :server.run(port=4000,threaded=True)).start()
-				print('lkgjdflkgjdklfjgkjflkgjdflkj')
 
 				# If it's a video capture
 			if not args.get("input", False):

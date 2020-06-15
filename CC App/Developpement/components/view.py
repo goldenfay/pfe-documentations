@@ -13,7 +13,7 @@ from matplotlib import cm
 from io import BytesIO as _BytesIO
 from PIL import Image
 import re,time,base64,os,sys,glob,datetime,traceback,inspect
-
+from flask import Flask, Response
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(currentdir)
@@ -273,7 +273,8 @@ class View(Component):
                                         ),
                                         html.Div(id="div-visual-mode"),
                                         html.Div(id="div-detection-mode"),
-                                        html.Div(id="socket-errors-div",children=[])
+                                        html.Div(id="socket-errors-div",children=[]),
+                                        html.Div(id="test-div",children=[])
                                     ]
                                 )]),
                         static.markdown_popup(),
@@ -474,7 +475,12 @@ def launch_counting(button_click, model_type, children):
         return [],[]    
     else:    
         frames = [functions.b64_to_numpy(el) for el in images_list]
-
+        
+        @app.callback(Output('test-div', 'children'),
+                    [Input('url', 'pathname')])
+        def display(pathname):
+            if pathname == '/testing':
+                return ['dlfksldfk,dlfk,dslfk,dlkf,dlkf,ldkf,dlkf,ldkf,ldkf,dl']
         # results=ModelManager.process_frame(frames)
         # res_img_list=[]
         # for img,count in enumerate(results):
@@ -562,10 +568,12 @@ def launch_counting(button_click, model_type, children):
               [State("dropdown-model-selection", "value"),
                State("dropdown-footage-selection", "value")])
 def process_video(button_click, model_type, video_path):
-    global server
+    global server,app
     if button_click > 0:
-      
-        ModelManager.process_video(video_path)
+        def video_feed():
+            return Response(ModelManager.process_video(video_path),mimetype='multipart/x-mixed-replace; boundary=frame')
+        append_route_rule('/video_feed','video_feed',video_feed)
+        # ModelManager.process_video(video_path)
 
             # run=lambda :server.run(port=4000)
             # multiprocessing.Process(target=run).start()
@@ -702,6 +710,12 @@ if False:
 
     #     return go.Figure(data=[go.Pie()], layout=layout)  # Returns empty pie chart
 
+def append_route_rule(arg1,arg2,arg3):
+    app.server.add_url_rule(arg1,arg2,arg3)
+
+def test_fcn():
+    return '<h1> kfjhdkjfhdkjfhkdshfkjd</h1>'
+app.server.add_url_rule('/test','test',test_fcn)
 ##############################################################################################################
 ##############################################################################################################
 ############################################SOCKETS HANDLERS #################################################

@@ -3,6 +3,8 @@ import numpy as np
 import os,sys,inspect,glob,traceback
 import importlib
 import cv2
+from imutils.video import VideoStream
+from imutils.video import FPS
 
 
 sys.path.append('utils')
@@ -13,6 +15,7 @@ import store.models.equivalence as equivalence
 import utils.YOLO_V3.detector as yolo_detector 
 import utils.mobilenet_SSD.bbox_counter as ssd_detector
 from utils.detection_model import DetectionModel
+import imutils
 
 def is_detection_model(model_name):
     return model_name in ['mobileSSD','yolo']
@@ -74,23 +77,74 @@ class ModelManager:
         else: # It's a detection model
             return cls.model.forward(frame)
     @classmethod
-    def process_video(cls,video_path):
+    def process_video(cls,video_path,args=None):
             #If the current model is a density map based model
         if is_densitymap_model(cls.model):
-            pass # Implemented soon
+            vs = cv2.VideoCapture(video_path)
+            frame = vs.read()
+                #VideoStream returns a frame, VideoCapture returns a tuple
+            frame = frame[1] if len(frame)>1 else frame
+
+            if frame is None:
+                raise Exception('[FATAL] Cannot read video stream')
             
+            (H, W) = frame.shape[:2]
+            fourcc = cv2.VideoWriter_fourcc(*"MP4V")
+            writer = cv2.VideoWriter(os.path.join(cls.BASE_PATH,'output','output.mp4'), fourcc, 30,
+			    (W, H*2), True)
+            fps = FPS().start()   
+
+            while True:
+                frame = imutils.resize(frame, width=500)
+                rgb_frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                (H, W) = frame.shape[:2] 
+
+                dmap=cls.model(rgb_frame)
+                count=dmap.data.sum().item()
+                if cls.model.__class__.__name__=='SANet':
+                    count=count//100
+                text = "Estimated count : {}".format(count)
+                cv2.putText(frame, text, (10, H - 20),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)	
+                cv2.imshow("Frame", frame)
+                
+                if  writer is not None:
+                    dmap = imutils.resize(dmap, width=500)
+                    concated=cv2.vconcat(frame,dmap)
+                    writer.write(concated)
+
+                key = cv2.waitKey(1) & 0xFF
+
+                if key == ord("q"):
+                    break    
+                frame = vs.read()
+                #VideoStream returns a frame, VideoCapture returns a tuple
+                frame = frame[1] if len(frame)>1 else frame
+
+                if frame is None:
+                    break
+            fps.stop()
+            print("[INFO] elapsed time: {:.2f}".format(fps.elapsed()))
+            print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
+            vs.stop()
+
+	
+	if writer is not None:
+		writer.release()
         else: # It's a detection model
-            args={
+            if args is None :
+                args={
                 'input': video_path,
                 'silent': True,
                 'write_output':True,
 
-            }
-            cls.model.forward_video(args)
-            # for x in cls.model.forward_video(args):
-            #     encoded=cv2.imencode('.jpg', x)[1].tobytes()
-            #     yield (b'--frame\r\n'
-			# 	b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
+                }
+            # cls.model.forward_video(args)
+            for x in cls.model.forward_video(args):
+                yield x
+                # encoded=cv2.imencode('.jpg', x)[1].tobytes()
+                # yield (b'--frame\r\n'
+				# b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
 
 
            
