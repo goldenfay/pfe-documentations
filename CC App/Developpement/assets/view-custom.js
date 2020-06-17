@@ -59,16 +59,20 @@
                      });
                  socket.on('server-error',
                      function(data) {
+                         console.log('Server-errors occured.')
                          $(document).append(error_alert('An error occured on the server.', data['message']));
                          this.disconnect();
 
                      });
                  socket.on('process-done',
                      function(data) {
+
                          errors = data['errors']
                          if (errors && errors[0]) {
+                             console.log('Processing frame resulted some errors.')
 
-                             $(document).append(error_alert('An error occured on the server.', errors))
+
+                             $(document).append(error_alert('An error occured on the server.', errors[0]))
                          }
 
                      });
@@ -99,7 +103,6 @@
                      imgList.push({
                          id: img.id,
                          index: index,
-                         //  data: unescape(encodeURIComponent(img.src)).split(";base64,")[1]
                          data: encodeURI(img.src).split(";base64,")[1]
                      });
                      index++;
@@ -127,11 +130,12 @@
                      model_type = 'CCNN';
                      break;
              }
-             console.log(model_type)
+             // Send the socket to the server
              socket.emit('image-upload', {
                  model_type: model_type,
                  images: imgList
              });
+             console.log('Socket emitted.')
 
          } else { // Output error showing that must type server URL.
              url_input.addClass('border border-danger  animate__animated animate__shakeX')

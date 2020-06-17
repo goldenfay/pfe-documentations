@@ -52,8 +52,6 @@ def apply_async(pool, fun, args):
 
 def parse_contents(contents, filename):
     global images_list
-    x=contents.encode("utf-8").split(b";base64,")[1]
-    print(x)
     images_list.append(contents.encode("utf-8").split(b";base64,")[1])
     return html.Div(children=[
         html.H5(filename, style={'textAlign': 'center'}),
@@ -409,7 +407,7 @@ def select_footage(footage):
 @app.callback(Output("dummy-div", "style"),
               [Input("dropdown-model-selection", "value")])
 def change_model(model_type):
-    print('Loading model : ', model_type, ' ...')
+    print('[INFO] Loading model : ', model_type, ' ...')
     if model_type in ['mobileSSD', 'yolo']:
         x = ModelManager.load_detection_model(model_type)
         print(type(x))
@@ -421,7 +419,7 @@ def change_model(model_type):
                   model_type, end='\n\t')
             traceback.print_exc()
             pass
-    print('Done.')
+    print('[INFO] Done.')
     return {"display": "none"}
 
     # Upload image
@@ -431,7 +429,7 @@ def update_output(list_of_names, list_of_contents):
     global ONLINE_MODE
 
     if list_of_contents is not None:
-        print('uploading...')
+        print('[INFO] uploading...')
         children = []
         for i in range(len(list_of_contents)):
             children.append(parse_contents(
@@ -451,7 +449,7 @@ def update_output(list_of_names, list_of_contents):
                      className='d-flex flex-row align-items-center', children=[''])
         ]
 
-        print('Done')
+        print('[INFO] Done')
         return children
 
         # Upload video
@@ -483,10 +481,11 @@ def update_output(uploaded_filenames, uploaded_file_contents):
                State("output-image-process", "children")])
 def launch_counting(button_click, model_type, children):
     global images_list,res_img_list,CLIENT_SOCKET
-    return [],[]
+    return [],[] # to be removed
     if button_click == 0:
         return [],[]    
     else:    
+            # Convert html images (base64 encoded) to numpy arrays
         frames = [functions.b64_to_numpy(el) for el in images_list]
         
         @app.callback(Output('test-div', 'children'),

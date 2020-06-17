@@ -47,7 +47,7 @@ def imageUpload(data):
     print('[image-upload] Socket data Received')
     model_type=data['model_type']
     images_list=data['images']
-    print('[image-upload] Loading model ',model_type,' ...')
+    print('[image-upload] Loading model ',model_type,' ...',end='\t')
 
     try:
         if model_type in ['mobileSSD', 'yolo']:
@@ -56,18 +56,18 @@ def imageUpload(data):
             
             ModelManager.load_external_model(model_type)
     except Exception as e:
-        print('[image-upload] An error occured when loading model ',
+        print('[image-upload] An error occured while loading model ',
                 model_type, end='\n\t')
         traceback.print_exc()
         emit('server-error',{'message':str(e)})
         print('error sent')
         return
     print('Done.')
-    print('[image-upload] Converting images to arrays ...')
+    print('[image-upload] Converting images to arrays ...',end='\t')
 
     for image in images_list:
         image['data']=process_functions.b64_to_numpy(image['data'])
-      
+    print('Done.')  
     errors=[]
     print('[image-upload] Processing images ...')
     for id, frame in enumerate(images_list):
@@ -75,7 +75,7 @@ def imageUpload(data):
             try:
 
                 start = time.time()
-                res_img, count = ModelManager.process_frame(frame)
+                res_img, count = ModelManager.process_frame(frame['data'])
                 inference_time = time.time()-start
 
                 print('\t Done. ')
@@ -90,7 +90,7 @@ def imageUpload(data):
                 }    
                 emit('send-image', data, broadcast = True)
             except Exception as e:
-                print("An error occured while detecting ", end='\n\t')
+                print("An error occured while processing the image ", end='\n\t')
                 traceback.print_exc()
                 errors.append((frame['id'],str(e)))
                 continue
