@@ -14,13 +14,14 @@ import importlib
 import cv2
 from imutils.video import VideoStream
 from imutils.video import FPS
-
+import multiprocessing 
 
 sys.path.append('utils')
 sys.path.append('utils/YOLO_V3')
 sys.path.append('utils/mobilenet_SSD')
 # User's modules
 
+# QUEUE=multiprocessing.Queue()
 
 def is_detection_model(model_name):
     return model_name in ['mobileSSD', 'yolo']
@@ -85,7 +86,8 @@ class ModelManager:
             return cls.model.forward(frame)
 
     @classmethod
-    def process_video(cls, video_path, args=None):
+    def process_video(cls, video_path, args=None,queue=None):
+       
             # If the current model is a density map based model
         if is_densitymap_model(cls.model):
             vs = cv2.VideoCapture(video_path)
@@ -148,7 +150,9 @@ class ModelManager:
 
                 }
             # cls.model.forward_video(args)
+            # return 1
             for x in cls.model.forward_video(args):
+                # queue.put_nowait(x)
                 yield x
                 # encoded=cv2.imencode('.jpg', x)[1].tobytes()
                 # yield (b'--frame\r\n'

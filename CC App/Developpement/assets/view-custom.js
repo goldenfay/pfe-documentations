@@ -89,7 +89,7 @@
                  imgList.push({
                      id: imgs.id,
                      index: 0,
-                     data: imgs.src
+                     data: encodeURI(imgs.src).split(";base64,")[1]
                  });
 
              } else { // It's an array of images
@@ -99,7 +99,8 @@
                      imgList.push({
                          id: img.id,
                          index: index,
-                         data: unescape(encodeURIComponent(img.src)).split(";base64,")[1]
+                         //  data: unescape(encodeURIComponent(img.src)).split(";base64,")[1]
+                         data: encodeURI(img.src).split(";base64,")[1]
                      });
                      index++;
                  }

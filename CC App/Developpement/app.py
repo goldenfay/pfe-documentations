@@ -2,10 +2,16 @@
 import dash
 import dash_bootstrap_components as dbc
 from flask import Flask, Response
-
+import multiprocessing
+import queue
 # User's modules
 import config
 from modelmanager import ModelManager
+
+
+# QUEUE=multiprocessing.Queue()
+QUEUE=queue.Queue()
+seekindex=0
 
 
 # external JavaScript files
@@ -42,6 +48,23 @@ app = dash.Dash(__name__,
                 external_scripts = external_scripts,
                 external_stylesheets=external_stylesheets,
                 suppress_callback_exceptions=True)
+@server.route("/video_feed")
+def feed_video():
+    global seekindex
+    # global QUEUE
+    
+    # if not QUEUE.empty():
+    #     return Response(QUEUE.get_nowait(),mimetype='multipart/x-mixed-replace; boundary=frame')
+    # else:
+    #     return Response('Loading') 
+    with open('temp.txt','r') as f:
+        lines=f.readlines()
+        if len(lines)>seekindex   :
+            res= Response(lines[seekindex],mimetype='multipart/x-mixed-replace; boundary=frame')
+            seekindex+=1
+            return res
+        else:
+            return Response('Loading')     
 
 # server = app.server
 # server.run(port=4000)

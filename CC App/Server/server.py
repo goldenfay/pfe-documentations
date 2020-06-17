@@ -13,6 +13,8 @@ from modelmanager import ModelManager
 import config
 
 
+ModelManager.set_base_path(config.FROZEN_MODELS_BASE_PATH)
+
     # Define flask app and flask-socketIo wrapper
 app = Flask(__name__)
 

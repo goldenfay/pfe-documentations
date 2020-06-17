@@ -14,7 +14,9 @@ from io import BytesIO as _BytesIO
 from PIL import Image
 import re,time,base64,os,sys,glob,datetime,traceback,inspect
 from flask import Flask, Response
-
+import dill
+from multiprocessing import Pool
+from threading import Thread
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(currentdir)
 # User's modules
@@ -24,7 +26,7 @@ import components.reusable as reusable
 from modelmanager import ModelManager
 from sockets import ClientSocket
 from components.base import Component
-from app import app
+from app import app,QUEUE
 import functions
 
 
@@ -39,8 +41,19 @@ SERVER_URL = ''
 CLIENT_SOCKET=None
 
 
+def run_dill_encoded(payload):
+    fun, args = dill.loads(payload)
+    return fun(*args)
+
+
+def apply_async(pool, fun, args):
+    payload = dill.dumps((fun, args))
+    return pool.apply_async(run_dill_encoded, (payload,))
+
 def parse_contents(contents, filename):
     global images_list
+    x=contents.encode("utf-8").split(b";base64,")[1]
+    print(x)
     images_list.append(contents.encode("utf-8").split(b";base64,")[1])
     return html.Div(children=[
         html.H5(filename, style={'textAlign': 'center'}),
@@ -470,7 +483,7 @@ def update_output(uploaded_filenames, uploaded_file_contents):
                State("output-image-process", "children")])
 def launch_counting(button_click, model_type, children):
     global images_list,res_img_list,CLIENT_SOCKET
-   
+    return [],[]
     if button_click == 0:
         return [],[]    
     else:    
@@ -568,18 +581,56 @@ def launch_counting(button_click, model_type, children):
               [State("dropdown-model-selection", "value"),
                State("dropdown-footage-selection", "value")])
 def process_video(button_click, model_type, video_path):
-    global server,app
+    global server,app,QUEUE
     if button_click > 0:
-        def video_feed():
-            return Response(ModelManager.process_video(video_path),mimetype='multipart/x-mixed-replace; boundary=frame')
-        append_route_rule('/video_feed','video_feed',video_feed)
+        
+        
+
+        def launch_subprocess(model_type,video_path,queue):
+            global server
+            if model_type in ['mobileSSD', 'yolo']:
+                x = ModelManager.load_detection_model(model_type)
+                print('\t',type(x))
+            else:
+                try:
+                    ModelManager.load_external_model(model_type)
+                except Exception as e:
+                    print('An error occured when loading model ',
+                        model_type, end='\n\t')
+                    traceback.print_exc()
+                    pass
+            print('[INFO] Done.')
+            # ModelManager.process_video(video_path,queue)
+                
+            if server is None:
+                server=Flask(__name__)
+                @server.route('/stream')
+                def video_feed():
+                    return Response(ModelManager.process_video(video_path),mimetype='multipart/x-mixed-replace; boundary=frame')
+                    # if not QUEUE.empty():
+                    #     return Response(QUEUE.get_nowait(),mimetype='multipart/x-mixed-replace; boundary=frame')
+                    # else :return 'fgkjhdfskgjhdfkjh'
+            server.run(port=4000)
+            # for x in ModelManager.process_video(video_path):
+            #     # queue.put_nowait(x)
+            #     with open('temp.txt','a') as f:
+            #         f.write(x)
+        def start_thread()  :
+            pass          
+                    
+        Thread(target=launch_subprocess,args=(model_type,video_path,None)).start()
+        # pool = Pool(2)
+        # job=apply_async(pool,launch_subprocess,(model_type,video_path,QUEUE))
+        
         # ModelManager.process_video(video_path)
 
             # run=lambda :server.run(port=4000)
             # multiprocessing.Process(target=run).start()
-
+        print('fkgjfkgjhfldkjh')
         return [
-            html.Img(src='http://localhost:4000/video_feed')
+            # html.Img(src='/video_feed')
+            html.Img(src='http://localhost:4000/stream')
+            # html.Iframe(src='http://localhost:4000/stream')
 
         ]
 

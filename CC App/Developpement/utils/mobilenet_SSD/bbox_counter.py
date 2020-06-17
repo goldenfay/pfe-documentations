@@ -22,10 +22,8 @@ sys.path.append(currentdir)
 from trackers.centroidtracker import CentroidTracker
 from trackers.trackableobject import TrackableObject
 
-try:
-	from utils.detection_model import DetectionModel
-except:
-	pass	
+from utils.detection_model import DetectionModel
+
 modelfolder=os.path.join(currentdir,'mobilenet_ssd')
 if not os.path.exists(modelfolder):
 	os.makedirs(modelfolder)
@@ -38,6 +36,7 @@ CLASSES = ["background", "aeroplane", "bicycle", "bird", "boat",
 		"dog", "horse", "motorbike", "person", "pottedplant", "sheep",
 		"sofa", "train", "tvmonitor"]
 
+QUEUE=None
 server=None
 
 def download_if_not_present(url, file_name):
@@ -135,7 +134,7 @@ def process_frame(net,frame,min_conf=0.4,show_bbox=True):
 
 
 def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,silent=False):
-	
+	print('[INFO] Initializing ...')
 	ct = CentroidTracker(maxDisappeared=40, maxDistance=50)
 	trackers = []
 	trackableObjects = {}
@@ -158,6 +157,7 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 
 	fps = FPS().start()
 
+	print('[INFO] Video in process ...')
 
 	while True:
 		frame = imutils.resize(frame, width=500)
@@ -203,6 +203,7 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 
 		
 		else:	# Else  use tracking to get new positions of detected objects 
+
 					# loop over the trackers
 				for tracker in trackers:
 				
@@ -259,7 +260,7 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 		("Down", countDown)
 	]
 
-			# lShow infos on he frame
+			# Show infos on he frame
 		for (i, (k, v)) in enumerate(info):
 			text = "{}: {}".format(k, v)
 			cv2.putText(frame, text, (10, H - ((i * 20) + 20)),
@@ -272,19 +273,23 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 
 		if key == ord("q"):
 			break
-
 		totalFrames+=1
 		fps.update()
 		if silent:	
 			encoded=cv2.imencode('.jpg', frame)[1].tobytes()
+			# QUEUE.put( b'--frame\r\n'
+			# 	b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
 			yield (b'--frame\r\n'
 				b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
 		else:	
 			cv2.imshow("Frame", frame)
+		if totalFrames%50==0:
+			print(' 50 Frames processed')
 		frame = vs.read()
 			#VideoStream returns a frame, VideoCapture returns a tuple
 		frame = frame[1] if len(frame)>1 else frame
 		if frame is None:
+			print('[Warning] Red a None frame')
 			break	
 
 	fps.stop()
@@ -378,7 +383,7 @@ class MobileSSD(DetectionModel):
 
 		def forward_video(self,args):
 			
-			global server
+			global server,QUEUE
 			if not args.get("input", False):
 				video_path='ressources/videos/example_02.mp4'
 				print("[INFO] Opening webcam...")
@@ -388,8 +393,13 @@ class MobileSSD(DetectionModel):
 				print("[INFO] opening video file...")
 				vs = cv2.VideoCapture(args["input"])
 			
+			# process_video(self.net,vs,write_output=args['write_output'],silent=args['silent'])
 			for f in process_video(self.net,vs,write_output=args['write_output'],silent=args['silent']):
+				
+				# QUEUE.put_nowait(f)
 				yield f
+				
+				
 			# if server is None:
 				
 				# server=Flask(__name__)
