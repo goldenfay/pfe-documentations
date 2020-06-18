@@ -79,8 +79,8 @@ def imageUpload(data):
                 inference_time = time.time()-start
 
                 print('\t Done. ')
-                encoded_img = HTML_IMG_SRC_PARAMETERS+process_functions.numpy_to_b64(
-                    res_img, model_type not in ['mobileSSD', 'yolo'])
+                encoded_img = HTML_IMG_SRC_PARAMETERS+(process_functions.numpy_to_b64(
+                    res_img, model_type not in ['mobileSSD', 'yolo']).decode("utf-8"))
                 data={
                     'id':frame['id'],
                     'index': frame['index'],

@@ -182,7 +182,7 @@
             <div class="col-md justify-content-center animate__animated animate__fadeInRight">
                 <div class="d-flex justify-content-center">
                     <h4 class="muted"> Original </h4>
-                    <img src=${data}>
+                    <img src=${data['data']}>
                 </div>
             </div>
         </div>
