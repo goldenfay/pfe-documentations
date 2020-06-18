@@ -88,14 +88,14 @@ def imageUpload(data):
                     'count': count,
                     'time':inference_time
                 }    
-                emit('send-image', data)
+                emit('send-image', data,broadcast = True)
             except Exception as e:
                 print("An error occured while processing the image ", end='\n\t')
                 traceback.print_exc()
                 errors.append((frame['id'],str(e)))
                 continue
     print('[image-upload] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
-    emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
+    # emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
 
     # result_img=process_functions.numpy_to_b64(np.zeros((250,250,3)),False)
     # print('sending result ...')

@@ -70,7 +70,7 @@
                      });
                  socket.on('process-done',
                      function(data) {
-                         console.log('fkjghdfkljhgfkjhgfkljhglkfjhkfjhgkj')
+                         console.log(data)
                          errors = data['errors']
                          if (errors && errors[0]) {
                              console.log('Processing frame resulted some errors.')
@@ -80,7 +80,7 @@
                          }
 
                      });
-                 socket.on("send-image", processImageResponse);
+                 socket.on("send-image", (data) => processImageResponse(data));
              }
              if (socket.disconnected) {
                  socket = io.connect(url_input.val(), {
