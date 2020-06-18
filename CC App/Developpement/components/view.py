@@ -407,6 +407,7 @@ def select_footage(footage):
 @app.callback(Output("dummy-div", "style"),
               [Input("dropdown-model-selection", "value")])
 def change_model(model_type):
+    if ONLINE_MODE : return {"display": "none"}
     print('[INFO] Loading model : ', model_type, ' ...')
     if model_type in ['mobileSSD', 'yolo']:
         x = ModelManager.load_detection_model(model_type)

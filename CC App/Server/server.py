@@ -22,7 +22,7 @@ secret=os.getenv("SECRET_KEY")
 app.logger.info("Starting...")
 app.config['SECRET_KEY'] = secret
 app.logger.critical("secret: %s" % secret)
-socketio = SocketIO(app,cors_allowed_origins="*",ping_timeout=600000)
+socketio = SocketIO(app,cors_allowed_origins="*",ping_timeout=600000,ping_interval=100)
 
 HTML_IMG_SRC_PARAMETERS = 'data:image/png;base64, '
 
@@ -88,7 +88,7 @@ def imageUpload(data):
                     'count': count,
                     'time':inference_time
                 }    
-                emit('send-image', data, broadcast = True)
+                emit('send-image', data)
             except Exception as e:
                 print("An error occured while processing the image ", end='\n\t')
                 traceback.print_exc()

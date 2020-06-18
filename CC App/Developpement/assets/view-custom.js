@@ -57,6 +57,10 @@
                      function() {
                          console.log('Socket connected.');
                      });
+                 socket.on('disconnect',
+                     function() {
+                         console.log('Socket disconnected.');
+                     });
                  socket.on('server-error',
                      function(data) {
                          console.log('Server-errors occured.')
@@ -66,7 +70,7 @@
                      });
                  socket.on('process-done',
                      function(data) {
-
+                         console.log('fkjghdfkljhgfkjhgfkljhglkfjhkfjhgkj')
                          errors = data['errors']
                          if (errors && errors[0]) {
                              console.log('Processing frame resulted some errors.')
@@ -78,7 +82,7 @@
                      });
                  socket.on("send-image", processImageResponse);
              }
-             if (!socket.connected) {
+             if (socket.disconnected) {
                  socket = io.connect(url_input.val(), {
                      reconnection: false
                  });
@@ -147,31 +151,44 @@
 
  // Socket handlers functions
  function processImageResponse(data) {
-     $('<div/>', {
-             class: 'row'
-         })
-         .append(
-             $('<div/>', {
-                 class: 'col-md justify-content-center animate__animated animate__fadeInRight'
-             }).append(
-                 $('<div/>', {
-                     class: 'd-flex justify-content-center'
-                 }).append(
+     console.log('message received from server ', data)
+         //  $('<div/>', {
+         //          class: 'row'
+         //      })
+         //      .append(
+         //          $('<div/>', {
+         //              class: 'col-md justify-content-center animate__animated animate__fadeInRight'
+         //          }).append(
+         //              $('<div/>', {
+         //                  class: 'd-flex justify-content-center'
+         //              }).append(
 
-                     $('<h4/>', {
-                         text: 'Original',
-                         class: 'muted'
-                     })
-                 )
-             ).append(
-                 $('<img/>', {
-                     id: 'img',
-                     src: data
-                 })
+     //                  $('<h4/>', {
+     //                      text: 'Original',
+     //                      class: 'muted'
+     //                  })
+     //              )
+     //          ).append(
+     //              $('<img/>', {
+     //                  id: 'img',
+     //                  src: data
+     //              })
 
-             )
-         )
-         .appendTo('#output-image-process');
+     //          )
+     //      )
+     //      .appendTo('#output-image-process');
+     $('#output-image-process').append(
+         `<div class="row">
+            <div class="col-md justify-content-center animate__animated animate__fadeInRight">
+                <div class="d-flex justify-content-center">
+                    <h4 class="muted"> Original </h4>
+                    <img src=${data}>
+                </div>
+            </div>
+        </div>
+        `
+
+     );
 
  }
  // Create an observer instance linked to the callback function
