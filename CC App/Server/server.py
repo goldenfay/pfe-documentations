@@ -88,7 +88,7 @@ def imageUpload(data):
                     'count': count,
                     'time':str(inference_time)
                 }    
-                await emit('send-image', data,broadcast = True)
+                emit('send-image', data,broadcast = True)
             except Exception as e:
                 print("An error occured while processing the image ", end='\n\t')
                 traceback.print_exc()
