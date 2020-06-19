@@ -482,18 +482,13 @@ def update_output(uploaded_filenames, uploaded_file_contents):
                State("output-image-process", "children")])
 def launch_counting(button_click, model_type, children):
     global images_list,res_img_list,CLIENT_SOCKET
-    return [],[] # to be removed
+    #return [],[] # to be removed
     if button_click == 0:
         return [],[]    
     else:    
             # Convert html images (base64 encoded) to numpy arrays
         frames = [functions.b64_to_numpy(el) for el in images_list]
-        
-        @app.callback(Output('test-div', 'children'),
-                    [Input('url', 'pathname')])
-        def display(pathname):
-            if pathname == '/testing':
-                return ['dlfksldfk,dlfk,dslfk,dlkf,dlkf,ldkf,dlkf,ldkf,ldkf,dl']
+         
         # results=ModelManager.process_frame(frames)
         # res_img_list=[]
         # for img,count in enumerate(results):
@@ -501,8 +496,7 @@ def launch_counting(button_click, model_type, children):
         #     encoded_img = numpy_to_b64(img,model_type not in ['mobileSSD','yolo'])
         #     res_img_list.append(encoded_img)
 
-        
-
+    
         if ONLINE_MODE: # Proceed images to server and wait for results
             received=False
             server_error=False

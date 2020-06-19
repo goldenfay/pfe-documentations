@@ -1,25 +1,18 @@
-import utils.YOLO_V3.detector as yolo_detector
-import imutils
-from utils.detection_model import DetectionModel
-import utils.mobilenet_SSD.bbox_counter as ssd_detector
-import store.models.equivalence as equivalence
 import torch
-import numpy as np
-import os
-import sys
-import inspect
-import glob
-import traceback
-import importlib
+import os,sys,glob,traceback
 import cv2
+import imutils
 from imutils.video import VideoStream
 from imutils.video import FPS
-import multiprocessing 
 
 sys.path.append('utils')
 sys.path.append('utils/YOLO_V3')
 sys.path.append('utils/mobilenet_SSD')
-# User's modules
+    # User's modules
+import utils.YOLO_V3.yolo_model as yolo_detector
+import utils.mobilenet_SSD.bbox_counter as ssd_detector
+from utils.detection_model import DetectionModel
+import store.models.equivalence as equivalence
 
 # QUEUE=multiprocessing.Queue()
 
@@ -60,9 +53,9 @@ class ModelManager:
         # cls.model=torch.load(os.path.join(cls.FROZEN_MODELS_PATH,model_name+'.pth'),map_location=cls.device)
 
         if model_name == 'mobileSSD':
-            cls.model = ssd_detector.MobileSSD(model_name)
+            cls.model = ssd_detector.MobileSSD()
         else:
-            cls.model = yolo_detector.YOLO(model_name)
+            cls.model = yolo_detector.YOLO()
         return cls.model
 
     @classmethod
@@ -188,7 +181,7 @@ class ModelManager:
         cls.MODELS_SCHEMA_PATH = os.path.join(cls.BASE_PATH, 'schemas')
         sys.path.append(cls.BASE_PATH)
         sys.path.append(cls.MODELS_SCHEMA_PATH)
-        # importlib.import_module(cls.MODELS_SCHEMA_PATH)
+
         global Model, CCNN, CSRNet, MCNN, SANet
         import schemas
         from model import Model

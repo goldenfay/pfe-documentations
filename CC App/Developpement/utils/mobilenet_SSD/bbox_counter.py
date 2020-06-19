@@ -338,7 +338,7 @@ def stream_video(args):
 
 class MobileSSD(DetectionModel):
 
-		def __init__(self, model_name):
+		def __init__(self):
 			self.net=MobileSSD.load_net()
 			
 

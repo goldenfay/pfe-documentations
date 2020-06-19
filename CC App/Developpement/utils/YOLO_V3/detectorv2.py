@@ -256,14 +256,14 @@ def update_frame(image, people_indxs, class_ids, detected_boxes, conf_levels, co
                 if blur:
                     image = blur_area(image, max(x, 0), max(y, 0), w, h)
 
-            # draw a bounding box rectangle and label on the frame
+                # draw a bounding box rectangle and label on the frame
             if (show_boxes and class_ids[i] == 0) or box_all_objects:
                 color = [int(c) for c in colors[class_ids[i]]]
                 cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
                 text = "{}: {:.2f}".format(labels[class_ids[i]], conf_levels[i])
                 cv2.putText(image, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-    # write number of people in bottom corner
+        # write number of people in bottom corner
     text = "Persons: {}".format(count_people)
     cv2.putText(image, text, (10, image.shape[0] - 20), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
     return image, count_people
@@ -316,14 +316,14 @@ def show_plots(data):
 
 if __name__ == '__main__':
     
-    # construct the argument parse and parse the arguments
+        # construct the argument parse and parse the arguments
     args = define_args()
     config = read_config(args["config"])
 
-    # Load the trained network
+        # Load the trained network
     (net, ln, LABELS) = load_network(config['NETWORK']['Path'],tiny_version=True)
 
-    # Initialise video source
+        # Initialise video source
     webcam = (config['READER']['Webcam'] == "yes")
     if webcam:
         cam_id = int(config['READER']['WebcamID'])
@@ -333,9 +333,8 @@ if __name__ == '__main__':
     else:
         (cam, cam_width, cam_height) = get_filesource(config['READER']['Filename'])
 
-    # determine if we need to show the enclosing boxes, etc
-    network_path = config['NETWORK']['Path']
-    webcam = (config['READER']['Webcam'] == "yes")
+        # determine if we need to show the enclosing boxes, etc
+
     showpeopleboxes = (config['OUTPUT']['ShowPeopleBoxes'] == "yes")
     showallboxes = (config['OUTPUT']['ShowAllBoxes'] == "yes")
     blurpeople = (config['OUTPUT']['BlurPeople'] == "yes")
@@ -347,23 +346,23 @@ if __name__ == '__main__':
     show_graphs = (config['OUTPUT']['ShowGraphs'] == "yes")
     print_ascii = (config['OUTPUT']['PrintAscii'] == "yes")
     SkipFrames = int(config['READER']['SkipFrames'])
-    # initialize a list of colors to represent each possible class label
+        # initialize a list of colors to represent each possible class label
     np.random.seed(42)
     COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
 
-    # Initialise video ouptut writer
+        # Initialise video ouptut writer
     if save_video:
         (writer, fps) = get_videowriter(config['OUTPUT']['Filename'], cam_width, cam_height,
                                         int(config['OUTPUT']['FPS']))
     else:
         (writer, fps) = (None, 0)
 
-    # Create output windows, but limit on 1440x810
+        # Create output windows, but limit on 1440x810
     cv2.namedWindow('Video', cv2.WINDOW_NORMAL)
     cv2.resizeWindow('Video', min(cam_width, 1440), min(cam_height, 810))
     #cv2.resizeWindow('Video', min(cam_width, 640), min(cam_height, 360))
     cv2.moveWindow('Video', 0, 0)
-    # Create plot
+        # Create plot
     if show_graphs:
         plt.ion()
         plt.figure(num=None, figsize=(8, 7), dpi=80, facecolor='w', edgecolor='k')
@@ -388,13 +387,13 @@ if __name__ == '__main__':
         rgb_frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) 
 
         start = time.time()
-        # Feed frame to network
+            # Feed frame to network
         layerOutputs = forward_detection(frame, net, ln)
-        # Obtain detected objects, including cof levels and bounding boxes
+            # Obtain detected objects, including cof levels and bounding boxes
         (idxs, classIDs, boxes, confidences) = get_detected_items(layerOutputs, nw_confidence, nw_threshold,
         
                                                                  cam_width, cam_height)
-        if totalFrames % SkipFrames== 0:
+        if totalFrames % SkipFrames== 0: # detection
             for box in boxes:
                 tracker = dlib.correlation_tracker()
                 rect = dlib.rectangle(box[0], box[1], box[2], box[3])
@@ -402,37 +401,37 @@ if __name__ == '__main__':
                     tracker.start_track(rgb_frame, rect)
                 except:
                     continue    
-                # add the tracker to our list of trackers 
+                    # add the tracker to our list of trackers 
                 trackers.append(tracker)
-        else:
+        else: # Tracking
             print('[Infos] Will use low cost tracker')
             for tracker in trackers:
                 
 
-                # update the tracker and grab the updated position
+                    # update the tracker and grab the updated position
                 tracker.update(rgb_frame)
                 pos = tracker.get_position()
 
-                # get start point and both height and width
+                    # get start point and both height and width
                 startX = int(pos.left())
                 startY = int(pos.top())
                 endX = int(pos.right())
                 endY = int(pos.bottom())
 
-                # add the bounding box coordinates to the rectangles list
+                    # add the bounding box coordinates to the rectangles list
                 rects.append((startX, startY, endX, endY))
         objects = cent_tracker.update(rects) 
-        # loop over the tracked objects
+            # loop over the tracked objects
         for (objectID, centroid) in objects.items():
            
  
             tracked_obj = trackableObjects.get(objectID, None)
 
-            # if there is no existing trackable object, create one
+                # if there is no existing trackable object, create one
             if tracked_obj is None:
                 tracked_obj = TrackableObject(objectID, centroid)
 
-            # else, use trackable object to determine direction
+                # else, use trackable object to determine direction
             else:
                 # the difference between the y-coordinate of the *current*
                 # centroid and the mean of *previous* centroids will tell
@@ -442,7 +441,7 @@ if __name__ == '__main__':
                 direction = centroid[1] - np.mean(y)
                 tracked_obj.centroids.append(centroid)
 
-                # check to see if the object has been counted or not
+                    # check to see if the object has been counted or not
                 if not tracked_obj.counted:
                     # if the direction is negative (indicating the object
                     # is moving up) AND the centroid is above the center
@@ -458,11 +457,11 @@ if __name__ == '__main__':
                         # countDown += 1
                         tracked_obj.counted = True
 
-            # store the trackable object in our dictionary
+                # store the trackable object in our dictionary
             trackableObjects[objectID] = tracked_obj
 
-            # draw both the ID of the object and the centroid of the
-            # object on the output frame
+                # draw both the ID of the object and the centroid of the
+                # object on the output frame
             text = "ID {}".format(objectID)
             cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
@@ -470,21 +469,21 @@ if __name__ == '__main__':
             cv2.imshow("Video", frame)
 
 
-        # Update frame with recognised objects
+            # Update frame with recognised objects
         frame, npeople = update_frame(frame, idxs, classIDs, boxes, confidences, COLORS, LABELS, showpeopleboxes,
                                       blurpeople, showallboxes)
         log_count(countfile, npeople)
 
-        # Show frame with bounding boxes on screen
+            # Show frame with bounding boxes on screen
         cv2.imshow('Video', frame)
 
         if show_graphs:
-            # Add row to panda frame
+                # Add row to panda frame
             new_row = pd.DataFrame([[npeople]], columns=["value"], index=[pd.to_datetime(datetime.datetime.now())])
             df = pd.concat([df, pd.DataFrame(new_row)], ignore_index=False)
             show_plots(df)
 
-        # write the output frame to disk, repeat (time taken * 30 fps) in order to get a video at real speed
+            # write the output frame to disk, repeat (time taken * 30 fps) in order to get a video at real speed
         if save_video:
             frame_cnt = int((time.time()-start)*fps) if webcam and realspeed else 1
             save_frame(writer, frame, frame_cnt)

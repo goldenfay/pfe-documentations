@@ -179,10 +179,10 @@
      //      .appendTo('#output-image-process');
      $('#output-image-process').append(
          `<div class="row">
-            <div class="col-md justify-content-center animate__animated animate__fadeInRight">
-                <div class="d-flex justify-content-center">
-                    <h4 class="muted"> Original </h4>
-                    <img src=${data['data']}>
+            <div class="col-md d-flex justify-content-center animate__animated animate__fadeInRight">
+                <div class="d-flex align-items-center">
+                    <h4 class="muted d-flex justify-content-center"> Original </h4>
+                    <img src="${data['data']}">
                 </div>
             </div>
         </div>

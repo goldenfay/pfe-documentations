@@ -8,7 +8,7 @@ sys.path.append('.')
 
 
 class DetectionModel:
-    def __init__(self,model_name):
+    def __init__(self):
         pass
     #    if model_name=='mobileSSD':
     #        self.net=ssd_module.MobileSSD.load_net()
