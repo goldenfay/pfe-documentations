@@ -55,6 +55,14 @@ class YOLO(DetectionModel):
 
         return frame,npeople                              
 
+    def forward_video(self,args):
+        if args is None:
+            args={
+                'silent':True
+            }
+        for f in process_video(args=args):
+            yield f
+                
     def init_params(self):
         self.confidence = float(YOLO.config['NETWORK']['Confidence'])
         self.threshold = float(YOLO.config['NETWORK']['Threshold'])

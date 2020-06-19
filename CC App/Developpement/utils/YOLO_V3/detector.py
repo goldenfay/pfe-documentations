@@ -176,7 +176,6 @@ def get_detected_items(layeroutputs, confidence_level, threshold, img_width, img
     detected_boxes = []
     detection_confidences = []
     detected_classes = []
-    print('Total of {} Detections.'.format(len(layeroutputs)))
     for output in layeroutputs:
             # loop over detections
         for detection in output:
@@ -217,14 +216,14 @@ def process_video(config=None, args=None):
         config = read_config(config_file)
 
         # Load the trained network
-    (net, ln, LABELS) = load_network(config['NETWORK']['Path'], tiny_version=True)
+    (net, ln, LABELS) = load_network(os.path.join(currentdir,'yolo-coco'), tiny_version=True)
         # Get VideoStream if using webcam, or VideoCapture if using a video
     webcam = (config['READER']['Webcam'] == "yes")
     if webcam:
         cam_width,cam_height = int(config['READER']['Width']),int(config['READER']['Height'])
         video_path=None
     else:
-        video_path=config['READER']['Filename']
+        video_path=os.path.sep.join([currentdir]+config['READER']['Filename'].split('/'))
     (vs, cam_width, cam_height) = get_capture(webcam=webcam,video_path=video_path)
 
         # get params from config file
