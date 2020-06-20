@@ -39,7 +39,12 @@ ONLINE_MODE = False
 server=None
 SERVER_URL = ''
 CLIENT_SOCKET=None
-
+best_performence_models={
+    'MCNN':'internal',
+    'CSRNet':'external',
+    'SANet':'external',
+    'CCNN':'internal'
+}
 
 def run_dill_encoded(payload):
     fun, args = dill.loads(payload)
@@ -413,8 +418,9 @@ def change_model(model_type):
         x = ModelManager.load_detection_model(model_type)
         print(type(x))
     else:
+        external_flag=best_performence_models[model_type]=='external'
         try:
-            ModelManager.load_external_model(model_type)
+            ModelManager.load_external_model(model_type,external_flag)
         except Exception as e:
             print('An error occured when loading model ',
                   model_type, end='\n\t')

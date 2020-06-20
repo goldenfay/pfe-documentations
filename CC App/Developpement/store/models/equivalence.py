@@ -22,8 +22,11 @@ def define_equivalence_dict(key_list, couples_equivalence_list) -> dict:
 def get_dict_match(model_name):
     external_model_statedict=torch.load(os.path.join(currentdir,'frozen','external',model_name+'.pth'), map_location='cpu')
     if model_name=='CSRNet':
+        # match_dict= define_equivalence_dict(list(external_model_statedict),
+        #                                    [('CCN.', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
         match_dict= define_equivalence_dict(list(external_model_statedict),
-                                           [('CCN.', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
+                                           [('CCN.module', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
+
     elif model_name=='SANet':
         match_dict= define_equivalence_dict(list(external_model_statedict),
                                            [('CCN.module.', ''), ('branch1x1', 'branch_1x1'), ('branch3x3', 'branch_3x3'), ('branch5x5', 'branch_5x5'), ('branch7x7', 'branch_7x7')])
@@ -68,3 +71,37 @@ def get_dict_match(model_name):
 # SANet_DICT_MATCH = define_equivalence_dict(list(torch.load('08-SANet_all_ep_57_mae_42.4_mse_85.4.pth', map_location='cpu')),
 #                                            [('CCN.module.', ''), ('branch1x1', 'branch_1x1'), ('branch3x3', 'branch_3x3'), ('branch5x5', 'branch_5x5'), ('branch7x7', 'branch_7x7')])
 
+['CCN.module.frontend.0.weight',
+ 'CCN.module.frontend.0.bias',
+ 'CCN.module.frontend.2.weight',
+ 'CCN.module.frontend.2.bias',
+ 'CCN.module.frontend.5.weight',
+ 'CCN.module.frontend.5.bias',
+ 'CCN.module.frontend.7.weight',
+ 'CCN.module.frontend.7.bias',
+ 'CCN.module.frontend.10.weight',
+ 'CCN.module.frontend.10.bias',
+ 'CCN.module.frontend.12.weight',
+ 'CCN.module.frontend.12.bias',
+ 'CCN.module.frontend.14.weight',
+ 'CCN.module.frontend.14.bias',
+ 'CCN.module.frontend.17.weight',
+ 'CCN.module.frontend.17.bias',
+ 'CCN.module.frontend.19.weight',
+ 'CCN.module.frontend.19.bias',
+ 'CCN.module.frontend.21.weight',
+ 'CCN.module.frontend.21.bias',
+ 'CCN.module.backend.0.weight',
+ 'CCN.module.backend.0.bias',
+ 'CCN.module.backend.2.weight',
+ 'CCN.module.backend.2.bias',
+ 'CCN.module.backend.4.weight',
+ 'CCN.module.backend.4.bias',
+ 'CCN.module.backend.6.weight',
+ 'CCN.module.backend.6.bias',
+ 'CCN.module.backend.8.weight',
+ 'CCN.module.backend.8.bias',
+ 'CCN.module.backend.10.weight',
+ 'CCN.module.backend.10.bias',
+ 'CCN.module.output_layer.weight',
+ 'CCN.module.output_layer.bias']

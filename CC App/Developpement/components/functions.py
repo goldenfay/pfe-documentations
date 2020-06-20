@@ -24,10 +24,12 @@ def b64_to_numpy(string, to_scalar=True):
 
 
 def numpy_to_pil(array, jetMap=True):
+    print(array.shape,array.max(),array.min())    
     if jetMap:
         print('\t Converting to Jet color map')
         array = cm.jet(array)
-    return Image.fromarray(np.uint8(array*255))
+    array=array/array.max()*255    
+    return Image.fromarray(np.uint8(array))
 
 
 def numpy_to_b64(array, jetMap=True):

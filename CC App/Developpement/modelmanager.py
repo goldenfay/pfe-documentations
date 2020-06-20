@@ -60,6 +60,8 @@ class ModelManager:
 
     @classmethod
     def process_frame(cls, frame):
+        #TO REMEMBER : padding = int((kernel_size - 1) / 2) if same_padding else 0
+        print(cls.model.__class__.__name__)
             # If the current model is a density map based model
         if is_densitymap_model(cls.model):
             if not isinstance(frame, torch.Tensor):
@@ -73,7 +75,6 @@ class ModelManager:
                 count = dmap.data.sum().item()
                 if cls.model.__class__.__name__ == 'SANet':
                     count = count//100
-
             return dmap.squeeze().detach().cpu().numpy(), count
         else:  # It's a detection model
             return cls.model.forward(frame)
@@ -122,7 +123,7 @@ class ModelManager:
                     break
                 fps.update()
                 frame = vs.read()
-                # VideoStream returns a frame, VideoCapture returns a tuple
+                    # VideoStream returns a frame, VideoCapture returns a tuple
                 frame = frame[1] if len(frame) > 1 else frame
 
                 if frame is None:
@@ -143,31 +144,30 @@ class ModelManager:
 
                 }
             # cls.model.forward_video(args)
-            # return 1
             for x in cls.model.forward_video(args):
                 # queue.put_nowait(x)
                 yield x
-                # encoded=cv2.imencode('.jpg', x)[1].tobytes()
-                # yield (b'--frame\r\n'
-                # b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
+  
 
     @staticmethod
-    def load_external_model(model_name):
+    def load_external_model(model_name,external=True):
         try:
-            # match_dict=getattr(equivalence,model_name+'_DICT_MATCH')
-            # pretrained_dict = torch.load(os.path.join(ModelManager.FROZEN_MODELS_PATH,'external',model_name+'.pth'),map_location=ModelManager.device)
-            pretrained_dict, match_dict = equivalence.get_dict_match(
-                model_name)
             model = ModelManager.get_instance(model_name)
-            model_dict = model.state_dict()
+            if external:
+                pretrained_dict, match_dict = equivalence.get_dict_match(
+                    model_name)
+                model_dict = model.state_dict()
 
-            # 1. filter out unnecessary keys
-            pretrained_dict = {
-                match_dict[k]: v for k, v in pretrained_dict.items() if k in match_dict}
-            # 2. overwrite entries in the existing state dict
-            model_dict.update(pretrained_dict)
-            # 3. load the new state dict
-            model.load_state_dict(model_dict)
+                # 1. filter out unnecessary keys
+                pretrained_dict = {
+                    match_dict[k]: v for k, v in pretrained_dict.items() if k in match_dict}
+                # 2. overwrite entries in the existing state dict
+                model_dict.update(pretrained_dict)
+                # 3. load the new state dict
+                model.load_state_dict(model_dict)
+                
+            else:
+                model.load_state_dict(torch.load(os.path.join(ModelManager.FROZEN_MODELS_PATH,'internal',model_name+'.pth'),map_location=ModelManager.device)['model_state_dict'])    
             ModelManager.model = model
             return model
         except Exception as e:
@@ -189,4 +189,3 @@ class ModelManager:
         from CSRNet import CSRNet
         from mcnn import MCNN
         from SANet import SANet
-        # print(schemas)
