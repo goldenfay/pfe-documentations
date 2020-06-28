@@ -92,6 +92,7 @@ class ModelManager:
 
             if frame is None:
                 raise Exception('[FATAL] Cannot read video stream')
+                traceback.print_exc()
 
             (H, W) = frame.shape[:2]
             fourcc = cv2.VideoWriter_fourcc(*"MP4V")
