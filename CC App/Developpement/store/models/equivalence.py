@@ -25,7 +25,7 @@ def get_dict_match(model_name):
         # match_dict= define_equivalence_dict(list(external_model_statedict),
         #                                    [('CCN.', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
         match_dict= define_equivalence_dict(list(external_model_statedict),
-                                           [('CCN.module', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
+                                           [('CCN.module.', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
 
     elif model_name=='SANet':
         match_dict= define_equivalence_dict(list(external_model_statedict),

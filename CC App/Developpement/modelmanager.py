@@ -72,6 +72,7 @@ class ModelManager:
                 if len(frame.shape) == 3:
                     frame = frame.unsqueeze(0)
                 dmap = cls.model(frame)
+                dmap=dmap+(abs(dmap.min().item()))
                 count = dmap.data.sum().item()
                 if cls.model.__class__.__name__ == 'SANet':
                     count = count//100
@@ -86,7 +87,7 @@ class ModelManager:
         if is_densitymap_model(cls.model):
             vs = cv2.VideoCapture(video_path)
             frame = vs.read()
-            # VideoStream returns a frame, VideoCapture returns a tuple
+                # VideoStream returns a frame, VideoCapture returns a tuple
             frame = frame[1] if len(frame) > 1 else frame
 
             if frame is None:

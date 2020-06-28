@@ -72,6 +72,7 @@ class MCNN(Model):
         branch3=self.branch3(img_tensor)
         x=torch.cat((branch1,branch2,branch3),1)
         x=self.fuse(x)
+        # x=nn.ReLU(inplace=True)(x)
         return x
 
     def _initialize_weights(self):
