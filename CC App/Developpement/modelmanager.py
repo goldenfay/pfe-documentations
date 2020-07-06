@@ -1,5 +1,7 @@
 import torch
-import os,sys,glob,traceback
+import numpy as np
+from matplotlib import cm
+import os,sys,glob,traceback,time
 import cv2
 import imutils
 from imutils.video import VideoStream
@@ -61,7 +63,6 @@ class ModelManager:
     @classmethod
     def process_frame(cls, frame):
         #TO REMEMBER : padding = int((kernel_size - 1) / 2) if same_padding else 0
-        print(cls.model.__class__.__name__)
             # If the current model is a density map based model
         if is_densitymap_model(cls.model):
             if not isinstance(frame, torch.Tensor):
@@ -76,13 +77,16 @@ class ModelManager:
                 count = dmap.data.sum().item()
                 if cls.model.__class__.__name__ == 'SANet':
                     count = count//100
+                elif cls.model.__class__.__name__ == 'CSRNet':
+                    count = count//80
             return dmap.squeeze().detach().cpu().numpy(), count
         else:  # It's a detection model
             return cls.model.forward(frame)
 
     @classmethod
     def process_video(cls, video_path, args=None,queue=None):
-       
+        output=args.get('output',None)
+        
             # If the current model is a density map based model
         if is_densitymap_model(cls.model):
             vs = cv2.VideoCapture(video_path)
@@ -95,29 +99,47 @@ class ModelManager:
                 traceback.print_exc()
 
             (H, W) = frame.shape[:2]
-            fourcc = cv2.VideoWriter_fourcc(*"MP4V")
-            writer = cv2.VideoWriter(os.path.join(cls.BASE_PATH, 'output', 'output.mp4'), fourcc, 30,
-                                     (W, H*2), True)
+            
+            writer=None
             fps = FPS().start()
-
+            totalFrame=0
+          
             while True:
-                frame = imutils.resize(frame, width=500)
+                frame = imutils.resize(frame, height=500)
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 (H, W) = frame.shape[:2]
-
-                dmap = cls.model(rgb_frame)
-                count = dmap.data.sum().item()
-                if cls.model.__class__.__name__ == 'SANet':
-                    count = count//100
-                text = "Estimated count : {}".format(count)
-                cv2.putText(frame, text, (10, H - 20),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-                cv2.imshow("Frame", frame)
-
-                if writer is not None:
-                    dmap = imutils.resize(dmap, width=500)
-                    concated = cv2.vconcat(frame, dmap)
-                    writer.write(concated)
+                if totalFrame%30==0:
+                    start=time.time()
+                    dmap,count=ModelManager.process_frame(rgb_frame)
+                    elapsed=time.time()-start
+                    text = "Estimated count : {}".format(count)
+                    cv2.putText(frame, text, (10, H - 20),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+                    # print('Processed in : ',elapsed,' ',text)            
+                    cv2.imshow("Frame", frame)
+                    # cv2.imshow("DM", dmap)
+                    if output is not None and writer is None:
+                        min_height=min(dmap.shape[0],frame.shape[0])
+                        frame=imutils.resize(frame, height=min_height)
+                        dmap = imutils.resize(dmap, height=min_height)
+                        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+                        writer = cv2.VideoWriter(os.path.join(output, 'output', 'CNNCC_output.avi'), fourcc, 30,(dmap.shape[1]+frame.shape[1],min_height), True)
+                    
+                    if writer is not None:
+                        dmap = imutils.resize(dmap, height=min_height)
+                        frame=imutils.resize(frame, height=min_height)
+                        dmap=cm.jet(dmap)*255
+                        dmap=dmap[:,:,:3].astype('uint8')
+                        dmap=cv2.cvtColor(dmap, cv2.COLOR_BGR2RGB)
+                        # concated = cv2.vconcat(frame, dmap)
+                        nb_rows= int(dmap.shape[0]+frame.shape[0])
+                        nb_cols= int(dmap.shape[1]+frame.shape[1])
+                        concated = np.zeros(shape=(frame.shape[0], nb_cols, 3), dtype=np.uint8)
+                        concated[:,:frame.shape[1]]=frame
+                        concated[:,frame.shape[1]:]=dmap[:,:,:3]
+                        print(frame.shape,dmap.shape,concated.shape)
+                        cv2.imshow("DM", concated)
+                        writer.write(concated)
 
                 key = cv2.waitKey(1) & 0xFF
 
@@ -133,7 +155,7 @@ class ModelManager:
             fps.stop()
             print("[INFO] elapsed time: {:.2f}".format(fps.elapsed()))
             print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
-            vs.stop()
+            vs.release()
 
             if writer is not None:
                 writer.release()
@@ -191,3 +213,19 @@ class ModelManager:
         from CSRNet import CSRNet
         from mcnn import MCNN
         from SANet import SANet
+
+
+
+import os,sys
+import cv2,imutils
+ROOT_PATH='C:\\Users\\PC\\Desktop\\PFE related\\applications\\CC App\\Developpement'
+VIDEO_PATH='C:\\Users\\PC\\Downloads\\Video\\hadj.mp4'
+model_type='SANet'
+sys.path.append(ROOT_PATH)
+import config
+from modelmanager import ModelManager
+ModelManager.set_base_path(config.FROZEN_MODELS_BASE_PATH)
+ModelManager.load_external_model(model_type)
+for x in ModelManager.process_video(VIDEO_PATH,args=dict(output=os.path.join(ROOT_PATH,'ressources','videos'))):
+    # cv2.imshow('frame22222',x)
+    pass
