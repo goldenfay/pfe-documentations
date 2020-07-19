@@ -20,6 +20,18 @@ export default{
 		then((result)=>{
 			console.warn(result)
 		})
+	},
+	postEditData(id,data){
+		apiClient.put('/crowds/'+id,data).
+		then((result)=>{
+			console.warn(result)
+		})
+	},
+	deleteSensorRequest(id){
+		apiClient.delete('/crowds/'+id).
+		then((result)=>{
+			console.warn(result)
+		})
 	}
 
 

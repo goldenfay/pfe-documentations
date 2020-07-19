@@ -19,12 +19,12 @@
                   <td>{{sensor.sensor_type_name}}</td>
                   <td>
                         <slot name="EditButton">
-                              <Button :sensorsID="sensor.id" class="btn btn-success btn-sm" @click="fireEdit(sensor.id)">
+                              <Button :sensorsID="sensor.id" class="btn btn-success btn-sm btn-block" @click="fireEdit(sensor)">
                                   Modifier
                               </Button>
                         </slot>
                         <slot name="DeleteButton">
-                              <Button :sensorsID="sensor.id" class="btn btn-danger btn-sm" @click="fireDelete(sensor.id)">
+                              <Button :sensorsID="sensor.id" class="btn btn-danger btn-sm btn-block" @click="fireDelete(sensor)">
                                   Supprimer
                               </Button>
                         </slot>
@@ -51,11 +51,11 @@ import ActionButton from '@/components/ActionButton'
     	}
     },
     methods:{
-      fireDelete(id_Of_Sensor){
-        this.$emit('delete-action',id_Of_Sensor)
+      fireDelete(Sensor){
+        this.$emit('delete-action',Sensor)
       },
-      fireEdit(id_Of_Sensor){
-        this.$emit('edit-action',id_Of_Sensor)
+      fireEdit(Sensor){
+        this.$emit('edit-action',Sensor)
       }
     }
   };

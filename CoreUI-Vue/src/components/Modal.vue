@@ -1,12 +1,11 @@
 <template>
-	<div class="modal fade" :id="id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" v-bind:class="{ 'hide': isActive}">
+	<div class="modal fade" :id="id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 
 		<div class="modal-dialog" role="document">
 		  <div class="modal-content">
 
 		      <div class="modal-header">
 		        <slot name="title">
-		        	..
 		        </slot>
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="close">
 		          <span aria-hidden="true">&times;</span>
@@ -21,7 +20,7 @@
 
 		      <div class="modal-footer">
 		        <slot name="button1"></slot>
-		        <slot name="button2"></slot>
+		        <slot name="button2" data-dismiss="modal"></slot>
 		      </div>
 
 		  </div>

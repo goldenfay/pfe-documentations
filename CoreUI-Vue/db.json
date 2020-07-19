@@ -3,25 +3,25 @@
     {
       "sensor_name": "Capteur1",
       "sensor_zone": "Rue Larbi Ben Mhidi",
-      "sensor_desc": "Surveillance sensors ",
-      "sensor_type_name": "Scène large échelle",
-      "sensor_type_id": 1,
+      "sensor_desc": "Surveillance sensors",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
       "id": 1
     },
     {
       "sensor_name": "Capteur alpha",
       "sensor_zone": "Rue Didouche Morad",
       "sensor_desc": "Commercial & localization ",
-      "sensor_type_name": "Scène moyen échelle",
-      "sensor_type_id": 2,
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
       "id": 2
     },
     {
-      "sensor_name": "Capteur beta",
+      "sensor_name": "Capteur Beta",
       "sensor_zone": "Rue Mohammed Boudiaf",
-      "sensor_desc": "Security & data visualization",
-      "sensor_type_name": "Scène large échelle",
-      "sensor_type_id": 1,
+      "sensor_desc": "Management & security purposes",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
       "id": 3
     }
   ]
