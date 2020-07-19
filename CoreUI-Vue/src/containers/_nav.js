@@ -13,6 +13,12 @@ export default [
         }*/
       },
       {
+       _name: 'CSidebarNavItem',
+        name: 'Créer capteur',
+        to: '/creation',
+        icon: 'cil-calculator', 
+      },
+      {
       	_name: 'CSidebarNavItem',
       	name:'Models',
       	to:'/models/models-list',

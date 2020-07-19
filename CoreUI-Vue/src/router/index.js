@@ -11,6 +11,7 @@ const ModelsList = () => import('@/views/models/ModelsList')
 const ModelShow = () => import('@/views/models/ModelShow')
 const VideoCapture = () => import('@/views/models/VideoCapture')
 const StatisticalCharts = () => import('@/views/my_charts/StatisticalCharts')
+const CreateSensor = () => import('@/views/crud/CreateSensor')
 
 const Colors = () => import('@/views/theme/Colors')
 const Typography = () => import('@/views/theme/Typography')
@@ -96,6 +97,21 @@ function configRoutes () {
               path: 'models-list',
               name: 'ModelsList',
               component: ModelsList
+            }
+          ] 
+        },
+        {
+          path: 'creation',
+          redirect: 'creation/create-sensor',
+          name: 'CreationSensor',
+          component: {
+            render (c) { return c('router-view') }
+          },
+          children: [
+            {
+              path: 'create-sensor',
+              name: 'CreateSensor',
+              component: CreateSensor
             }
           ] 
         },

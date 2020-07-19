@@ -1,16 +1,28 @@
 import axios from 'axios'
 
-const apiCilent = axios.create({
+const apiClient = axios.create({
 	
 	baseURL: `http://localhost:3000`,
-	withCredentials: false,
+	withCredentials: true,
 	headers:{
 		Accept: 'application/json',
 		'Content-Type': 'application/json'
 	}
 })
-
 export default{
+	
+	getSensors(){ 
+		return apiClient.get('/crowds')
+	},
+	postSensorData(data){
+
+		apiClient.post('/crowds',data).
+		then((result)=>{
+			console.warn(result)
+		})
+	}
+
+
 
 	/*getCapImage(){
 		return apiCilent.get('http://localhost:3000/events')
@@ -21,6 +33,5 @@ export default{
 				console.log(error)
 			})
 	}*/
-
-	//end export
 }
+

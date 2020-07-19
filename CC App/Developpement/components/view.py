@@ -24,7 +24,7 @@ import components.static as static
 import components.reusable as reusable
 
 from modelmanager import ModelManager
-from sockets import ClientSocket
+#from sockets import ClientSocket
 from components.base import Component
 from app import app,QUEUE
 import functions
