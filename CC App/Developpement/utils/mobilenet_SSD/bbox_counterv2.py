@@ -106,7 +106,7 @@ if __name__=='__main__':
 		net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 
 	if not args.get("input", False):
-		video_path='ressources/videos/example_02.mp4'
+		video_path='videos/example_03.mp4'
 		print("[INFO] Opening webcam...")
 		# vs = VideoStream(src=0).start()
 		vs = cv2.VideoCapture(video_path)
@@ -128,12 +128,12 @@ if __name__=='__main__':
 
 	if frame is None:
 		raise Exception('[FATAL] Cannot read video stream')
-	
+	frame = imutils.resize(frame, width=500)
 	(H, W) = frame.shape[:2]
 	writer=None
 	if args['output']:
 		fourcc = cv2.VideoWriter_fourcc(*"MP4V")
-		writer = cv2.VideoWriter(os.path.join(currentdir,'output','output.mp4'), fourcc, 30,
+		writer = cv2.VideoWriter(os.path.join(currentdir,'output','output2.mp4'), fourcc, 30,
 			(W, H), True)
 
 	fps = FPS().start()

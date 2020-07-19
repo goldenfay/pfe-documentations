@@ -22,10 +22,10 @@ def define_equivalence_dict(key_list, couples_equivalence_list) -> dict:
 def get_dict_match(model_name):
     external_model_statedict=torch.load(os.path.join(currentdir,'frozen','external',model_name+'.pth'), map_location='cpu')
     if model_name=='CSRNet':
-        # match_dict= define_equivalence_dict(list(external_model_statedict),
-        #                                    [('CCN.', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
         match_dict= define_equivalence_dict(list(external_model_statedict),
-                                           [('CCN.module.', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
+                                           [('CCN.', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
+        # match_dict= define_equivalence_dict(list(external_model_statedict),
+        #                                    [('CCN.module.', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
 
     elif model_name=='SANet':
         match_dict= define_equivalence_dict(list(external_model_statedict),

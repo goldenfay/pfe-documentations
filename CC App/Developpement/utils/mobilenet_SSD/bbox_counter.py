@@ -116,7 +116,6 @@ def process_frame(net,frame,min_conf=0.4,show_bbox=True):
 
 			if CLASSES[idx] != "person":
 				continue
-			print('person found')
 				# compute coordinates of the bounding box
 			box = detections[0, 0, i, 3:7] * np.array([W, H, W, H])
 			(startX, startY, endX, endY) = box.astype("int")
@@ -147,7 +146,7 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 
 	if frame is None:
 		raise Exception('[FATAL] Cannot read video stream')
-	
+	frame = imutils.resize(frame, width=500)
 	(H, W) = frame.shape[:2]
 	writer=None
 	if write_output:
@@ -187,7 +186,6 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 
 						if CLASSES[idx] != "person":
 							continue
-						print('person found')
 							# compute the coordinates of the bounding box of the object
 						box = detections[0, 0, i, 3:7] * np.array([W, H, W, H])
 						(startX, startY, endX, endY) = box.astype("int")
