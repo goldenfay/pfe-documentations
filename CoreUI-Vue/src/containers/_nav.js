@@ -19,6 +19,12 @@ export default [
         icon: 'cil-calculator', 
       },
       {
+        _name: 'CSidebarNavItem',
+        name: 'Liste capteurs',
+        to: '/list',
+        icon: 'cil-star', 
+      },
+      {
       	_name: 'CSidebarNavItem',
       	name:'Models',
       	to:'/models/models-list',

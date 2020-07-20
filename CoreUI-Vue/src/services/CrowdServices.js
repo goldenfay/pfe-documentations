@@ -10,7 +10,9 @@ const apiClient = axios.create({
 	}
 })
 export default{
-	
+	getSensorsPagination(perPage, page){
+		return apiClient.get('/crowds?_limit='+perPage+"&_page="+page)
+	},
 	getSensors(){ 
 		return apiClient.get('/crowds')
 	},

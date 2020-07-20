@@ -23,6 +23,62 @@
       "sensor_type_name": "Scène moyen échelle",
       "sensor_type_id": 2,
       "id": 3
+    },
+    {
+      "sensor_name": "Capteur4",
+      "sensor_zone": "Rue Larbi Ben Mhidi",
+      "sensor_desc": "Surveillance sensors",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 4
+    },
+    {
+      "sensor_name": "Capteur alpha5",
+      "sensor_zone": "Rue Didouche Morad",
+      "sensor_desc": "Commercial & localization ",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
+      "id": 5
+    },
+    {
+      "sensor_name": "Capteur Beta6",
+      "sensor_zone": "Rue Mohammed Boudiaf",
+      "sensor_desc": "Management & security purposes",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 6
+    },
+    {
+      "sensor_name": "Capteur7",
+      "sensor_zone": "Rue Larbi Ben Mhidi",
+      "sensor_desc": "Surveillance sensors",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 7
+    },
+    {
+      "sensor_name": "Capteur alpha8",
+      "sensor_zone": "Rue Didouche Morad",
+      "sensor_desc": "Commercial & localization ",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
+      "id": 8
+    },
+    {
+      "sensor_name": "Capteur Beta9",
+      "sensor_zone": "Rue Mohammed Boudiaf",
+      "sensor_desc": "Management & security purposes",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 9
+    },
+    {
+      "sensor_name": "Capteur Beta10",
+      "sensor_zone": "Rue Mohammed Boudiaf",
+      "sensor_desc": "Management & security purposes",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 10
     }
   ]
 }
