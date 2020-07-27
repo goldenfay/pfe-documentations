@@ -1,7 +1,7 @@
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-import grasia_dash_components as gdc
+# import grasia_dash_components as gdc
 import dash_defer_js_import as dji
 from dash.dependencies import Input, Output
 
@@ -30,8 +30,8 @@ def display_page(pathname):
         component = components.View(app, config)
         # app.callback_map = component.app.callback_map.copy()
         
-        import_js=dji.Import(src="test.js")
-        return dbc.Container([component.layout,import_js], fluid=True, style={"height": "500px", })
+        # import_js=dji.Import(src="test.js")
+        return dbc.Container([component.layout], fluid=True, style={"height": "500px", })
     else:
         return dbc.Container([dbc.Row([
                                 html.H3([html.Span(className='fa fa-ban mr-3'),'404 Page not found'])

@@ -223,7 +223,10 @@ def process_video(config=None, args=None):
         cam_width,cam_height = int(config['READER']['Width']),int(config['READER']['Height'])
         video_path=None
     else:
-        video_path=os.path.sep.join([currentdir]+config['READER']['Filename'].split('/'))
+        if args is not None and args.get('input',None) is not None:
+            video_path=args['input']
+
+        else: video_path=os.path.sep.join([currentdir]+config['READER']['Filename'].split('/'))
     (vs, cam_width, cam_height) = get_capture(webcam=webcam,video_path=video_path)
 
         # get params from config file
@@ -395,9 +398,7 @@ def process_video(config=None, args=None):
                 b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
         else:	# Otherwise, we display it in the standard openCV window
             cv2.imshow("Video", frame)
-        if totalFrames%50==0:
-            print(' 50 Frames processed')
-
+     
             # Read next frame
         frame = vs.read()
             #VideoStream returns a frame, VideoCapture returns a tuple

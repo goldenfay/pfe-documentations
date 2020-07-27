@@ -75,7 +75,7 @@ def params_card(hours, crowd_number, param_name, title1, title2):
 
 def count_results_grid(images_list,res_img_list):
     return [
-        html.Div(className='row', children=[
+        html.Div(className='row mt-5', children=[
 
             html.Div(children=[
                 html.Div(html.H4('Original', className='muted'),

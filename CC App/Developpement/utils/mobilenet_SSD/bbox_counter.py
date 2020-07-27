@@ -127,13 +127,22 @@ def process_frame(net,frame,min_conf=0.4,show_bbox=True):
 				cv2.rectangle(frame,(startX,startY),(endX,endY),(255,0,0),thickness=4)
 			# cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
 	text='Persons : {}'.format(count)
-	cv2.putText(frame, text, (10,frame.shape[1]-10),
+	cv2.putText(frame, text, (10,frame.shape[0]-10),
 			cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 4)		
-	return frame,detections.shape[2]
+	return frame,count
 
 
-def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,silent=False):
+def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,silent=False,args=None):
 	print('[INFO] Initializing ...')
+
+	show_regions=False
+	tang,b=None,None
+	if args is not None and args.get('regions_params',False):
+		show_regions=args['regions_params'].get('show',False)
+		tang,b=args['regions_params'].get('tang',None),args['regions_params'].get('b',None)
+		line_eq=lambda x: int(tang*x+b)
+		horizontal_splited=abs(tang)<1
+	print('\t\t',tang,b)
 	ct = CentroidTracker(maxDisappeared=40, maxDistance=50)
 	trackers = []
 	trackableObjects = {}
@@ -230,20 +239,29 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 				tracked_obj = TrackableObject(objectID, centroid)
 
 			else:
-					# get the object(person) direction the difference between the y-coordinate of the current
-					# object and the mean of it previous centroids
-				y = [c[1] for c in tracked_obj.centroids]
-				direction = centroid[1] - np.mean(y)
 				tracked_obj.centroids.append(centroid)
-
 				
-				if not tracked_obj.counted:
-					if direction < 0 and centroid[1] < H // 2:
-						countUp += 1
-						tracked_obj.counted = True
-					elif direction > 0 and centroid[1] > H // 2:
-						countDown += 1
-						tracked_obj.counted = True
+
+				if show_regions:
+						# determines wether direction will be based on x or y coordinate (horizontal/vertical splitting)
+					coord_ref=1 if horizontal_splited else 0
+
+						# get the object(person) direction the difference between the y/x-coordinate of the current
+						# object and the mean of it previous centroids
+					coord = [c[coord_ref] for c in tracked_obj.centroids]
+					direction = centroid[coord_ref] - np.mean(coord)
+				
+
+					if not tracked_obj.counted:
+					
+					
+						if direction < 0 and centroid[coord_ref] < line_eq(centroid[coord_ref]):
+							countUp += 1
+							tracked_obj.counted = True
+						elif direction > 0 and centroid[coord_ref] > line_eq(centroid[coord_ref]):
+							countDown += 1
+							tracked_obj.counted = True
+						
 			trackableObjects[objectID] = tracked_obj
 
 				# draw both the ID of the object and the centroid of the
@@ -252,17 +270,19 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 				cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 			cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
 			#cv2.imshow("Frame", frame)
+		info=[("Total" , len(list(objects)))]
+		if show_regions:
+			info += [
+			("Up" if horizontal_splited else "Left", countUp),
+			("Down" if horizontal_splited else "Right", countDown)
+			]
 
-		info = [
-		("Up", countUp),
-		("Down", countDown)
-	]
-
-			# Show infos on he frame
-		for (i, (k, v)) in enumerate(info):
-			text = "{}: {}".format(k, v)
-			cv2.putText(frame, text, (10, H - ((i * 20) + 20)),
-				cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)	
+				# Show infos on he frame
+			for (i, (k, v)) in enumerate(info):
+				text = "{}: {}".format(k, v)
+				cv2.putText(frame, text, (10, H - ((i * 20) + 20)),
+					cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+			cv2.line(frame,(0,line_eq(0)),(frame.shape[1],line_eq(frame.shape[1])),(0,200,0),5)				
 		
 		if  writer is not None:
 			writer.write(frame)
@@ -281,8 +301,7 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 				b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
 		else:	
 			cv2.imshow("Frame", frame)
-		if totalFrames%50==0:
-			print(' 50 Frames processed')
+	
 		frame = vs.read()
 			#VideoStream returns a frame, VideoCapture returns a tuple
 		frame = frame[1] if len(frame)>1 else frame
@@ -392,7 +411,7 @@ class MobileSSD(DetectionModel):
 				vs = cv2.VideoCapture(args["input"])
 			
 			# process_video(self.net,vs,write_output=args['write_output'],silent=args['silent'])
-			for f in process_video(self.net,vs,write_output=args['write_output'],silent=args['silent']):
+			for f in process_video(self.net,vs,write_output=args['write_output'],silent=args['silent'],args=args):
 				
 				# QUEUE.put_nowait(f)
 				yield f

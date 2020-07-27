@@ -25,6 +25,24 @@ app.logger.critical("secret: %s" % secret)
 socketio = SocketIO(app,cors_allowed_origins="*",ping_timeout=600000,ping_interval=100)
 
 HTML_IMG_SRC_PARAMETERS = 'data:image/png;base64, '
+server=None
+server_thread=None
+
+def load_model(model_type):
+    try:
+        if model_type in ['mobileSSD', 'yolo']:
+            x = ModelManager.load_detection_model(model_type)
+        else:
+            
+            ModelManager.load_external_model(model_type)
+    except Exception as e:
+        print('[image-upload] An error occured while loading model ',
+                model_type, end='\n\t')
+        traceback.print_exc()
+        emit('server-error',{'message':str(e)})
+        print('error sent')
+        return
+    print('Done.')
 
     #default routes
 @app.route('/hello')
@@ -49,25 +67,14 @@ def imageUpload(data):
     images_list=data['images']
     print('[image-upload] Loading model ',model_type,' ...',end='\t')
 
-    try:
-        if model_type in ['mobileSSD', 'yolo']:
-            x = ModelManager.load_detection_model(model_type)
-        else:
-            
-            ModelManager.load_external_model(model_type)
-    except Exception as e:
-        print('[image-upload] An error occured while loading model ',
-                model_type, end='\n\t')
-        traceback.print_exc()
-        emit('server-error',{'message':str(e)})
-        print('error sent')
-        return
-    print('Done.')
+    load_model(model_type)
+
     print('[image-upload] Converting images to arrays ...',end='\t')
 
     for image in images_list:
         image['data']=process_functions.b64_to_numpy(image['data'])
-    print('Done.')  
+    print('Done.') 
+    print('Getting ',len(images_list)) 
     errors=[]
     print('[image-upload] Processing images ...')
     for id, frame in enumerate(images_list):
@@ -95,15 +102,40 @@ def imageUpload(data):
                 errors.append((frame['id'],str(e)))
                 continue
     print('[image-upload] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
-    # emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
+    emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
 
     # result_img=process_functions.numpy_to_b64(np.zeros((250,250,3)),False)
     # print('sending result ...')
     # emit('send-image', result_img, broadcast = True)   
 
 
+@socketio.on('video-upload')
+def imageUpload(data):
+    emit('send-image', 'video uploaded')
+
+    if server is None:
+            print('[SERVER] Creating a server instance ...')
+            from flask import request
+            server = Flask('StreamServer')
+
+            @server.route('/test', methods=['GET'])
+            def test():
+                return 'jfhskdjfhskjdhfkjshdkjfhskdjhf'
+
+            @server.route('/terminate', methods=['GET'])
+            def stop_server():
+                raise threading.ThreadError("the thread is not active")
+
+            @server.route('/stream')
+            def video_feed():
+               
+                return Response(ModelManager.process_video(video_path), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+        
+    server_thread = ServerThread(server)
+    server_thread.start()
 
     
         
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app,port=5000, debug=True)
