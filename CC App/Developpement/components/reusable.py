@@ -65,11 +65,31 @@ def params_card(hours, crowd_number, param_name, title1, title2):
     for hour in hours:
         if i < len(hours):
             string = string+str(hour)+", "
-        string = string+str(hour)+"."
-    card_content.append(
-        html.P(children=[html.B(title1), string], className="h3"))
-    card_content.append(
-        html.P(children=[html.B(title2), str(crowd_number)], className="h3"))
+        else:    
+            string = string+str(hour)+"."
+        i = i + 1    
+    string = string+"    "        
+    card_content.append(html.P(children=[html.B(title1), string], className="h3"))
+    card_content.append(html.P(children=[html.B(title2), str(crowd_number)], className="h3"))
+    return dbc.CardBody(card_content)
+
+def params_card_test(hours, crowd_number, param_name, title1, title2):
+    card_content = [html.H1(param_name, className="card-title")]
+    string = ""
+    zones = ""
+    i = 1
+    for hour in hours:
+        print("hi")
+        print(hour)
+        '''if i < len(hours):
+            string = string+hour[0]+", "
+            zones = zones+"("+str(hour[1])+","+str(hour[2])+")"+", "
+        else:    
+            string = string+str(hour[0])+"."
+            zones = zones+"("+str(hour[1])+","+str(hour[2])+")"+"."
+        i = i + 1    '''
+    card_content.append(html.P(children=[html.B(title1),string], className="h3"))
+    card_content.append(html.P(children=[html.B(title2)], className="h3"))
     return dbc.CardBody(card_content)
 
 

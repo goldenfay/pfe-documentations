@@ -20,7 +20,7 @@ app.layout = html.Div([
 def display_page(pathname):
 
     if pathname == '/global':
-        component = components.Global_Charts(app, 'ressources/dummy_data.json')
+        component = components.Global_Charts(app, 'ressources/crowd_records.csv')
         return dbc.Container([html.Hr(), component.layout],style={"display": "flex", "flex-direction": "column"}, fluid=True)
     elif pathname == '/mono':
         component = components.Mono_Chart(app)

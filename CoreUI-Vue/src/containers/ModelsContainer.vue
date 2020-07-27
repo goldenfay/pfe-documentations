@@ -22,7 +22,7 @@ import TheHeader from './TheHeader'
 import TheFooter from './TheFooter'
 
 export default {
-  name: 'TheContainer',
+  name: 'TheModelsContainer',
   components: {
     TheSidebar,
     TheHeader,

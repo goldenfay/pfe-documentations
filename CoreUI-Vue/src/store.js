@@ -9,7 +9,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
 
   state:{
-
+        sensors: [],
+        sensorsTotal: 0,
         test : '',
         video_name : 'teb7iraVoyage',
         allImages : [],
@@ -20,6 +21,12 @@ export default new Vuex.Store({
   },
   mutations:{
 
+        SET_SENSORS_TOTAL(state, sensorsTotal) {
+          state.sensorsTotal = sensorsTotal
+         },
+        SET_SENSORS(state,sensors){
+            state.sensors = sensors
+        },
         ADD_IMAGE(state,images){
             state.test = images[0].title
             console.log('rani dfel mutations',images[0].title)
@@ -47,7 +54,19 @@ export default new Vuex.Store({
         }
   },
   actions:{
-
+        fetchSensors({commit},{perPage, page}){
+          CrowdServices.getSensorsPagination(perPage,page)
+            .then(response => {
+             commit(
+                'SET_SENSORS_TOTAL',
+                parseInt(response.headers['x-total-count'])
+              )
+              commit('SET_SENSORS',response.data)
+            })
+            .catch(error => {
+              console.log('There was an error:', error.response)
+            })
+        },
         addImage({commit}){
           /*axios.get('http://localhost:3000/events')
           .then(response => {

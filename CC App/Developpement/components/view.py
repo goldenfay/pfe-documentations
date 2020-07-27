@@ -28,6 +28,8 @@ currentdir = os.path.dirname(os.path.abspath(
 sys.path.append(currentdir)
 # User's modules
 from modelmanager import ModelManager
+
+#from sockets import ClientSocket
 from components.base import Component
 import components.reusable as reusable
 import components.static as static
