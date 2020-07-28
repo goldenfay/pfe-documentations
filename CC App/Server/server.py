@@ -60,6 +60,11 @@ def hello():
             PORT=4000
             server_thread = ServerThread(server,PORT)
             os.system('./ngrok http {} &'.format(PORT))
+            os.system("curl  http://localhost:4040/api/tunnels > tunnels.json")
+            with open('tunnels.json') as data_file:    
+                datajson = json.load(data_file)
+            listurls=[el['public_url'] for el in datajson]    
+            print(listurls)
             server_thread.start()            
     return "Hello World!"
 
