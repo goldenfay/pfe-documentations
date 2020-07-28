@@ -7,6 +7,7 @@ import torch
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(currentdir)
 import server_config
+from thread_server import ServerThread
 sys.path.append(server_config.BASIC_TOOLS_ROOT_PATH)
 import util.process_functions as process_functions
 from modelmanager import ModelManager
@@ -47,6 +48,18 @@ def load_model(model_type):
     #default routes
 @app.route('/hello')
 def hello():
+    global server,server_thread
+    if server is None:
+            print('[SERVER] Creating a server instance ...')
+            from flask import request
+            server = Flask('StreamServer')
+
+            @server.route('/test', methods=['GET'])
+            def test():
+                return 'jfhskdjfhskjdhfkjshdkjfhskdjhf'
+
+            server_thread = ServerThread(server)
+            server_thread.start()            
     return "Hello World!"
 
     # Basic default socket event handlers
@@ -104,13 +117,13 @@ def imageUpload(data):
     print('[image-upload] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
     emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
 
-    # result_img=process_functions.numpy_to_b64(np.zeros((250,250,3)),False)
-    # print('sending result ...')
-    # emit('send-image', result_img, broadcast = True)   
+   
 
 
 @socketio.on('video-upload')
 def imageUpload(data):
+    global server,server_thread
+    print(type(data))
     emit('send-image', 'video uploaded')
 
     if server is None:
