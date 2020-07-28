@@ -5,7 +5,7 @@ import ctypes
 import signal
 class ServerThread(threading.Thread):
 
-    def __init__(self, srv: Flask):
+    def __init__(self, srv: Flask,port=4000):
         threading.Thread.__init__(self)
         self.srv = make_server('127.0.0.1', 4000, srv)
         # self.srv = srv

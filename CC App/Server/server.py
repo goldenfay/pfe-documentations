@@ -57,8 +57,9 @@ def hello():
             @server.route('/test', methods=['GET'])
             def test():
                 return 'jfhskdjfhskjdhfkjshdkjfhskdjhf'
-
-            server_thread = ServerThread(server)
+            PORT=4000
+            server_thread = ServerThread(server,PORT)
+            os.system('./ngrok http {} &'.format(PORT))
             server_thread.start()            
     return "Hello World!"
 
