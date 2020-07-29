@@ -27,12 +27,13 @@ app.logger.critical("secret: %s" % secret)
 
 
 Payload.max_decode_packets = 500
-socketio = SocketIO(app,async_mode='gevent',cors_allowed_origins="*",ping_timeout=600000,ping_interval=100)
+socketio = SocketIO(app,async_handlers=True,cors_allowed_origins="*",ping_timeout=600000,ping_interval=100)
 
 HTML_IMG_SRC_PARAMETERS = 'data:image/png;base64, '
 server=None
 server_thread=None
-
+model_type=None
+list_frame=[]
 def load_model(model_type):
     try:
         if model_type in ['mobileSSD', 'yolo']:
@@ -41,7 +42,7 @@ def load_model(model_type):
             
             ModelManager.load_external_model(model_type)
     except Exception as e:
-        print('[image-upload] An error occured while loading model ',
+        print('[Loading model] An error occured while loading model ',
                 model_type, end='\n\t')
         traceback.print_exc()
         emit('server-error',{'message':str(e)})
@@ -131,12 +132,14 @@ def imageUpload(data):
 
 @socketio.on('init-process-video')
 def setup(data):
+    global model_type
     model_type=data['model_type']
     print('[process-frame] Loading model ',model_type,' ...',end='\t')
     load_model(model_type)
 
 @socketio.on('process-frame')
 def imageUpload(data):
+    global model_type
     print('[process-frame] frame Received')
     if ModelManager.model is None:
         print('[process-frame] Loading model ',model_type,' ...',end='\t')
@@ -174,6 +177,40 @@ def imageUpload(data):
     print('[process-frame] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
 
    
+
+
+@socketio.on('frame-upload')
+def frameUpload(data):
+    global list_frame
+    list_frame.append(data['frame'])
+
+@socketio.on('process-video')
+def startprocessing(data):
+    global list_frame,model_type
+    for frame in list_frame:
+        try:
+
+                start = time.time()
+                res_img, count = ModelManager.process_frame(frame)
+                inference_time = time.time()-start
+
+                print('\t Done. ')
+                encoded_img = HTML_IMG_SRC_PARAMETERS+(process_functions.numpy_to_b64(
+                    res_img, model_type not in ['mobileSSD', 'yolo']))
+                data={
+                    'data': encoded_img,
+                    'count': count,
+                    'time':str(inference_time)
+                }    
+                emit('send-frame', data,broadcast = True)
+        except Exception as e:
+            print("An error occured while processing the image ", end='\n\t')
+            traceback.print_exc()
+            errors.append((frame['id'],str(e)))
+            continue
+    print('[process-video] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
+    # emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
+
 
 
 @socketio.on('video-upload')

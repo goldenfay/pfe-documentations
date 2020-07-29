@@ -24,7 +24,6 @@ def b64_to_numpy(string, to_scalar=True):
 
 
 def numpy_to_pil(array, jetMap=True):
-    print(array.shape,array.max(),array.min())    
     if jetMap:
         print('\t Converting to Jet color map')
         array = cm.jet(array)

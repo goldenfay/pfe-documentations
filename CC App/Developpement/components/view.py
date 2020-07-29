@@ -1014,12 +1014,14 @@ def emit_by_frame(video_path,model_type):
         frame=HTML_IMG_SRC_PREFIX+functions.numpy_to_b64(
             frame, model_type not in ['mobileSSD', 'yolo'])
         frame=frame.encode("utf-8").split(b";base64,")[1]
-        CLIENT_SOCKET.emit('process-frame',{'frame':frame})
+        CLIENT_SOCKET.emit('frame-upload',{'frame':frame})
+        # CLIENT_SOCKET.emit('process-frame',{'frame':frame})
         key = cv2.waitKey(10) & 0xFF
 
         if key == ord("q"):
             break
-
+    CLIENT_SOCKET.emit('process-video',{'frame':frame})
+    print('[INFO] Reading video completed.')
 
 
 def append_res_img(data):
