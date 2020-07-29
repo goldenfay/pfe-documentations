@@ -661,7 +661,7 @@ def launch_counting(button_click, model_type, children):
               [State("dropdown-model-selection", "value"),
                State("dropdown-footage-selection", "value")])
 def process_video(button_click, model_type, video_path):
-    global server, server_thread, app, get_regions_params,SERVER_URL
+    global server, server_thread, app, get_regions_params,SERVER_URL,CLIENT_SOCKET,ONLINE_MODE
     if button_click > 0:
         print('Process server state : ',('not None' if server is not None else 'None'))
         if server_thread is not None:
@@ -721,25 +721,12 @@ def process_video(button_click, model_type, video_path):
         if ONLINE_MODE:
             if CLIENT_SOCKET is None:
                 CLIENT_SOCKET = ClientSocket(reconnection=False)
-                CLIENT_SOCKET.on('server-error', handler=server_error_response)
-                CLIENT_SOCKET.on('send-frame', handler=append_res_img)
             if not CLIENT_SOCKET.connected:
                 CLIENT_SOCKET.connect(SERVER_URL)
 
             CLIENT_SOCKET.emit('init-process-video',{'model_type':model_type})
-            vs = cv2.VideoCapture(video_path)
-            while True:
-                frame = vs.read()
-                    #VideoStream returns a frame, VideoCapture returns a tuple
-                frame = frame[1] if len(frame)>1 else frame
-                if frame is None:
-                    break
-                frame = imutils.resize(frame, width=500)
-                CLIENT_SOCKET.emit('process-frame',{'frame':frame})
-                key = cv2.waitKey(10) & 0xFF
-
-                if key == ord("q"):
-                    break
+            socket_thread=StoppableThread(target=emit_by_frame,args=(video_path,model_type,))
+            socket_thread.start()
 
         else:
             if server is None:
@@ -1012,6 +999,27 @@ if False:
 ############################################SOCKETS HANDLERS #################################################
 ##############################################################################################################
 ##############################################################################################################
+
+def emit_by_frame(video_path,model_type):
+    global CLIENT_SOCKET
+    import cv2,imutils
+    vs = cv2.VideoCapture(video_path)
+    while True:
+        frame = vs.read()
+            #VideoStream returns a frame, VideoCapture returns a tuple
+        frame = frame[1] if len(frame)>1 else frame
+        if frame is None:
+            break
+        frame = imutils.resize(frame, width=500)
+        frame=HTML_IMG_SRC_PREFIX+functions.numpy_to_b64(
+            frame, model_type not in ['mobileSSD', 'yolo'])
+        frame=frame.encode("utf-8").split(b";base64,")[1]
+        CLIENT_SOCKET.emit('process-frame',{'frame':frame})
+        key = cv2.waitKey(10) & 0xFF
+
+        if key == ord("q"):
+            break
+
 
 
 def append_res_img(data):

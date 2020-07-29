@@ -1,4 +1,5 @@
 from flask import Flask
+from engineio.payload import Payload
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import sys,os,glob,inspect,time,traceback,json
 import numpy as np
@@ -23,7 +24,10 @@ secret=os.getenv("SECRET_KEY")
 app.logger.info("Starting...")
 app.config['SECRET_KEY'] = secret
 app.logger.critical("secret: %s" % secret)
-socketio = SocketIO(app,cors_allowed_origins="*",ping_timeout=600000,ping_interval=100)
+
+
+Payload.max_decode_packets = 500
+socketio = SocketIO(app,async_mode='gevent',cors_allowed_origins="*",ping_timeout=600000,ping_interval=100)
 
 HTML_IMG_SRC_PARAMETERS = 'data:image/png;base64, '
 server=None
