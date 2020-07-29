@@ -33,7 +33,7 @@ const callback = function (mutationsList, observer) {
           $("#drop-div").removeClass("d-none");
         }
         
-        // Process images button Capture
+          // Process images button Capture
         var processbtn = $(addNode).find("#process-imgs-button");
         if (processbtn.length) {
           
@@ -45,6 +45,19 @@ const callback = function (mutationsList, observer) {
               // console.log("Clicked");
               $('#output-image-process').focus();
               send_to_server();
+            }
+          });
+        }
+          // Process video button Capture
+        var processVideobtn = $(addNode).find("#process-video-button");
+        if (processVideobtn.length) {
+          
+          // if (addNode.id === "process-imgs-button") {
+          console.log("Video Button targeted");
+
+          processVideobtn.click(function (e) {
+            if ($("#usage-switch").hasClass("toggled-on")) {
+              send_video_to_server();
             }
           });
         }
@@ -149,51 +162,75 @@ const callback = function (mutationsList, observer) {
   }
 };
 
+const get_model_type=(model_type)=>{
+  switch (model_type) {
+    case "Mobile SSD":
+     return "mobileSSD";
+      break;
+    case "YOLO":
+     return "yolo";
+      break;
+    case "MCNN":
+     return "MCNN";
+      break;
+    case "CSRNet":
+     return "CSRNet";
+      break;
+    case "SANet":
+     return "SANet";
+      break;
+    case "CCNN":
+     return "CCNN";
+      break;
+  }
+}
+const instantiate_socket=(url)=>{
+  socket = io.connect(url, {
+    reconnection: false,
+  });
+  socket.on("connect", function () {
+    console.log("Socket connected.");
+  });
+  socket.on("disconnect", function () {
+    console.log("Socket disconnected.");
+  });
+  socket.on("server-error", function (data) {
+    console.log("Server-errors occured.");
+    $(document).append(
+      error_alert("An error occured on the server.", data["message"])
+    );
+    this.disconnect();
+  });
+  socket.on("process-done", function (data) {
+    console.log(data);
+    
+    $('#output-image-process').append(x)
+    errors = data["errors"];
+    if (errors && errors[0]) {
+      console.log("Processing frame resulted some errors.");
+
+      $(document).append(
+        error_alert("An error occured on the server.", errors[0])
+      );
+    }
+  });
+  socket.on("send-image", (data) => processImageResponse(data));
+
+    // Video process events
+  socket.on("send-frame",(data)=>{
+    $('#process-video-output-flow').attr('src',data['data'])
+  })  
+}
 const send_to_server = function () {
   var url_input = $("#server-url-control input");
   if (url_input) {
     if (url_input.val()) {// If server URL is provided
       imgList = Array();
-      // If socket not initialized yet, connect and create handlers.
-      if (socket === null) {
-        socket = io.connect(url_input.val(), {
-          reconnection: false,
-        });
-        socket.on("connect", function () {
-          console.log("Socket connected.");
-        });
-        socket.on("disconnect", function () {
-          console.log("Socket disconnected.");
-        });
-        socket.on("server-error", function (data) {
-          console.log("Server-errors occured.");
-          $(document).append(
-            error_alert("An error occured on the server.", data["message"])
-          );
-          this.disconnect();
-        });
-        socket.on("process-done", function (data) {
-          console.log(data);
-          let x=document.createElement('div')
-          x.innerHtml='<h1>lkdfskdjflksjfskjf</h1>'
-          $('#output-image-process').append(x)
-          errors = data["errors"];
-          if (errors && errors[0]) {
-            console.log("Processing frame resulted some errors.");
-
-            $(document).append(
-              error_alert("An error occured on the server.", errors[0])
-            );
-          }
-        });
-        socket.on("send-image", (data) => processImageResponse(data));
+        // If socket not initialized yet, connect and create handlers.
+      if (socket === null || socket.disconnected) {
+        instantiate_socket(url_input.val())
       }
-      if (socket.disconnected) {
-        socket = io.connect(url_input.val(), {
-          reconnection: false,
-        });
-      }
-
+     
       var imgs = document.querySelectorAll("#output-image-upload img");
 
       if (imgs.nodeType === 1) {
@@ -219,26 +256,8 @@ const send_to_server = function () {
       var model_type = $(
         '#dropdown-model-selection span[aria-selected="true"]'
       ).html();
-      switch (model_type) {
-        case "Mobile SSD":
-          model_type = "mobileSSD";
-          break;
-        case "YOLO":
-          model_type = "yolo";
-          break;
-        case "MCNN":
-          model_type = "MCNN";
-          break;
-        case "CSRNet":
-          model_type = "CSRNet";
-          break;
-        case "SANet":
-          model_type = "SANet";
-          break;
-        case "CCNN":
-          model_type = "CCNN";
-          break;
-      }
+      model_type=get_model_type(model_type)
+      
         // Send the socket to the server
       socket.emit("image-upload", {
         model_type: model_type,
@@ -264,6 +283,32 @@ const send_to_server = function () {
   }
 };
 
+const send_video_to_server=()=>{
+  var url_input = $("#server-url-control input");
+  if (url_input) {
+    if (url_input.val()) {// If server URL is provided
+        // If socket not initialized yet, connect and create handlers.
+      if (socket === null || socket.disconnected) {
+        instantiate_socket(url_input.val())
+      }
+     
+
+    } else {
+      // Output error showing that must type server URL.
+      url_input.addClass(
+        "border border-danger  animate__animated animate__shakeX"
+      );
+      setTimeout(
+        () =>
+          url_input.removeClass(
+            "border border-danger  animate__animated animate__shakeX"
+          ),
+        10000
+      );
+    }
+
+
+}
 // Socket handlers functions
 function processImageResponse(data) {
   console.log("message received from server ", data);

@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_socketio import SocketIO, emit, join_room, leave_room
-import sys,os,glob,inspect,time,traceback
+import sys,os,glob,inspect,time,traceback,json
 import numpy as np
 import torch
 
@@ -46,6 +46,7 @@ def load_model(model_type):
     print('Done.')
 
     #default routes
+
 @app.route('/hello')
 def hello():
     global server,server_thread
@@ -63,7 +64,7 @@ def hello():
             os.system("curl  http://localhost:4040/api/tunnels > tunnels.json")
             with open('tunnels.json') as data_file:    
                 datajson = json.load(data_file)
-            listurls=[el['public_url'] for el in datajson]    
+            listurls=[el['public_url'] for el in datajson['tunnels']]    
             print(listurls)
             server_thread.start()            
     return "Hello World!"
@@ -122,6 +123,51 @@ def imageUpload(data):
                 continue
     print('[image-upload] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
     emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
+
+
+@socketio.on('init-process-video')
+def setup(data):
+    model_type=data['model_type']
+    print('[process-frame] Loading model ',model_type,' ...',end='\t')
+    load_model(model_type)
+
+@socketio.on('process-frame')
+def imageUpload(data):
+    print('[process-frame] frame Received')
+    if ModelManager.model is None:
+        print('[process-frame] Loading model ',model_type,' ...',end='\t')
+
+        load_model(model_type)
+
+    print('[process-frame] Converting frame  ...',end='\t')
+
+    
+    frame=process_functions.b64_to_numpy(data['frame'])
+    print('Done.') 
+    errors=[]
+    print('[process-frame] Processing frame ...')
+    
+    try:
+
+        start = time.time()
+        res_img, count = ModelManager.process_frame(frame)
+        inference_time = time.time()-start
+
+        print('\t Done. ')
+        encoded_img = HTML_IMG_SRC_PARAMETERS+(process_functions.numpy_to_b64(
+            res_img, model_type not in ['mobileSSD', 'yolo']))
+        data={
+            'data': encoded_img,
+            'count': count,
+            'time':str(inference_time)
+        }    
+        emit('send-frame', data,broadcast = True)
+    except Exception as e:
+        print("An error occured while processing the frame ", end='\n\t')
+        traceback.print_exc()
+        emit('process-frame-error',{},broadcast = True)         
+        
+    print('[process-frame] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
 
    
 
