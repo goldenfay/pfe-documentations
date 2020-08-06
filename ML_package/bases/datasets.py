@@ -46,7 +46,7 @@ class BasicCrowdDataSet(Dataset):
         gt_dmap=gt_dmap[np.newaxis,:,:]
         # print(np.min(gt_dmap),np.max(gt_dmap))
         # img_tensor=torch.tensor(img,dtype=torch.float).permute((2,0,1))
-        img_tensor=transforms.Compose([transforms.ToTensor()])(img)
+        img_tensor=transforms.Compose([transforms.ToTensor(),transforms.RandomHorizontalFlip(),transforms.RandomVerticalFlip()])(img)
         # gt_dmap_tensor=transforms.Compose([transforms.ToTensor()])(gt_dmap)
         # img_tensor=torch.from_numpy(img).permute((2,0,1))
         gt_dmap_tensor=torch.tensor(gt_dmap,dtype=torch.float)
