@@ -121,6 +121,7 @@ app = dash.Dash(__name__,
                 external_scripts = external_scripts,
                 external_stylesheets=external_stylesheets,
                 suppress_callback_exceptions=True)
+app.title='Crowd Counting Monitor'
 
 @server.route("/assets/<path>")
 def serve_file(path):

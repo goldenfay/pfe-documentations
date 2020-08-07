@@ -31,7 +31,7 @@ class ModelManager:
 
     model = None
     outputs_path=os.path.join(currentdir,'ressources','videos','output')
-    device = torch.device('cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     BASE_PATH = ''
 
     @staticmethod
@@ -96,7 +96,7 @@ class ModelManager:
 
             # If the current model is a density map based model
         if is_densitymap_model(cls.model):
-            print(args)
+            print('\t Passing :',args)
             show_regions=False
             tang,b=None,None
             if args is not None and args.get('regions_params',False):
@@ -104,6 +104,11 @@ class ModelManager:
                 tang,b=args['regions_params'].get('tang',None),args['regions_params'].get('b',None)
                 line_eq=lambda x: int(tang*x+b)
                 horizontal_splited=abs(tang)<1
+
+            log_count=args is not None and args.get('log_counts',False)
+	
+            if log_count:
+                log_count_fcn=args.get('log_count_fcn',False)
 
 
             vs = cv2.VideoCapture(video_path)
@@ -157,21 +162,21 @@ class ModelManager:
                             countA = countA//100
                             countB = countB//100
                         print(countA,countB)
-                        cv2.imshow("Surveillence", zoneA)
-                        cv2.imshow("Surveillence2", zoneB)
+                        # cv2.imshow("Surveillence", zoneA)
+                        # cv2.imshow("Surveillence2", zoneB)
 
                     if show_regions:
                         cv2.line(frame,(0,line_eq(0)),(frame.shape[1],line_eq(frame.shape[1])),(0,200,0),5)	
                         if 'zoneA' in locals() and 'zoneA' in locals():
                             cv2.putText(frame, 'Zone A :  {}'.format(countA), (10,20),
 					                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2) 
-                            cv2.putText(frame, 'Zone B : {}'.format(countB), (frame.shape[1]-30,frame.shape[0]-20),
+                            cv2.putText(frame, 'Zone B : {}'.format(countB), (frame.shape[1]-50,frame.shape[0]-20),
 					                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2) 
 
                     text = "Estimated count : {}".format(count)
                     cv2.putText(frame, text, (10, H - 20),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-                    print('Processed in : ',elapsed,' ',text)            
+                    print('Processed in : ',elapsed,'s, ',text)            
                   
                 if output is not None and writer is None:
                     min_height=min(dmap.shape[0],frame.shape[0])
@@ -201,6 +206,10 @@ class ModelManager:
                         yield (b'--frame\r\n'
                                 b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
                     else: cv2.imshow("Surveillence", concated)
+
+
+                if log_count:
+                    log_count_fcn(os.path.join(args['output'],'temp.csv'),len(list(objects)))
 
                 key = cv2.waitKey(1) & 0xFF
 
@@ -233,7 +242,6 @@ class ModelManager:
             if args.get('log_counts',False):
                 args['output']=output
 
-            # cls.model.forward_video(args)
             for x in cls.model.forward_video(args):
                 # queue.put_nowait(x)
                 yield x

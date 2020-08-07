@@ -166,10 +166,10 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 	if write_output:
 		fourcc = cv2.VideoWriter_fourcc(*"H264")
 		if args.get('output',False):
-			writer = cv2.VideoWriter(os.path.join(args['output'],os.path.basename(args['input'])+'.mp4'), fourcc, 30,
+			writer = cv2.VideoWriter(os.path.join(args['output'],os.path.basename(args['input'])), fourcc, 30,
 			(W, H), True)
 		else:
-			writer = cv2.VideoWriter(os.path.join(currentdir,'output',os.path.basename(args['input'])+'.mp4'), fourcc, 30,
+			writer = cv2.VideoWriter(os.path.join(currentdir,'output',os.path.basename(args['input'])), fourcc, 30,
 			(W, H), True)
 
 	fps = FPS().start()
