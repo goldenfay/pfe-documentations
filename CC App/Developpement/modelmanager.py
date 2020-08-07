@@ -30,6 +30,7 @@ def is_densitymap_model(model):
 class ModelManager:
 
     model = None
+    outputs_path=os.path.join(currentdir,'ressources','videos','output')
     device = torch.device('cpu')
     BASE_PATH = ''
 
@@ -57,6 +58,7 @@ class ModelManager:
 
         if model_name == 'mobileSSD':
             cls.model = ssd_detector.MobileSSD()
+            
         else:
             cls.model = yolo_detector.YOLO()
         return cls.model
@@ -219,18 +221,18 @@ class ModelManager:
             if writer is not None:
                 writer.release()
         else:  # It's a detection model
-            if args is None:
-                args = {
+            params = {
                     'input': video_path,
                     'silent': True,
                     'write_output': True,
                 }
+            if args is None:
+                args = params
             else: 
-                args.update({
-                    'input': video_path,
-                    'silent': True,
-                    'write_output': True,
-                })   
+                args.update(params) 
+            if args.get('log_counts',False):
+                args['output']=output
+
             # cls.model.forward_video(args)
             for x in cls.model.forward_video(args):
                 # queue.put_nowait(x)

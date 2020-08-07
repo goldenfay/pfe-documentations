@@ -2,9 +2,12 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 # import grasia_dash_components as gdc
-import dash_defer_js_import as dji
+# import dash_defer_js_import as dji
 from dash.dependencies import Input, Output
 
+from flask import request
+import urllib.parse as urlparse
+from urllib.parse import parse_qs
     # User's modules
 import config
 from app import app
@@ -16,22 +19,40 @@ app.layout = html.Div([
 ])
 
 @app.callback(Output('page-content', 'children'),
-              [Input('url', 'pathname')])
-def display_page(pathname):
+              [Input('url', 'pathname'),Input('url', 'search')])
+def display_page(pathname,search):
 
     if pathname == '/global':
         component = components.Global_Charts(app, 'ressources/crowd_records.csv')
         return dbc.Container([html.Hr(), component.layout],style={"display": "flex", "flex-direction": "column"}, fluid=True)
-    elif pathname == '/mono':
-        component = components.Mono_Chart(app)
-        return dbc.Container([component.layout], fluid=True, style={"height": "500px", })
     elif pathname == '/view':
         # app.callback_map = default_callbacks
         component = components.View(app, config)
         # app.callback_map = component.app.callback_map.copy()
         
         # import_js=dji.Import(src="test.js")
-        return dbc.Container([component.layout], fluid=True, style={"height": "500px", })
+        return dbc.Container([component.layout], fluid=True)
+    elif pathname == '/statistics':
+        
+       
+        parsed = urlparse.urlparse(search)
+        args=parse_qs(parsed.query)
+        print(args)
+
+        component = components.StatsView(app, config,args)
+        
+        return dbc.Container([component.layout], fluid=True)
+    
+    elif pathname == '/sensorprocess':
+        
+       
+        parsed = urlparse.urlparse(search)
+        args=parse_qs(parsed.query)
+        print(args)
+
+        component = components.SensorProcessView(app, config,args)
+        
+        return dbc.Container([component.layout], fluid=True)
     else:
         return dbc.Container([dbc.Row([
                                 html.H3([html.Span(className='fa fa-ban mr-3'),'404 Page not found'])

@@ -4,7 +4,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 import sys,os,glob,inspect,time,traceback,json
 import numpy as np
 import torch
-
+import cv2 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(currentdir)
 import server_config
@@ -34,6 +34,8 @@ server=None
 server_thread=None
 model_type=None
 list_frame=[]
+writter=None
+Ready=False
 def load_model(model_type):
     try:
         if model_type in ['mobileSSD', 'yolo']:
@@ -51,6 +53,14 @@ def load_model(model_type):
     print('Done.')
 
     #default routes
+@app.route('/stream')
+def video_feed():
+    global Ready
+
+    if not Ready:
+        return 'Hello'
+    else:   
+        return Response(ModelManager.process_video('temp.avi'), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/hello')
 def hello():
@@ -132,10 +142,14 @@ def imageUpload(data):
 
 @socketio.on('init-process-video')
 def setup(data):
-    global model_type
+    global model_type,writter
     model_type=data['model_type']
+    H,W=data['height'],data['width']
     print('[process-frame] Loading model ',model_type,' ...',end='\t')
     load_model(model_type)
+    fourcc = cv2.VideoWriter_fourcc(*"XVID")
+    writter = cv2.VideoWriter('temp.avi', fourcc, 30,
+        (W, H), True)
 
 @socketio.on('process-frame')
 def imageUpload(data):
@@ -181,35 +195,42 @@ def imageUpload(data):
 
 @socketio.on('frame-upload')
 def frameUpload(data):
-    global list_frame
+    global list_frame,writter
     list_frame.append(data['frame'])
+    # writter.write(process_functions.b64_to_numpy(data['frame']))
 
 @socketio.on('process-video')
 def startprocessing(data):
-    global list_frame,model_type
-    for frame in list_frame:
-        try:
+    global list_frame,model_type,writter,Ready
+    writer.release()
+    Ready=True
 
-                start = time.time()
-                res_img, count = ModelManager.process_frame(frame)
-                inference_time = time.time()-start
 
-                print('\t Done. ')
-                encoded_img = HTML_IMG_SRC_PARAMETERS+(process_functions.numpy_to_b64(
-                    res_img, model_type not in ['mobileSSD', 'yolo']))
-                data={
-                    'data': encoded_img,
-                    'count': count,
-                    'time':str(inference_time)
-                }    
-                emit('send-frame', data,broadcast = True)
-        except Exception as e:
-            print("An error occured while processing the image ", end='\n\t')
-            traceback.print_exc()
-            errors.append((frame['id'],str(e)))
-            continue
-    print('[process-video] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
-    # emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
+    
+
+    # for frame in list_frame:
+    #     try:
+
+    #             start = time.time()
+    #             res_img, count = ModelManager.process_frame(frame)
+    #             inference_time = time.time()-start
+
+    #             print('\t Done. ')
+    #             encoded_img = HTML_IMG_SRC_PARAMETERS+(process_functions.numpy_to_b64(
+    #                 res_img, model_type not in ['mobileSSD', 'yolo']))
+    #             data={
+    #                 'data': encoded_img,
+    #                 'count': count,
+    #                 'time':str(inference_time)
+    #             }    
+    #             emit('send-frame', data,broadcast = True)
+    #     except Exception as e:
+    #         print("An error occured while processing the image ", end='\n\t')
+    #         traceback.print_exc()
+    #         errors.append((frame['id'],str(e)))
+    #         continue
+    # print('[process-video] Processing is done'+(' with errors' if len(errors)>0 else ''),'.')  
+    # # emit('process-done',{'flag': 'success' if len(errors)==0 else 'fail','errors':errors},broadcast = True)         
 
 
 

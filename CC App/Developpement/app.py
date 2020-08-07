@@ -127,6 +127,15 @@ def serve_file(path):
     fullpath=path.split('***')
     return send_from_directory(os.path.sep.join([STATIC_PATH]+fullpath[:-1]), fullpath[-1])
 
+@server.route("/videos/<video_name>")
+def serve_video(video_name):
+    paths=list(os.walk(STATIC_PATH.replace('assets','videos')))
+    # paths=[el for el in paths if not el[0].endswith('output')]
+    
+    video_path=[os.path.join(f[0],video_name) for f in paths if video_name in f[2] and not f[0].endswith('output') ][0]
+    
+    return send_from_directory(os.path.dirname(video_path),video_name)
+
 @server.route("/scene/regions/",methods=['POST'])
 def save_regions_params():
     global scene_region_params

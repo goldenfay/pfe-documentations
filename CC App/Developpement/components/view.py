@@ -1,5 +1,3 @@
-import ctypes
-import signal
 from sockets import ClientSocket
 import dash
 import dash_core_components as dcc
@@ -10,17 +8,12 @@ from dash.dependencies import Input, Output, State
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
-from matplotlib import cm
-from io import BytesIO as _BytesIO
-from PIL import Image
+import cv2,imutils
 import re,time,base64,os,sys,glob,datetime,traceback,inspect
 from flask import Flask, Response
-from werkzeug.serving import make_server
-import dill
 import multiprocessing
 from multiprocessing import Pool
 import threading
-from threading import Thread
 
 
 currentdir = os.path.dirname(os.path.abspath(
@@ -34,72 +27,9 @@ from components.base import Component
 import components.reusable as reusable
 import components.static as static
 import functions
-
+from threads import *
 
 from app import app,get_regions_params
-
-class StoppableThread(threading.Thread):
-    """Thread class with a stop() method. The thread itself has to check
-    regularly for the stopped() condition."""
-
-    def __init__(self,  *args, **kwargs):
-        super(StoppableThread, self).__init__(*args, **kwargs)
-        self._stop_event = threading.Event()
-
-    def stop(self):
-        self._stop_event.set()
-
-    def stopped(self):
-        return self._stop_event.is_set()
-
-
-class ServerThread(threading.Thread):
-
-    def __init__(self, srv: Flask):
-        threading.Thread.__init__(self)
-        self.srv = make_server('127.0.0.1', 4000, srv)
-        # self.srv = srv
-        self._stopper = threading.Event()
-        self.ctx = srv.app_context()
-        # self.ctx.push()
-
-    def run(self):
-        print('starting process server')
-
-        try:
-            # self.srv.run('127.0.0.1', 4000)
-            self.srv.serve_forever()
-        except:
-            self._stopper.set()
-
-        # self.srv.serve_forever()
-
-    def shutdown(self):
-        self.srv.shutdown()
-        # print('shutted down')
-        self._stopper.set()
-        # self._stop()
-        print('[Server] Terminated')
-
-    def stopped(self):
-        return self._stopper.is_set()
-
-    def get_id(self):
-
-            # returns id of the respective thread
-        if hasattr(self, '_thread_id'):
-            return self._thread_id
-        for id, thread in threading._active.items():
-            if thread is self:
-                return id
-
-    def raise_exception(self):
-        thread_id = self.get_id()
-        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id,
-                                                         ctypes.py_object(SystemExit))
-        if res > 1:
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
-            print('Exception raise failure')
 
 
 images_list = []
@@ -108,6 +38,7 @@ res_img_list = []
 HTML_IMG_SRC_PREFIX = 'data:image/png;base64, '
 config = None
 ONLINE_MODE = False
+SHOW_GRAPHS=True
 server = None
 server_thread = None
 SERVER_URL = ''
@@ -119,15 +50,6 @@ best_performence_models = {
     'CCNN': 'internal'
 }
 
-
-def run_dill_encoded(payload):
-    fun, args = dill.loads(payload)
-    return fun(*args)
-
-
-def apply_async(pool, fun, args):
-    payload = dill.dumps((fun, args))
-    return pool.apply_async(run_dill_encoded, (payload,))
 
 
 def parse_contents(contents, filename):
@@ -153,10 +75,17 @@ class View(Component):
         self.config = config
         super(View, self).__init__(app)
 
-    def initialize(self, app):
-        global images_list,res_img_list
+    def reset_variables(self):
+        global images_list,res_img_list,server,server_thread
         images_list = []
         res_img_list=[]
+        if server_thread is not None and server_thread.isAlive():
+            server_thread.raise_exception()
+            
+
+    def initialize(self, app):
+        self.reset_variables()
+        
         list_vidoes = list(glob.glob(os.path.join(
             self.config.VIDEOS_DIR_PATH, '*.mp4')))
 
@@ -218,33 +147,8 @@ class View(Component):
                                                 )
                                             ]
                                         ),
-                                        html.Div(
-                                            className='control-element',
-                                            children=[
-                                                html.Div(
-                                                    children=['Usage:'],
-                                                    style={
-                                                        'width': '40%'}
-                                                ),
-                                                html.Div(
-                                                    children=[daq.ToggleSwitch(
-                                                        id='usage-switch',
-                                                        value=False,
-                                                        color='#fa4f56'
-                                                    )
-                                                    ],
-                                                    style={
-                                                        'width': '20%'}
-                                                ),
-
-                                                html.Div(children=['Local'],
-                                                         id='usage-switch-label',
-                                                         style={
-                                                    'width': '40%',
-                                                    'textAlign': 'center'}
-                                                )
-                                            ]
-                                        ),
+                                        reusable.toggleswitch_control('Usage','usage-switch','usage-switch-label',False,'Local','#fa4f56'),
+                                        
                                         html.Div(
                                             id="server-url-control",
                                             className='control-element',
@@ -272,33 +176,8 @@ class View(Component):
                                                 )
                                             ]
                                         ),
-                                        html.Div(
-                                            className='control-element',
-                                            children=[
-                                                html.Div(
-                                                    children=['Mode:'],
-                                                    style={
-                                                        'width': '40%'}
-                                                ),
-                                                html.Div(
-                                                    children=[daq.ToggleSwitch(
-                                                        id='mode-switch',
-                                                        value=True,
-                                                        color='#fa4f56'
-                                                    )
-                                                    ],
-                                                    style={
-                                                        'width': '20%'}
-                                                ),
+                                        reusable.toggleswitch_control('Mode','mode-switch','switch-label',True,'Footage','#fa4f56'),
 
-                                                html.Div(children=['Footage'],
-                                                         id='switch-label',
-                                                         style={
-                                                    'width': '40%',
-                                                    'text1lign': 'center'}
-                                                )
-                                            ]
-                                        ),
                                         html.Div(style={'display': 'none'},
                                                  className='control-element',
                                                  children=[
@@ -329,9 +208,7 @@ class View(Component):
                                             {'label': 'CSRNet',
                                              'value': 'CSRNet'},
                                             {'label': 'SANet',
-                                             'value': 'SANet'},
-                                            {'label': 'CCNN',
-                                             'value': 'CCNN'}
+                                             'value': 'SANet'}
                                         ], "mobileSSD",
                                             id="dropdown-model-selection"
 
@@ -348,25 +225,18 @@ class View(Component):
                                         ),
                                             id='footage-selection-control'
                                         ),
-                                        reusable.dropdown_control("Video Display Mode:", [
-                                            {'label': 'Normal Display',
-                                             'value': 'normal'},
-                                            {'label': 'Display with density map',
-                                             'value': 'density_map'},
-                                        ], 'density_map', id="dropdown-video-display-mode"
+
+                                        html.Div(
+                                            id='show-graphs-control',
+                                            
+                                            children=[
+                                                reusable.toggleswitch_control('Show graphs','show-graphs-switch','graph-switch-label',True,'Yes','#fa4f56'),
+
+                                                
+                                            ]
                                         ),
-
-                                        reusable.dropdown_control("Graph View Mode:", [
-                                            {'label': 'Visual Mode',
-                                             'value': 'visual'},
-                                            {'label': 'Detection Mode',
-                                             'value': 'detection'}
-                                        ], 'visual',
-
-                                            id="dropdown-graph-view-mode",
-
-                                        ),
-                                        html.Div(id="div-visual-mode"),
+                                        html.Div(id="display-plots-div",children=[]),
+                                        static.default_count_plots_modal(os.path.join(ModelManager.outputs_path,'results_history.csv')),
                                         html.Div(id="div-detection-mode"),
                                         html.Div(
                                             id="socket-errors-div", children=[]),
@@ -380,7 +250,31 @@ class View(Component):
             ]
         )
 
+def load_model(model_type):
+    if model_type in ['mobileSSD', 'yolo']:
+        x = ModelManager.load_detection_model(model_type)
+        print(type(x))
+    else:
+        external_flag = best_performence_models[model_type] == 'external'
+        try:
+            ModelManager.load_external_model(model_type, external_flag)
+        except Exception as e:
+            print('An error occured when loading model ',
+                  model_type, end='\n\t')
+            traceback.print_exc()
+            pass
+    print('[INFO] Done.')   
 
+    # graphs modal handler
+@app.callback(
+    Output("count-plots-modal", "is_open"),
+    [Input("view-count-plots-btn", "n_clicks"), Input("count-plots-close-btn", "n_clicks")],
+    [State("count-plots-modal", "is_open")],
+)
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open
 ##############################################################################################
 #           Dropdowns event handlers
 ##############################################################################################
@@ -422,7 +316,8 @@ def server_url_change(value, children):
 
 @app.callback([Output("switch-label", "children"),
                Output('footage-container', 'children'),
-               Output('footage-selection-control', 'style')],
+               Output('footage-selection-control', 'style'),
+               Output("show-graphs-control", "style")],
               [Input("mode-switch", "value")])
 def toggle_display(value):
     if value:
@@ -470,7 +365,7 @@ def toggle_display(value):
                 ])
         ]
         # static.default_footage_section()
-    return ['Footage' if not value else 'Still images'], children, {'display': 'block'} if not value else {'display': 'none'}
+    return ['Footage' if not value else 'Still images'], children, {'display': 'block'} if not value else {'display': 'none'},{'display': 'block'} if not value else {'display': 'none'}
 
     # Footage Selection
 @app.callback(Output("video-display", "url"),
@@ -487,20 +382,17 @@ def change_model(model_type):
     if ONLINE_MODE:
         return {"display": "none"}
     print('[INFO] Loading model : ', model_type, ' ...')
-    if model_type in ['mobileSSD', 'yolo']:
-        x = ModelManager.load_detection_model(model_type)
-        print(type(x))
-    else:
-        external_flag = best_performence_models[model_type] == 'external'
-        try:
-            ModelManager.load_external_model(model_type, external_flag)
-        except Exception as e:
-            print('An error occured when loading model ',
-                  model_type, end='\n\t')
-            traceback.print_exc()
-            pass
-    print('[INFO] Done.')
+    load_model(model_type)
     return {"display": "none"}
+
+   # Show graphs toggle
+@app.callback([Output("graph-switch-label", "children")],
+              [Input("show-graphs-switch", "value")])
+def toggle_show_graph(value):
+    global SHOW_GRAPHS
+    SHOW_GRAPHS=value
+    return ['Yes'] if value else ['No']
+
 
     # Upload image
 @app.callback(Output('output-image-upload', 'children'),
@@ -546,6 +438,62 @@ def update_output(uploaded_filenames, uploaded_file_contents):
         return html.Div(html.Video(id="myvideo", controls=True, src='http://127.0.0.1:8080/'+var, style={'width': '500px', 'height': '300px'}))
 
 
+
+    #Show graphs interval elapsed
+@app.callback(Output("live-count-plot", "figure"),
+              [Input("interval-show-graphs", "n_intervals")])
+def update_count_plots(n):
+    csv_file_path=os.path.join(ModelManager.outputs_path,'temp.csv')
+    df=functions.read_existing_data(csv_file_path)
+    xtext,ytext,title="Timestamp","Count","Live process plot"
+    layout=dict(title={
+        'text':title,
+        'y':0.9,
+        'x':0.5,
+        'xanchor': 'center'
+        },
+    xaxis_title=xtext,
+    yaxis_title=ytext,
+    hovermode="closest",
+    transition={
+        'easing':'quad-in-out'
+    }
+    )
+    return go.Figure(data=go.Scatter(x=df.index.tolist(),y=df['value'].values.tolist()),layout=layout)
+#     #Show graphs interval elapsed
+# @app.callback([Output("week-count-plot", "figure"),
+#                 Output("day-count-plot", "figure"),
+#                 Output("hours-count-plot", "figure")],
+#               [Input("interval-show-graphs", "n_intervals")])
+# def update_count_plots(n):
+#     csv_file_path=os.path.join(ModelManager.outputs_path,'results_history.csv')
+#     # return functions.show_plots(functions.read_existing_data(csv_file_path))
+#     # dfs=functions.show_plots(functions.read_existing_data(csv_file_path))
+#     [df_2h,df_8h,df_1d,df_1w]=functions.show_plots(functions.read_existing_data(csv_file_path))
+#     # print([df["value"].values.tolist() for df in dfs])
+#     week_fig=go.Figure(data=go.Scatter(x=df_1w.index.tolist(),y=df_1w['value'].values.tolist(),text='gfjhfhgfjhgfjhfhgf',name='ooooooooooo'))
+#     day_fig=go.Figure(data=go.Scatter(x=df_1d.index.tolist(),y=df_1d['value'].values.tolist()))
+#     hours_fig=go.Figure(data=go.Scatter(x=df_2h.index.tolist(),y=df_2h['value'].values.tolist()))
+    
+#     return week_fig,day_fig,hours_fig
+
+#     return  go.Figure({
+#                 'data': [{'hoverinfo': 'x+text',
+#                           'name': 'Counting history',
+#                           'text': [f'{count}' for count in df['value'].values.tolist()],
+#                           'type': 'bar',
+#                           'x': df.index.tolist(),
+#                         #   'marker': {'color': colors},
+#                           'y': df["value"].values.tolist()} for df in dfs],
+#                 'layout': {'showlegend': True,
+#                            'autosize': True,
+#                            'paper_bgcolor': 'rgb(249,249,249)',
+#                            'plot_bgcolor': 'rgb(249,249,249)',
+#                            'xaxis': {'automargin': True, 'tickangle': -45},
+#                            'yaxis': {'automargin': True, 'title': {'text': 'Count'}}}
+#                 } )
+
+    
 ##############################################################################################
 #           Buttons clicks event handlers
 ##############################################################################################
@@ -558,7 +506,7 @@ def update_output(uploaded_filenames, uploaded_file_contents):
               [Input("process-imgs-button", "n_clicks")],
               [State("dropdown-model-selection", "value"),
                State("output-image-process", "children")])
-def launch_counting(button_click, model_type, children):
+def process_frames(button_click, model_type, children):
     global images_list, res_img_list, CLIENT_SOCKET
     res_img_list=[]
     # return [],[] # to be removed
@@ -608,11 +556,6 @@ def launch_counting(button_click, model_type, children):
             print('[INFO] Sending images to server ...')
             # CLIENT_SOCKET.emit('image-upload', data)
             print('[INFO] Done.')
-            # while True:
-            #     if received or server_error:
-            #         break
-            #     print('waiting ...')
-            #     time.sleep(1)
             if server_error:
                 return [], [
                     dbc.Alert(children=['An error occured on the server.'],
@@ -656,12 +599,13 @@ def launch_counting(button_click, model_type, children):
     # Process video button click
 
 
-@app.callback(Output("output-video-process", "children"),
+@app.callback([Output("output-video-process", "children"),
+                Output("display-plots-div", "children")],
               [Input("process-video-button", "n_clicks")],
               [State("dropdown-model-selection", "value"),
                State("dropdown-footage-selection", "value")])
 def process_video(button_click, model_type, video_path):
-    global server, server_thread, app, get_regions_params,SERVER_URL,CLIENT_SOCKET,ONLINE_MODE
+    global server, server_thread, get_regions_params,SHOW_GRAPHS, SERVER_URL,CLIENT_SOCKET,ONLINE_MODE
     if button_click > 0:
         print('Process server state : ',('not None' if server is not None else 'None'))
         if server_thread is not None:
@@ -671,18 +615,7 @@ def process_video(button_click, model_type, video_path):
         #     global server
         #     from flask import request
 
-        #     if model_type in ['mobileSSD', 'yolo']:
-        #         x = ModelManager.load_detection_model(model_type)
-        #         print('\t', type(x))
-        #     else:
-        #         try:
-        #             ModelManager.load_external_model(model_type)
-        #         except Exception as e:
-        #             print('An error occured when loading model ',
-        #                   model_type, end='\n\t')
-        #             traceback.print_exc()
-        #             pass
-        #     print('[INFO] Done.')
+        #     load_model(model_type)
         #     # ModelManager.process_video(video_path,queue)
 
         #     if server is None:
@@ -705,26 +638,19 @@ def process_video(button_click, model_type, video_path):
         #             return 'Server shutting down...'
         #     server.run(port=4000)
 
-        if model_type in ['mobileSSD', 'yolo']:
-            x = ModelManager.load_detection_model(model_type)
-            print('\t', type(x))
-        else:
-            try:
-                ModelManager.load_external_model(model_type)
-            except Exception as e:
-                print('An error occured when loading model ',
-                      model_type, end='\n\t')
-                traceback.print_exc()
-                pass
-        print('[INFO] Done.')
+        load_model(model_type)
 
         if ONLINE_MODE:
             if CLIENT_SOCKET is None:
                 CLIENT_SOCKET = ClientSocket(reconnection=False)
             if not CLIENT_SOCKET.connected:
                 CLIENT_SOCKET.connect(SERVER_URL)
-
-            CLIENT_SOCKET.emit('init-process-video',{'model_type':model_type})
+            vs=cv2.VideoCapture(video_path)    
+            frame = vs.read()
+                #VideoStream returns a frame, VideoCapture returns a tuple
+            frame = frame[1] if len(frame)>1 else frame
+            (H, W) = frame.shape[:2]
+            CLIENT_SOCKET.emit('init-process-video',{'model_type':model_type,'height':H,'width':W})
             socket_thread=StoppableThread(target=emit_by_frame,args=(video_path,model_type,))
             socket_thread.start()
 
@@ -744,13 +670,14 @@ def process_video(button_click, model_type, video_path):
 
                 @server.route('/stream')
                 def video_feed():
+                    global SHOW_GRAPHS
                 
                     params={
                         'show':True,
                         'tang': float(get_regions_params()['tang']),
                         'b': int(float(get_regions_params()['b']))
                     } if get_regions_params() is not None else None
-                    return Response(ModelManager.process_video(video_path,args={'regions_params':params}), mimetype='multipart/x-mixed-replace; boundary=frame')
+                    return Response(ModelManager.process_video(video_path,args={'regions_params':params,'log_counts':SHOW_GRAPHS,'log_count_fcn':functions.log_count}), mimetype='multipart/x-mixed-replace; boundary=frame')
 
             # server_thread=StoppableThread(target=launch_subprocess,args=(model_type,video_path,None))
             # server_thread.start()
@@ -766,8 +693,10 @@ def process_video(button_click, model_type, video_path):
             # run=lambda :server.run(port=4000)
             # server_thread=multiprocessing.Process(target=server.run)
             # server_thread.start()
-
+       
         return [
+            
+            
             html.Div(
                 className='row shadow-sm',
                 children=[
@@ -791,8 +720,7 @@ def process_video(button_click, model_type, video_path):
                     html.Div(
                         className='col-md-12 d-flex justify-content-center align-items-center',
                         children=[
-                            # html.Img(src='/video_feed')
-                            html.Img(src='http://localhost:4000/stream?t='+str(datetime.datetime.now()),
+                            html.Img(src=('http://localhost:4000'if not ONLINE_MODE else SERVER_URL)+'/stream?t='+str(datetime.datetime.now()),
                                      id='process-video-output-flow',
                                      className='img-fluid'),
                             # html.Iframe(src='http://localhost:4000/stream')
@@ -833,11 +761,31 @@ def process_video(button_click, model_type, video_path):
             ),
             html.P(id='hidden-splitLine-input',
                       className='d-none', title='')
-
-
-
+        ],[] if not SHOW_GRAPHS else [
+            dcc.Interval(
+                id="interval-show-graphs",
+                interval=1000,
+                n_intervals=0
+            ) if SHOW_GRAPHS else html.Div(),
+            dcc.Graph(
+                        id="live-count-plot",
+                        style={'height': '55vh'}
+                    ),
+            # dcc.Graph(
+            #             id="week-count-plot",
+            #             style={'height': '55vh'}
+            #         ),
+            # dcc.Graph(
+            #             id="day-count-plot",
+            #             style={'height': '55vh'}
+            #         ),
+            # dcc.Graph(
+            #             id="hours-count-plot",
+            #             style={'height': '55vh'}
+            #         )
 
         ]
+    else: return [],[]    
 
 
 
@@ -1002,7 +950,6 @@ if False:
 
 def emit_by_frame(video_path,model_type):
     global CLIENT_SOCKET
-    import cv2,imutils
     vs = cv2.VideoCapture(video_path)
     while True:
         frame = vs.read()

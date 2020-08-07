@@ -7,8 +7,11 @@ import dash
 import dash_core_components as dcc
 import dash_daq as daq
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import dash_player as player
 from textwrap import dedent
+import plotly.graph_objs as go
+import functions
 
 
 def default_header():
@@ -116,3 +119,64 @@ def default_footage_section():
         )
     )
     ]
+def history_count_figures(csv_file_path):
+    xtext,ytext="Timestamp","Count"
+    layout=dict(title={
+        'y':0.9,
+        'x':0.5,
+        'xanchor': 'center'
+        },
+    xaxis_title=xtext,
+    yaxis_title=ytext,
+    hovermode="closest",
+    transition={
+        'easing':'quad-in-out'
+    }
+    )
+    [df_2h,df_8h,df_1d,df_1w]=functions.show_plots(functions.read_existing_data(csv_file_path))
+    week_fig=go.Figure(data=go.Scatter(x=df_1w.index.tolist(), y=df_1w['value'].values.tolist()),layout=layout)
+    day_fig=go.Figure(data=go.Scatter(x=df_1d.index.tolist(),y=df_1d['value'].values.tolist()),layout=layout)
+    hours_fig=go.Figure(data=go.Scatter(x=df_2h.index.tolist(),y=df_2h['value'].values.tolist()),layout=layout)
+    
+    week_fig.update_layout({
+        'title': {'text':'Last weeks counting analytics'}
+    })
+    day_fig.update_layout({
+        'title': {'text':'Last day counting analytics'}
+    })
+    hours_fig.update_layout({
+        'title': {'text':'Last 2 hours counting analytics'}
+    })
+    return week_fig,day_fig,hours_fig
+
+def default_count_plots_modal(csv_file_path):
+    week_fig,day_fig,hours_fig=history_count_figures(csv_file_path)
+    
+    return html.Div(
+    [
+        dbc.Button("View history", id="view-count-plots-btn"),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(html.Div("History Analytics",className="text-center")),
+                dbc.ModalBody(children=[
+                    html.Div(className='row',
+                    children=[
+                        html.Div(className="col-md",children=[dcc.Graph(figure=week_fig)]),
+                        html.Div(className="col-md",children=[dcc.Graph(figure=day_fig)]),
+                        html.Div(className="col-md",children=[dcc.Graph(figure=hours_fig)])
+
+                    ])
+                    
+                ]),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "Close", id="count-plots-close-btn", className="ml-auto"
+                    )
+                ),
+            ],
+            id="count-plots-modal",
+            size="xl",
+            centered=True,
+        ),
+    ]
+)
