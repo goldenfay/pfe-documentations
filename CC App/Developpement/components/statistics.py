@@ -77,9 +77,9 @@ class StatsView(Component):
                              'The requested sensor Id does not exist')
             return
             # Grap dataframe from the specific .csv file
-        csv_file=os.path.join(self.sensor_path,'results_history.csv')
+        csv_file=os.path.join(self.sensor_path,'temp.csv')
         df=functions.read_existing_data(csv_file)
-        
+        df.index = pd.DatetimeIndex(df.index)
         valuesAxes=df['value'].values
             # Calculate most busy days (day name, date)
         most_busy_days=df.groupby(df.index.date).agg({'value': 'mean'})
@@ -113,7 +113,7 @@ class StatsView(Component):
         end_date=df.index.max()
         delta=end_date-start_date
         delta_hours=delta/np.timedelta64(1,'h')
-        print()
+        print(df.index)
         self.layout = dbc.Container(
 
             className='mt-5',
@@ -126,7 +126,7 @@ class StatsView(Component):
                                 dbc.CardDeck(
                                     [
                                         reusable.basic_stat_info_card('Most busy day',most_busy_days,'primary'),
-                                        reusable.basic_stat_info_card('Most dense crowd in one moment',max(valuesAxes.tolist()),'danger'),
+                                        # reusable.basic_stat_info_card('Most dense crowd in one moment',max(valuesAxes.tolist()),'danger'),
                                         reusable.basic_stat_info_card('Peak hours',', '.join(most_busy_hours),'warning')
 
 

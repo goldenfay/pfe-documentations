@@ -155,21 +155,22 @@ class SensorProcessView(Component):
                                                     id='sensor-video-preview',
                                                     children=(
                                                         html.H3('Preview',className='text-center text-primary font-weight-bold'),
-                                                        # player.DashPlayer(
-                                                        #     id='video-display',
-                                                        #     # style={'position': 'absolute', 'width': '100%',
-                                                        #     #     'height': '100%', 'top': '0', 'left': '0', 'bottom': '0', 'right': '0'},
-                                                        #     url='http://localhost:8050/videos/{}'.format(os.path.basename(list_vidoes[0])),
-                                                        #     controls=True,
-                                                        #     playing=False,
-                                                        #     volume=1,
-                                                        #     width='100%',
-                                                        #     height='100%'
-                                                        # )
-                                                        html.Video(
-                                                            src='http://localhost:8050/videos/{}'.format(os.path.basename(list_vidoes[0])),
-                                                            controls=True,autoPlay=False
+                                                        player.DashPlayer(
+                                                            id='sensor-video-preview',
+                                                            # style={'position': 'absolute', 'width': '100%',
+                                                            #     'height': '100%', 'top': '0', 'left': '0', 'bottom': '0', 'right': '0'},
+                                                            url='http://localhost:8050/videos/{}'.format(os.path.basename(list_vidoes[0])),
+                                                            controls=True,
+                                                            playing=False,
+                                                            volume=1,
+                                                            width='100%',
+                                                            height='100%'
                                                         )
+                                                        # html.Video(
+                                                        #     id='sensor-video-preview',
+                                                        #     src='http://localhost:8050/videos/{}'.format(os.path.basename(list_vidoes[0])),
+                                                        #     controls=True,autoPlay=False
+                                                        # )
                                                        
                                                     )
 
@@ -266,6 +267,7 @@ class SensorProcessView(Component):
 #           Switch event handlers
 ##############################################################################################
 
+
 @app.callback([Output("sensor-footage-selection-control", "style"),
                 Output("video-source-switch-label", "children")],
                 [Input("video-source-switch","value")]
@@ -292,6 +294,11 @@ def toggle_show_live_plot(value):
 #           Dropdowns event handlers
 ##############################################################################################
 
+@app.callback([Output("sensor-video-preview", "url")],
+                [Input("sensor-dropdown-footage-selection","value")]
+            )
+def change_video_footage(value):
+    return ['http://localhost:8050/videos/{}'.format(os.path.basename(value))]
 
 
 ##############################################################################################

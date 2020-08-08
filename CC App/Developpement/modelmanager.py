@@ -71,8 +71,8 @@ class ModelManager:
             if not isinstance(frame, torch.Tensor):
                 frame = torch.Tensor(frame).permute((2, 0, 1))
             with torch.no_grad():
-                cls.model.to(cls.device)
-                frame.to(cls.device)
+                cls.model=cls.model.to(cls.device)
+                frame=frame.to(cls.device)
                 if len(frame.shape) == 3:
                     frame = frame.unsqueeze(0)
                 dmap = cls.model(frame)
