@@ -10,6 +10,7 @@ const apiClient = axios.create({
 	}
 })
 export default{
+	
 	getSensorsPagination(perPage, page){
 		return apiClient.get('/crowds?_limit='+perPage+"&_page="+page)
 	},
@@ -18,22 +19,13 @@ export default{
 	},
 	postSensorData(data){
 
-		apiClient.post('/crowds',data).
-		then((result)=>{
-			console.warn(result)
-		})
+		return apiClient.post('/crowds',data)
 	},
 	postEditData(id,data){
-		apiClient.put('/crowds/'+id,data).
-		then((result)=>{
-			console.warn(result)
-		})
+		return apiClient.put('/crowds/'+id,data)
 	},
 	deleteSensorRequest(id){
-		apiClient.delete('/crowds/'+id).
-		then((result)=>{
-			console.warn(result)
-		})
+		return apiClient.delete('/crowds/'+id)
 	}
 
 

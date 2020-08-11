@@ -1,31 +1,47 @@
 <template>
   <div>
-    <div v-if="itemsPerPageSelect || tableFilter" class="row my-2 mx-0">
+    <div 
+      v-if="itemsPerPageSelect || haveFilterOption" 
+      class="row my-2 mx-0"
+    >
       <div
         class="col-sm-6 form-inline p-0"
-        v-if="tableFilter"
+        v-if="haveFilterOption"
       >
-        <label class="mr-2">{{tableFilterData.label}}</label>
-        <input
-          class="form-control"
-          type="text"
-          :placeholder="tableFilterData.placeholder"
-          @input="tableFilterChange($event.target.value, 'input')"
-          @change="tableFilterChange($event.target.value, 'change')"
-          :value="tableFilterState"
-        >
+        <template v-if="tableFilter">
+          <label class="mr-2">{{tableFilterData.label}}</label>
+          <input
+            class="form-control"
+            type="text"
+            :placeholder="tableFilterData.placeholder"
+            @input="tableFilterChange($event.target.value, 'input')"
+            @change="tableFilterChange($event.target.value, 'change')"
+            :value="tableFilterState"
+            aria-label="table filter input"
+          >
+        </template>
+        <slot name="cleaner" :clean="clean" :isFiltered="isFiltered">
+          <template v-if="cleaner">
+            <CIcon
+              v-if="cleaner"
+              v-bind="cleanerProps"
+              @click.native="clean"
+            />
+          </template>
+        </slot>
       </div>
 
       <div
         v-if="itemsPerPageSelect"
         class="col-sm-6 p-0"
-        :class="{ 'offset-sm-6': !tableFilter }"
+        :class="{ 'offset-sm-6': !haveFilterOption }"
       >
         <div class="form-inline justify-content-sm-end">
           <label class="mr-2">{{paginationSelect.label}}</label>
           <select
             class="form-control"
             @change="paginationChange"
+            aria-label="changes number of visible items"
           >
             <option value="" selected disabled hidden>
               {{perPageItems}}
@@ -38,6 +54,7 @@
               {{number}}
             </option>
           </select>
+
         </div>
       </div>
     </div>
@@ -69,6 +86,7 @@
                     width="18"
                     :content="$options.icons.cilArrowTop"
                     :class="iconClasses(index)"
+                    :aria-label="`change column: '${name}' sorting`"
                   />
                 </slot>
               </th>
@@ -85,6 +103,7 @@
                     @input="columnFilterEvent(colName, $event.target.value, 'input')"
                     @change="columnFilterEvent(colName, $event.target.value, 'change')"
                     :value="columnFilterState[colName]"
+                    :aria-label="`column name: '${colName}' filter input`"
                   />
                 </slot>
               </th>
@@ -186,6 +205,7 @@
             </template>
           </tr>
         </tfoot>
+        <slot name="footer" :itemsAmount="currentItems.length"/>
         <slot name="caption"/>
       </table>
 
@@ -216,11 +236,11 @@
 import CElementCover from '../element-cover/CElementCover'
 import CPagination from '../pagination/CPagination'
 import CIcon from '@coreui/icons-vue/src/CIconRaw.vue'
-import { cilArrowTop, cilBan } from '@coreui/icons'
+import { cilArrowTop, cilBan, cilFilterX } from '@coreui/icons'
 
 export default {
   name: 'CDataTable',
-  icons: { cilArrowTop, cilBan },
+  icons: { cilArrowTop, cilBan, cilFilterX },
   components: {
     CPagination,
     CElementCover,
@@ -264,7 +284,8 @@ export default {
     footer: Boolean,
     loading: Boolean,
     clickableRows: Boolean,
-    noItemsView: Object
+    noItemsView: Object,
+    cleaner: Boolean
   },
   data () {
     return {
@@ -340,10 +361,10 @@ export default {
       })
       return items
     },
-    filterableCols () {
-      return this.rawColumnNames.filter(name => {
-        return this.generatedColumnNames.includes(name)
-      })
+    itemsDataColumns () {	
+      return this.rawColumnNames.filter(name => {	
+        return this.generatedColumnNames.includes(name)	
+      })	
     },
     tableFiltered () {
       let items = this.columnFiltered
@@ -353,7 +374,7 @@ export default {
       const filter = this.tableFilterState.toLowerCase()
       const hasFilter = (item) => String(item).toLowerCase().includes(filter)
       items = items.filter(item => {
-        return this.filterableCols.filter(key => hasFilter(item[key])).length
+        return this.itemsDataColumns.filter(key => hasFilter(item[key])).length
       })
       return items
     },
@@ -447,6 +468,22 @@ export default {
         return customValues.noResults || 'No filtering results'
       }
       return customValues.noItems || 'No items'
+    },
+    isFiltered () {
+      return this.tableFilterState || 
+             Object.values(this.columnFilterState).join('') || 
+             this.sorterState.column
+    },
+    cleanerProps () {
+      return { 
+        content: this.$options.icons.cilFilterX,
+        class: `ml-2 ${this.isFiltered ? 'text-danger' : 'transparent'}`,
+        role: this.isFiltered ? 'button' : null,
+        tabindex: this.isFiltered ? 0 : null,
+      }
+    },
+    haveFilterOption () {
+      return this.tableFilter || this.cleaner || this.$scopedSlots.cleaner
     }
   },
   methods: {
@@ -500,7 +537,9 @@ export default {
       return classes
     },
     isSortable (index) {
-      return this.sorter && (!this.fields || this.fields[index].sorter !== false)
+      return this.sorter && 
+             (!this.fields || this.fields[index].sorter !== false) && 
+             this.itemsDataColumns.includes(this.rawColumnNames[index])
     },
     headerClass (index) {
       const fields = this.fields
@@ -554,6 +593,11 @@ export default {
     objectsAreIdentical (obj1, obj2) {
       return obj1.length === obj2.length && 
              JSON.stringify(obj1) === JSON.stringify(obj2)
+    },
+    clean() {
+      this.tableFilterState = ""
+      this.columnFilterState = {}
+      this.sorterState = { column: "", asc: true }
     }
   }
 }

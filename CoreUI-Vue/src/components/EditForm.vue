@@ -27,7 +27,7 @@
     <Button type="submit" class="btn btn-primary  btn-block">
       Modifier capteur
     </Button>
-    <Button type="button" @click="cancel" class="btn btn-secondary btn-block">
+    <Button type="button" @click="cancel" class="btn btn-secondary btn-block" data-dismiss="modal">
       Annuler
     </Button>
   </form>

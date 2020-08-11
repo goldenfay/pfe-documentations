@@ -18,17 +18,17 @@
         </CHeaderNavLink>
       </CHeaderNavItem>
       <CHeaderNavItem class="px-3">
-        <CHeaderNavLink to="/users" exact>
-          Models
+        <CHeaderNavLink to="/list" exact>
+          Liste des capteurs
         </CHeaderNavLink>
       </CHeaderNavItem>
       <CHeaderNavItem class="px-3">
-        <CHeaderNavLink>
-          Settings
+        <CHeaderNavLink to="/creation">
+          Créer Capteur
         </CHeaderNavLink>
       </CHeaderNavItem>
     </CHeaderNav>
-    <CHeaderNav class="mr-4">
+    <!--CHeaderNav class="mr-4">
       <CHeaderNavItem class="d-md-down-none mx-2">
         <CHeaderNavLink>
           <CIcon name="cil-bell"/>
@@ -45,7 +45,7 @@
         </CHeaderNavLink>
       </CHeaderNavItem>
       
-    </CHeaderNav><!--
+    </CHeaderNav--><!--
     <CSubheader class="px-3">
       <CBreadcrumbRouter class="border-0 mb-0"/>
     </CSubheader>-->

@@ -38,7 +38,6 @@
             
           </CCardFooter>
         </CCard>
-        
 
         <!-- Button trigger modal --
         <button type="button" class="btn btn-primary" @click="boolModal1 = true">
@@ -53,7 +52,7 @@
         <Modal id="deleteModal">
             <h1 slot="title">Confirmer la suppression</h1>
             <p slot="body_content">Êtes vous sur de vouloir supprimer ?</p>
-            <button @click="deleteSensor" slot="button1" type="button" class="btn btn-danger">Supprimer</button>
+            <button @click="deleteSensor" slot="button1" type="button" class="btn btn-danger" >Supprimer</button>
             <button slot="button2" type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
         </Modal>
 
@@ -62,19 +61,20 @@
               <h2> Capteur créer avec succès !</h2> 
             </div>
             <button slot="button2" type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-        </Modal>
-
+        </Modal>  
       </CCol>
+
     </CRow>
-    <CRow>
+    <CRow id="sensorTable">
       <CCol sm="12" md="12">
         <CCard>
-          <CCardBody>
-              <Table :allDBsensors="allDBsensors" @delete-action="deleteSensorModal" @edit-action="editSensorModal" />
+          <CCardBody >
+              <Table  :allDBsensors="allDBsensors" @delete-action="deleteSensorModal" @edit-action="editSensorModal" />
           </CCardBody>  
         </CCard>    
       </CCol>
     </CRow>
+
 	</div>
 </template>
 
@@ -86,6 +86,8 @@ import Table from '@/components/Table'
 import EditForm from '@/components/EditForm'
 import ActionButton from '@/components/ActionButton'
 import apiClient from '@/services/CrowdServices.js'
+import $ from 'jquery'
+import {Toast,Modal as cModal} from '@coreui/coreui'
 
 export default {
   name: 'CreateSensor',
@@ -97,6 +99,8 @@ export default {
   },
   data(){
     return {
+      boolModal1: false,
+      valr: null,
       nameSensor : null,
       nameZone : null,
       sensorDesc : null,
@@ -116,33 +120,41 @@ export default {
               'sensor_type_name': this.typeSc.text,
               'sensor_type_id': this.typeSc.id
       }
-      CrowdServices.postSensorData(data)
-      this.getMySensors()
+      CrowdServices.postSensorData(data).
+        then(()=>{ 
+            var myModal = new cModal(document.getElementById('createModal'))
+            myModal.show()
+            this.getMySensors()
+        })
       this.nameSensor = null;
       this.nameZone = null;
       this.sensorDesc = null;
       this.typeSc = '';
-      this.boolModal1 = true
-      var myModal = new coreui.Modal(document.getElementById('createModal'))
-      myModal.show()
     },
 
     editSensorModal(Sensor){
-      var myModal = new coreui.Modal(document.getElementById('exampleModal'))
+      var myModal = new cModal(document.getElementById('exampleModal'))
       this.editFormData = Object.assign({},Sensor)
       myModal.show()
     },
 
     deleteSensorModal(Sensor){
-      var myModal = new coreui.Modal(document.getElementById('deleteModal'))
+      var myModal = new cModal(document.getElementById('deleteModal'))
       this.deletedSensor = Object.assign({},Sensor)
       myModal.show()
 
     },
 
     deleteSensor(){
-      CrowdServices.deleteSensorRequest(this.deletedSensor.id)
-      this.getMySensors()
+      CrowdServices.deleteSensorRequest(this.deletedSensor.id).
+        then(()=>{
+            this.getMySensors()
+            var myModalEl = document.getElementById('deleteModal')
+            var myModal = cModal.getInstance(myModalEl)
+            myModal.hide()  
+        })
+      //var myModal = new cModal(document.getElementById('deleteModal'))
+      //var myModal = document.getElementById('deleteModal')  
     },
 
     postEditedData(editedD){
@@ -152,18 +164,21 @@ export default {
               'sensor_type_name': editedD.sensor_type_name,
               'sensor_type_id': editedD.sensor_type_id
       }
-
-      console.log('Listned and called')
-      CrowdServices.postEditData(editedD.id,data)
+      CrowdServices.postEditData(editedD.id,data).
+        then(()=>{
+          this.getMySensors()
+          var myModalEl = document.getElementById('exampleModal')
+          var myModal = cModal.getInstance(myModalEl)
+          myModal.hide()  
+        })
       editFormData: {}
-      this.getMySensors()
     },
 
     getMySensors(){
         CrowdServices.getSensors()
         .then((response)=>{
           this.allDBsensors = response.data
-          console.log(this.allDBsensors[0].sensor_name)
+          //console.log(this.allDBsensors[0].sensor_name)
         })
         .catch(error =>{
           console.log(error)
@@ -171,7 +186,7 @@ export default {
     },
 
     close_edit(){
-      var myModal = new coreui.Modal(document.getElementById('exampleModal'))
+      var myModal = new cModal(document.getElementById('exampleModal'))
       console.log('wsalt')
       //myModal.hide()
       console.log('wsalt2')

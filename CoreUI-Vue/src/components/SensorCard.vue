@@ -1,6 +1,10 @@
 <template>
   <router-link class="sensor-link" :to="{ name: 'list', params: { id: sensor.id } }">
-    <div class="sensor-card -shadow">
+    <div class="sensor-card -shadow border border-primary rounded-lg">
+            <blockquote class="blockquote text-center">
+        <p class="mb-0">{{sensor.sensor_zone}}</p>
+        <footer class="blockquote-footer">Someone famous in <cite title="Source Title">Source Title</cite></footer>
+      </blockquote>
       <span class="eyebrow">@12 on 1212</span>
       <h4 class="title "> {{sensor.sensor_name}} </h4>
       <BaseIcon name="users"> 25  attending</BaseIcon>

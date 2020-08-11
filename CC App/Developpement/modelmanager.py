@@ -226,6 +226,6 @@ import config
 from modelmanager import ModelManager
 ModelManager.set_base_path(config.FROZEN_MODELS_BASE_PATH)
 ModelManager.load_external_model(model_type)
-for x in ModelManager.process_video(VIDEO_PATH,args=dict(output=os.path.join(ROOT_PATH,'ressources','videos'))):
+#for x in ModelManager.process_video(VIDEO_PATH,args=dict(output=os.path.join(ROOT_PATH,'ressources','videos'))):
     # cv2.imshow('frame22222',x)
-    pass
+ #   pass

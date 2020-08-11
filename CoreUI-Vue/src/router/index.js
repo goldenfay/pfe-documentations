@@ -13,6 +13,7 @@ const VideoCapture = () => import('@/views/models/VideoCapture')
 const StatisticalCharts = () => import('@/views/my_charts/StatisticalCharts')
 const CreateSensor = () => import('@/views/crud/CreateSensor')
 const ListSensor = () => import('@/views/crud/ListSensor')
+const ProcessSensor = () => import('@/views/crud/ProcessSensor')
 
 const Colors = () => import('@/views/theme/Colors')
 const Typography = () => import('@/views/theme/Typography')
@@ -69,7 +70,15 @@ Vue.use(Router)
 export default new Router({
   mode: 'history', // https://router.vuejs.org/api/#mode
   linkActiveClass: 'active',
-  scrollBehavior: () => ({ y: 0 }),
+  scrollBehavior: (to, from, savedPosition) =>{
+    if (savedPosition) {
+      return savedPosition;
+    }
+    if (to.hash) {
+      return { selector: to.hash };
+    }
+    return { x: 0, y: 0 };
+  } ,
   routes: configRoutes()
 })
 
@@ -84,7 +93,7 @@ function configRoutes () {
         {
           path: 'dashboard',
           name: 'Dashboard',
-          component: Dashboard
+          component: StatisticalCharts
         },
         {
           path: 'models',
@@ -128,6 +137,21 @@ function configRoutes () {
               path: 'list-sensor',
               name: 'ListSensor',
               component: ListSensor
+            }
+          ] 
+        },
+        {
+          path: 'process',
+          redirect: 'process/process-sensor',
+          name: 'ProcessSensor',
+          component: {
+            render (c) { return c('router-view') }
+          },
+          children: [
+            {
+              path: 'process-sensor/:id/:name/:type',
+              name: 'ProcessSensor',
+              component: ProcessSensor
             }
           ] 
         },

@@ -12,7 +12,7 @@
         </thead>
         <tbody>
                 <tr v-for="sensor in allDBsensors">
-                  <th scope="row">{{sensor.id}}</th>
+                  <th scope="row" :id="sensor.sensor_name">{{sensor.id}}</th>
                   <td>{{sensor.sensor_name}}</td>
                   <td>{{sensor.sensor_zone}}</td>
                   <td>{{sensor.sensor_desc}}</td>

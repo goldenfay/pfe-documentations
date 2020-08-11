@@ -25,16 +25,8 @@
       "id": 3
     },
     {
-      "sensor_name": "Capteur4",
-      "sensor_zone": "Rue Larbi Ben Mhidi",
-      "sensor_desc": "Surveillance sensors",
-      "sensor_type_name": "Scène moyen échelle",
-      "sensor_type_id": 2,
-      "id": 4
-    },
-    {
       "sensor_name": "Capteur alpha5",
-      "sensor_zone": "Rue Didouche Morad",
+      "sensor_zone": "Rue Mostafa Benbouali",
       "sensor_desc": "Commercial & localization ",
       "sensor_type_name": "Scène large échelle",
       "sensor_type_id": 1,
@@ -42,7 +34,7 @@
     },
     {
       "sensor_name": "Capteur Beta6",
-      "sensor_zone": "Rue Mohammed Boudiaf",
+      "sensor_zone": "Rue Larbi Tebassi",
       "sensor_desc": "Management & security purposes",
       "sensor_type_name": "Scène moyen échelle",
       "sensor_type_id": 2,
@@ -50,7 +42,7 @@
     },
     {
       "sensor_name": "Capteur7",
-      "sensor_zone": "Rue Larbi Ben Mhidi",
+      "sensor_zone": "Rue Saad Dahleb",
       "sensor_desc": "Surveillance sensors",
       "sensor_type_name": "Scène moyen échelle",
       "sensor_type_id": 2,
@@ -73,12 +65,36 @@
       "id": 9
     },
     {
-      "sensor_name": "Capteur Beta10",
-      "sensor_zone": "Rue Mohammed Boudiaf",
-      "sensor_desc": "Management & security purposes",
+      "sensor_name": "Capteur10",
+      "sensor_zone": "Rue Colonel Lotfi",
+      "sensor_desc": "Marketing & Localization purposes ",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
+      "id": 10
+    },
+    {
+      "sensor_name": "Capteur11",
+      "sensor_zone": "Rue Ali la pointe",
+      "sensor_desc": "Security counting",
       "sensor_type_name": "Scène moyen échelle",
       "sensor_type_id": 2,
-      "id": 10
+      "id": 11
+    },
+    {
+      "sensor_name": "Capteur12",
+      "sensor_zone": "Rue Hassiba Ben BouAli",
+      "sensor_desc": "Commercial zone",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
+      "id": 12
+    },
+    {
+      "sensor_name": "Capteur13",
+      "sensor_zone": "Rue Meriem Bouatoura",
+      "sensor_desc": "Another commercial area",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 13
     }
   ]
 }
