@@ -1,9 +1,13 @@
 import numpy as np
 import pandas as pd
+import csv
 from matplotlib import cm
+import matplotlib.pyplot as plt
+import plotly.tools as plt_tools
 from io import BytesIO as _BytesIO
 from PIL import Image
-import base64
+import os,base64,datetime
+
 
 def b64_to_pil(string):
     decoded = base64.b64decode(string)
@@ -24,7 +28,6 @@ def b64_to_numpy(string, to_scalar=True):
 
 
 def numpy_to_pil(array, jetMap=True):
-    print(array.shape,array.max(),array.min())    
     if jetMap:
         print('\t Converting to Jet color map')
         array = cm.jet(array)
@@ -83,4 +86,110 @@ def load_data(path):
     return data_dict
 
 
+def log_count(filename, n):
+  
+    f = open(filename, "a")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H-%M-%S")
+    line = "{} , {}\n".format(timestamp, n)
+    f.write(line)
+    f.close()
 
+def construct_combined_results(dirpath):
+    json={}
+    sensors_dirs=[dirname for dirname in os.listdir(self.sensor_path) if os.path.isdir(os.path.join(self.sensor_path,dirname))]
+
+    for sdir in sensors_dirs:
+        try:
+            with open(os.path.join(sdir,'temp.csv')) as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                json[sdir]=[
+                    # for row in csv_reader
+                ]
+
+
+def read_existing_data(filename)->pd.DataFrame:
+    times = []
+    values = []
+    if os.path.isfile(filename):
+        with open(filename) as csvfile:
+            csv_reader = csv.reader(csvfile, delimiter=',')
+            for row in csv_reader:
+                times.append(datetime.datetime.strptime(row[0], "%Y%m%d_%H-%M-%S "))
+                values.append(int(row[1]))
+    dataframe = pd.DataFrame()
+    dataframe['timestamp'] = pd.Series(dtype='datetime64[ns]')
+    dataframe['value'] = pd.Series(dtype=np.int32)
+    dataframe['timestamp'] = times
+    dataframe['value'] = values
+    dataframe.set_index('timestamp', inplace=True)
+    return dataframe
+
+def show_plots(data:pd.DataFrame,standalone_window=False):
+    """
+    Show the graphs with historical data
+    :param data: dataframe
+    :return:
+    """
+    
+    # data.index = pd.to_datetime(data.index)
+    data.index = pd.DatetimeIndex(data.index)
+    # Awful code to create new dataframes each time the graph is shown
+    df_1w = data[data.index >= pd.datetime.now() - pd.Timedelta('7D')]
+    df_1d = df_1w[df_1w.index >= pd.datetime.now() - pd.Timedelta('24H')]
+    df_8h = df_1d[df_1d.index >= pd.datetime.now() - pd.Timedelta('8H')]
+    df_2h = df_8h[df_8h.index >= pd.datetime.now() - pd.Timedelta('2H')]
+    # Resample to smooth the long running graphs
+    df_1w = df_1w.resample('1H').max()
+    df_1d = df_1d.resample('15min').max()
+
+    # plt.gcf().clear()
+
+    # plt.subplot(2, 2, 1)
+    # plt.plot(df_1w.index.tolist(), df_1w['value'].tolist())
+    # plt.title("Laatste week")
+    # plt.ylabel("Personen")
+    # plt.xlabel("Tijdstip")
+
+    # plt.subplot(2, 2, 2)
+    # plt.plot(df_1d.index.tolist(), df_1d['value'].tolist())
+    # plt.title("Afgelopen 24 uur")
+    # plt.ylabel("Personen")
+    # plt.xlabel("Tijdstip")
+
+    # plt.subplot(2, 2, 3)
+    # plt.plot(df_8h.index.tolist(), df_8h['value'].tolist())
+    # plt.title("Afgelopen 8 uur")
+    # plt.ylabel("Personen")
+    # plt.xlabel("Tijdstip")
+
+    # plt.subplot(2, 2, 4)
+    # plt.plot(df_2h.index.tolist(), df_2h['value'].tolist())
+    # plt.title("Afgelopen 2 uur")
+    # plt.ylabel("Personen")
+    # plt.xlabel("Tijdstip")
+
+    # plt.gcf().autofmt_xdate()
+    if standalone_window:
+        plt.show()
+    else:
+        # fig= plt_tools.make_subplots(rows=3, cols=1, shared_xaxes=False,vertical_spacing=0.009,horizontal_spacing=0.009)
+        # fig.append_trace({'x':df_1w.index,'y':df_1w['value'].values.tolist(),'type':'scatter','name':'Week'},1,1)
+        # fig.append_trace({'x':df_1d.index,'y':df_1d['value'].values.tolist(),'type':'scatter','name':'Day'},2,1)
+        # fig.append_trace({'x':df_2h.index,'y':df_2h['value'].values.tolist(),'type':'scatter','name':'Hours'},3,1)
+        # return plt_tools.mpl_to_plotly(plt.gcf())    
+        return [df_2h,df_8h,df_1d,df_1w]   
+        # return fig 
+
+
+
+
+def index_to_list_date(timeIndex):
+    return ['{}/{}/{}'.format(timestamp.year,timestamp.month,timestamp.day) for timestamp in timeIndex]
+
+dataframe = pd.DataFrame()
+dataframe['timestamp'] = pd.Series(dtype='datetime64[ns]')
+dataframe['value'] = pd.Series(dtype=np.int32)   
+for i in range(10):
+    dataframe=dataframe.append({'timestamp': pd.Timestamp(datetime.datetime.now()),'value':i},ignore_index=True) 
+dataframe.set_index('timestamp', inplace=True)
+print(dataframe)    

@@ -37,12 +37,12 @@ class Global_Charts(Component):
             i = i + 1    
         return hours
     
-    def get_max_zone(data):
+    def get_max_zone(self,data):
         max_zone = max(data['crowd_data']['zones'])
         '''max_zone is in the form of tuple (zone,crowd_nb,hour)'''
         return max_zone
     
-    def get_min_zone(data):
+    def get_min_zone(self,data):
         min_zone = min(data['crowd_data']['zones'])
         '''min_zone is in the form of tuple (zone,crowd_nb,hour)'''
         return min_zone
