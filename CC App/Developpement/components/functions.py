@@ -94,6 +94,19 @@ def log_count(filename, n):
     f.write(line)
     f.close()
 
+def construct_combined_results(dirpath):
+    json={}
+    sensors_dirs=[dirname for dirname in os.listdir(self.sensor_path) if os.path.isdir(os.path.join(self.sensor_path,dirname))]
+
+    for sdir in sensors_dirs:
+        try:
+            with open(os.path.join(sdir,'temp.csv')) as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                json[sdir]=[
+                    # for row in csv_reader
+                ]
+
+
 def read_existing_data(filename)->pd.DataFrame:
     times = []
     values = []
@@ -172,4 +185,11 @@ def show_plots(data:pd.DataFrame,standalone_window=False):
 
 def index_to_list_date(timeIndex):
     return ['{}/{}/{}'.format(timestamp.year,timestamp.month,timestamp.day) for timestamp in timeIndex]
-    
+
+dataframe = pd.DataFrame()
+dataframe['timestamp'] = pd.Series(dtype='datetime64[ns]')
+dataframe['value'] = pd.Series(dtype=np.int32)   
+for i in range(10):
+    dataframe=dataframe.append({'timestamp': pd.Timestamp(datetime.datetime.now()),'value':i},ignore_index=True) 
+dataframe.set_index('timestamp', inplace=True)
+print(dataframe)    

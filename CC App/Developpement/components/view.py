@@ -3,6 +3,7 @@ import dash
 import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 import dash_daq as daq
+import dash_player as player
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import numpy as np
@@ -36,7 +37,7 @@ images_list = []
 res_img_list = []
 
 HTML_IMG_SRC_PREFIX = 'data:image/png;base64, '
-config = None
+Lang = None
 ONLINE_MODE = False
 SHOW_GRAPHS=True
 server = None
@@ -70,9 +71,10 @@ def parse_contents(contents, filename):
 
 class View(Component):
     layout = None
+    config=None
 
     def __init__(self, app, config):
-        self.config = config
+        View.config = config
         super(View, self).__init__(app)
 
     def reset_variables(self):
@@ -84,10 +86,13 @@ class View(Component):
             
 
     def initialize(self, app):
+        global Lang
+        Lang=View.config.LANGUAGE_DICT
+        static.Lang=Lang
         self.reset_variables()
         
         list_vidoes = list(glob.glob(os.path.join(
-            self.config.VIDEOS_DIR_PATH, '*.mp4')))
+            View.config.VIDEOS_DIR_PATH, '*.mp4')))
 
         # Main Layout
         self.layout = html.Div(
@@ -129,32 +134,32 @@ class View(Component):
 
                                 'overflowY': 'scroll',
 
-                                'backgroundColor': '#F9F9F9'
+                                'backgroundColor': '#FAFAFA'
                             },
                             children=[
                                 html.Div(
                                     className='control-section d-flex flex-column',
                                     children=[
                                         html.Div(
-                                            className='row',
+                                            className='row mt-3',
                                             children=[
                                                 html.Div(
                                                     className='col-md-12 d-flex justify-content-center',
                                                     children=[
                                                         html.H4(
-                                                            'General Settings', className='muted')
+                                                            Lang['General Settings'], className='muted')
                                                     ]
                                                 )
                                             ]
                                         ),
-                                        reusable.toggleswitch_control('Usage','usage-switch','usage-switch-label',False,'Local','#fa4f56'),
+                                        reusable.toggleswitch_control('Usage','usage-switch','usage-switch-label',False,Lang['Local'],'#fa4f56'),
                                         
                                         html.Div(
                                             id="server-url-control",
                                             className='control-element',
                                             children=[
                                                 html.Div(
-                                                    children=["Server URL:"], style={'width': '40%'}),
+                                                    children=[Lang['Server URL:']], style={'width': '40%'}),
                                                 html.Div(dcc.Input(
                                                     id="server-url-input",
                                                     type="text",
@@ -171,12 +176,12 @@ class View(Component):
                                                     className='col-md-12 d-flex justify-content-center',
                                                     children=[
                                                         html.H4(
-                                                            'advanced Settings', className='muted')
+                                                            Lang['Advanced Settings'], className='muted')
                                                     ]
                                                 )
                                             ]
                                         ),
-                                        reusable.toggleswitch_control('Mode','mode-switch','switch-label',True,'Footage','#fa4f56'),
+                                        reusable.toggleswitch_control(Lang['Mode'],'mode-switch','switch-label',True,Lang['Footage'],'#fa4f56'),
 
                                         html.Div(style={'display': 'none'},
                                                  className='control-element',
@@ -194,26 +199,11 @@ class View(Component):
                                             ), style={'width': '60%'})
                                         ]
                                         ),
-                                        reusable.dropdown_control("Model type:", [
-                                            {'label': 'Detection models:',
-                                             'value': 'DM', 'disabled': True},
-                                            {'label': 'Mobile SSD',
-                                             'value': 'mobileSSD'},
-                                            {'label': 'YOLO',
-                                             'value': 'yolo'},
-                                            {'label': 'Density map based models:',
-                                             'value': 'CNCC', 'disabled': True},
-                                            {'label': 'MCNN',
-                                             'value': 'MCNN'},
-                                            {'label': 'CSRNet',
-                                             'value': 'CSRNet'},
-                                            {'label': 'SANet',
-                                             'value': 'SANet'}
-                                        ], "mobileSSD",
+                                        reusable.dropdown_control(Lang['Model type:'], static.model_selection_options(), "mobileSSD",
                                             id="dropdown-model-selection"
 
                                         ),
-                                        html.Div(children=reusable.dropdown_control("Footage Selection:", [
+                                        html.Div(children=reusable.dropdown_control(Lang['Footage Selection:'], [
                                             {'label': os.path.basename(
                                                 el), 'value': el}
                                             for el in list_vidoes
@@ -230,7 +220,7 @@ class View(Component):
                                             id='show-graphs-control',
                                             
                                             children=[
-                                                reusable.toggleswitch_control('Show graphs','show-graphs-switch','graph-switch-label',True,'Yes','#fa4f56'),
+                                                reusable.toggleswitch_control(Lang['Show graphs:'],'show-graphs-switch','graph-switch-label',True,Lang['Yes'],'#fa4f56'),
 
                                                 
                                             ]
@@ -292,9 +282,9 @@ def toggle_usage(value, classname):
     if classname is None:
         classname = ''
     if not value:  # Local usage
-        return ['Local'], {'display': 'none'}, classname.replace('toggled-on', '')
+        return [Lang['Local']], {'display': 'none'}, classname.replace('toggled-on', '')
     else:  # online usage
-        return ['Online'], {'display': 'block'}, classname+'toggled-on'
+        return [Lang['Online']], {'display': 'block'}, classname+'toggled-on'
 
 # Handle server-url input
 
@@ -318,19 +308,23 @@ def server_url_change(value, children):
                Output('footage-container', 'children'),
                Output('footage-selection-control', 'style'),
                Output("show-graphs-control", "style")],
-              [Input("mode-switch", "value")])
-def toggle_display(value):
+              [Input("mode-switch", "value")],
+              [State("dropdown-footage-selection", "value")])
+def toggle_display(value,selected_video):
     if value:
         children = [
             html.Div(
                 className='md-12 d-flex align-items-center flex-column',
                 children=[
-                    reusable.drag_drop_container('upload-image', 'drop-div', ['Drag and Drop', 'or', 'Select Files']
+                    reusable.drag_drop_container('upload-image', 'drop-div', [Lang['Drag and Drop'], Lang['or'], Lang['Select Files']]
                                                  ),
                     html.Div(children=[html.Div(id='output-image-upload',
                                 className='row d-flex align-items-center justify-content-center flex-row')]),
-                    html.Div(children=[html.Div(id='output-image-process',
-                     className='d-flex flex-column', children=[''])])
+                    html.Div(children=[dcc.Loading( 
+                        type="circle",
+                        children=[html.Div(id='output-image-process',
+                     className='d-flex flex-column', children=['']) ])
+                     ])
                 ])
         ]
     else:
@@ -340,13 +334,31 @@ def toggle_display(value):
                 children=[
                     html.Div(
                         id='',
-                        className='d-flex align-items-center justify-content-center',
+                        className='d-flex flex-column align-items-center justify-content-center',
                         children=[
+                            html.Div(
+                                className='mb-3',
+                               
+                                children=(
+                                    html.H3(Lang['Preview'],className='text-center text-primary font-weight-bold'),
+                                    player.DashPlayer(
+                                        id='video-preview',
+                                        url='http://localhost:8050/videos/{}'.format(selected_video),
+                                        controls=True,
+                                        playing=False,
+                                        volume=1,
+                                       
+                                    )
+                                 
+                                
+                                )
+
+                            ),
                             html.Button(
                                 id='process-video-button',
                                 n_clicks=0,
                                 className='btn btn-lg btn-outline-success',
-                                children=[html.Span('Start processing video', className='mr-2'), html.Span(
+                                children=[html.Span(Lang['Start processing video'], className='mr-2'), html.Span(
                                     className='fa fa-play')],
                                 style={'fontWeight': 'bold',
                                        'fontSize': '26px',
@@ -360,30 +372,41 @@ def toggle_display(value):
                             'height': '300px',
                         }
                     ),
-                    html.Div(id='output-video-process',
-                                className='container')
+                    dcc.Loading(
+                        type='circle',
+                        children=[html.Div(id='output-video-process',
+                                className='container')]
+                    )
                 ])
         ]
         # static.default_footage_section()
-    return ['Footage' if not value else 'Still images'], children, {'display': 'block'} if not value else {'display': 'none'},{'display': 'block'} if not value else {'display': 'none'}
+    return [Lang['Footage'] if not value else Lang['Still images']], children, {'display': 'block'} if not value else {'display': 'none'},{'display': 'block'} if not value else {'display': 'none'}
 
     # Footage Selection
-@app.callback(Output("video-display", "url"),
+@app.callback(Output("video-preview", "url"),
               [Input('dropdown-footage-selection', 'value')])
 def select_footage(footage):
-    # Find desired footage and update player video
-    # url = url_dict[footage]
-    return 'url'
+   
+     return 'http://localhost:8050/videos/{}'.format(os.path.basename(footage))
 
     # Model selection
-@app.callback(Output("dummy-div", "style"),
+@app.callback([Output("dummy-div", "style"),
+                Output("dropdown-footage-selection", "options"),
+                Output("dropdown-footage-selection", "value")],
               [Input("dropdown-model-selection", "value")])
 def change_model(model_type):
     if ONLINE_MODE:
         return {"display": "none"}
     print('[INFO] Loading model : ', model_type, ' ...')
+    list_vidoes = list(glob.glob(os.path.join(
+            View.config.VIDEOS_DIR_PATH,'sparse videos' if model_type in ['mobileSSD', 'yolo'] else 'crowd videos', '*.mp4')))
+    options=[{'label': os.path.basename(
+                    el), 'value': el}
+                for el in list_vidoes
+            ]
     load_model(model_type)
-    return {"display": "none"}
+    print(list_vidoes[0])
+    return {"display": "none"},options,list_vidoes[0]
 
    # Show graphs toggle
 @app.callback([Output("graph-switch-label", "children")],
@@ -391,7 +414,7 @@ def change_model(model_type):
 def toggle_show_graph(value):
     global SHOW_GRAPHS
     SHOW_GRAPHS=value
-    return ['Yes'] if value else ['No']
+    return [Lang['Yes']] if value else [Lang['No']]
 
 
     # Upload image
@@ -402,7 +425,7 @@ def update_output(list_of_names, list_of_contents):
     images_list=[]
     if list_of_contents is not None:
         print('[INFO] uploading...')
-        children = [html.H3('Preview',className='ml-5 text-primary font-weight-bold flex-break'),html.Hr()]
+        children = [html.H3(Lang['Preview'],className='ml-5 text-primary font-weight-bold flex-break'),html.Hr()]
         for i in range(len(list_of_contents)):
             children.append(parse_contents(
                 list_of_contents[i], list_of_names[i]))
@@ -445,7 +468,7 @@ def update_output(uploaded_filenames, uploaded_file_contents):
 def update_count_plots(n):
     csv_file_path=os.path.join(ModelManager.outputs_path,'temp.csv')
     df=functions.read_existing_data(csv_file_path)
-    xtext,ytext,title="Timestamp","Count","Live process plot"
+    xtext,ytext,title=Lang['Timestamp'],Lang['Count'],Lang['Live process plot']
     layout=dict(title={
         'text':title,
         'y':0.9,
@@ -705,7 +728,7 @@ def process_video(button_click, model_type, video_path):
                         id='edit-canvas-panel',
                         children=[
                             html.Button(id='line-canvas-button', children=[html.Span(
-                                className='fa fa-pencil-alt')], className='btn mr-5', title='Draw a vertical line'),
+                                className='fa fa-pencil-alt')], className='btn mr-5', title=Lang['Draw a split line']),
                             html.Button(children=[html.Span(
                                 className='fa fa-times')], className='btn ml-5', id='clear-canvas-button', title='Cancel')
 
@@ -741,8 +764,8 @@ def process_video(button_click, model_type, video_path):
                     html.Div(
                         className='col-md-12 mt-5 d-flex flex-column justify-content-center',
                         children=[
-                            html.H3('Scene Edition',className='text-primary text-center'),
-                            html.P('Draw the regions you want to focus on',className='text-secondary text-center')
+                            html.H3(Lang['Scene Edition'],className='text-primary text-center'),
+                            html.P(Lang['Draw the regions you want to focus on'],className='text-secondary text-center')
 
                         ]
                     ),
@@ -982,7 +1005,7 @@ def receive_result_image(data):
     return html.Div(className='row', children=[
 
         html.Div(children=[
-                    html.Div(html.H4('Original', className='muted'),
+                    html.Div(html.H4(Lang['Original'], className='muted'),
                              className="d-flex justify-content-center"),
                     html.Img(id='img-org-{}'.format(id),
                              src=HTML_IMG_SRC_PREFIX+(images_list[i].decode("utf-8")), style={
@@ -991,7 +1014,7 @@ def receive_result_image(data):
                     ],
                  className='col-md justify-content-center animate__animated animate__fadeInRight'),
         html.Div(children=[
-            html.Div(html.H4('Estimated count : '+str(int((count+1)/100)),
+            html.Div(html.H4(Lang['Estimated count : ']+str(int((count+1)/100)),
                              className='muted'), className="d-flex justify-content-center"),
             html.Img(id='img-{}'.format(id),
                      src=encoded_img, style={

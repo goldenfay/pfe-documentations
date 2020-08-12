@@ -6,6 +6,7 @@ import cv2
 import imutils
 from imutils.video import VideoStream
 from imutils.video import FPS
+import queue
 
 sys.path.append('utils')
 sys.path.append('utils/YOLO_V3')
@@ -17,7 +18,7 @@ from utils.detection_model import DetectionModel
 import store.models.equivalence as equivalence
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-# QUEUE=multiprocessing.Queue()
+QUEUE=queue.Queue()
 
 def is_detection_model(model_name):
     return model_name in ['mobileSSD', 'yolo']
@@ -127,7 +128,7 @@ class ModelManager:
             totalFrame=0
           
             while True:
-                frame = imutils.resize(frame, height=500)
+                # frame = imutils.resize(frame, height=500)
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 (H, W) = frame.shape[:2]
                 if totalFrame%30==0:
@@ -241,9 +242,12 @@ class ModelManager:
                 args.update(params) 
             if args.get('log_counts',False):
                 args['output']=output
+            if args.get('live_data',False):
+                args['queue']=QUEUE    
 
             for x in cls.model.forward_video(args):
                 # queue.put_nowait(x)
+                # QUEUE.put_nowait(x)
                 yield x
   
 

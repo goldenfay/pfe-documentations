@@ -186,6 +186,7 @@ def get_detected_items(layeroutputs, confidence_level, threshold, img_width, img
 
                 # filter weak predictions 
             if confidence > confidence_level and classid == 0:
+            # if  classid == 0:
                 print('\t Person found')
                     # scale the bounding box coordinates back relative to the size of the image
                 box = detection[0:4] * \

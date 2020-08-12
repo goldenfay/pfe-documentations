@@ -19,7 +19,7 @@ currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
 sys.path.append(currentdir)
     # User's modules
-from modelmanager import ModelManager
+from modelmanager import ModelManager,QUEUE
 
 from components.base import Component
 import components.reusable as reusable
@@ -28,6 +28,8 @@ import functions
 from threads import *
 
 from app import app,get_regions_params
+
+
 
 is_detectionModel= lambda model: model.lower() in ['mobilessd','yolo']
 
@@ -46,12 +48,13 @@ def load_model(model_type):
             pass
     print('[INFO] Done.')
 
-HTML_IMG_SRC_PREFIX = 'data:image/png;base64, '
+Lang=None
 model_type=None
 sensor_path=None
 server = None
 server_thread = None
 SHOW_LIVE_GRAPH=False
+LIVE_DF=None
 best_performence_models = {
     'MCNN': 'internal',
     'CSRNet': 'external',
@@ -68,8 +71,8 @@ error_layout=lambda icon, title,subtitle: dbc.Container([dbc.Row([
                             ],
             fluid=True,style={'height':'100vh'}) 
 
-figure_layout=dict(title={
-            'text': 'Full counting history',
+figure_layout=lambda :dict(title={
+            'text': Lang['Full counting history'],
             'y':0.9,
             'x':0.5,
             'xanchor': 'center'
@@ -93,7 +96,10 @@ class SensorProcessView(Component):
         super(SensorProcessView, self).__init__(app)
 
     def reset_variables(self):
-        global server, server_thread
+        global server, server_thread,LIVE_DF
+        LIVE_DF = pd.DataFrame()
+        LIVE_DF['timestamp'] = pd.Series(dtype='datetime64[ns]')
+        LIVE_DF['value'] = pd.Series(dtype=np.int32)
 
         if server_thread is not None and server_thread.isAlive():
             server_thread.raise_exception()
@@ -106,19 +112,22 @@ class SensorProcessView(Component):
 
         return True
     def initialize(self, app):
-        global sensor_path,model_type
+        global sensor_path,model_type,Lang
         self.reset_variables()
         if not self.validate_params():
-            self.layout= error_layout('fa-exclamation-triangle','Invalid Parameters',
-                             'The request contains invalid query parameters.')
+            self.layout= error_layout('fa-exclamation-triangle',Lang['Invalid Parameters'],
+                             Lang['The request contains invalid query parameters.'])
             return
 
         sensor_path=os.path.join(self.config.SENSORS_DEFAULT_BASE_PATH,self.url_params['sensor_name'][0])
 
         if not os.path.exists(sensor_path):
-            self.layout= error_layout('fa-question-circle','Sensor not registred',
-                             'The requested sensor Id does not exist')
+            self.layout= error_layout('fa-question-circle',Lang['Sensor not registred'],
+                             Lang['The requested sensor Id does not exist.'])
             return
+        
+        Lang=self.config.LANGUAGE_DICT
+        static.Lang=Lang    
         model_type=self.url_params['model_name'][0]
         
         list_vidoes = list(glob.glob(os.path.join(
@@ -151,38 +160,39 @@ class SensorProcessView(Component):
                                         html.Div(
                                             className='md-12 d-flex align-items-center flex-column',
                                             children=[
+                                                
                                                 html.Div(
-                                                    id='sensor-video-preview',
-                                                    children=(
-                                                        html.H3('Preview',className='text-center text-primary font-weight-bold'),
-                                                        player.DashPlayer(
-                                                            id='sensor-video-preview',
-                                                            # style={'position': 'absolute', 'width': '100%',
-                                                            #     'height': '100%', 'top': '0', 'left': '0', 'bottom': '0', 'right': '0'},
-                                                            url='http://localhost:8050/videos/{}'.format(os.path.basename(list_vidoes[0])),
-                                                            controls=True,
-                                                            playing=False,
-                                                            volume=1,
-                                                            width='100%',
-                                                            height='100%'
-                                                        )
-                                                        # html.Video(
-                                                        #     id='sensor-video-preview',
-                                                        #     src='http://localhost:8050/videos/{}'.format(os.path.basename(list_vidoes[0])),
-                                                        #     controls=True,autoPlay=False
-                                                        # )
-                                                       
-                                                    )
-
-                                                ),
-                                                html.Div(
-                                                    className='d-flex align-items-center justify-content-center',
+                                                    className='d-flex flex-column align-items-center justify-content-center',
                                                     children=[
+                                                        html.Div(
+                                                            
+                                                            children=(
+                                                                html.H3(Lang['Preview'],className='text-center text-primary font-weight-bold'),
+                                                                player.DashPlayer(
+                                                                    id='sensor-video-preview',
+                                                                    # style={'position': 'absolute', 'width': '100%',
+                                                                    #     'height': '100%', 'top': '0', 'left': '0', 'bottom': '0', 'right': '0'},
+                                                                    url='http://localhost:8050/videos/{}'.format(os.path.basename(list_vidoes[0])),
+                                                                    controls=True,
+                                                                    playing=False,
+                                                                    volume=1,
+                                                                    width='100%',
+                                                                    height='100%'
+                                                                )
+                                                                # html.Video(
+                                                                #     id='sensor-video-preview',
+                                                                #     src='http://localhost:8050/videos/{}'.format(os.path.basename(list_vidoes[0])),
+                                                                #     controls=True,autoPlay=False
+                                                                # )
+                                                            
+                                                            )
+
+                                                        ),
                                                         html.Button(
                                                             id='start-process-button',
                                                             n_clicks=0,
                                                             className='btn btn-lg btn-outline-success',
-                                                            children=[html.Span('Start ', className='mr-2'), html.Span(
+                                                            children=[html.Span(Lang['Start '], className='mr-2'), html.Span(
                                                                 className='fa fa-play')],
                                                             style={'fontWeight': 'bold',
                                                                    'fontSize': '26px',
@@ -190,11 +200,7 @@ class SensorProcessView(Component):
                                                                    'minHeight': '60px'}
 
                                                         )
-                                                    ],
-                                                    style={
-                                                        'width': '500px',
-                                                        'height': '300px',
-                                                    }
+                                                    ]
                                                 ),
                                                 html.Div(id='sensor-output-video-process',
                                                          className='container')
@@ -227,16 +233,16 @@ class SensorProcessView(Component):
                                                     className='col-md-12 d-flex justify-content-center',
                                                     children=[
                                                         html.H4(
-                                                            'Process settings', className='muted')
+                                                            Lang['Process settings'], className='muted')
                                                     ]
                                                 )
                                             ]
                                         ),
-                                        reusable.toggleswitch_control('video source','video-source-switch','video-source-switch-label',True,'Sample video','#8e24aa'),
-                                        reusable.toggleswitch_control('Show density map','show-dmap-switch','show-dmap-switch-label',True,'Yes','#2196f3'),
+                                        reusable.toggleswitch_control(Lang['Video source'],'video-source-switch','video-source-switch-label',True,Lang['Sample video'],'#8e24aa'),
+                                        # reusable.toggleswitch_control('Show density map','show-dmap-switch','show-dmap-switch-label',True,Lang['Yes'],'#2196f3'),
                                         
                                         
-                                        html.Div(children=reusable.dropdown_control("Footage Selection:", [
+                                        html.Div(children=reusable.dropdown_control(Lang['Footage Selection:'], [
                                             {'label': os.path.basename(
                                                 el), 'value': el}
                                             for el in list_vidoes
@@ -248,7 +254,7 @@ class SensorProcessView(Component):
                                         ),
                                             id='sensor-footage-selection-control'
                                         ),
-                                        reusable.toggleswitch_control('Show live graph','show-live-graph-switch','show-live-graph-switch-label',True,'Yes','#00c853')
+                                        reusable.toggleswitch_control(Lang['Show live graph'],'show-live-graph-switch','show-live-graph-switch-label',True,Lang['Yes'],'#00c853')
                                         ,
                                         html.Div(id="sensor-display-plots-div",children=[]),
                                         
@@ -274,9 +280,9 @@ class SensorProcessView(Component):
             )
 def toggle_video_source(value):
     if value:
-        return {'display':'block'},['Sample video']
+        return {'display':'block'},[Lang['Sample video']]
     else:
-        return {'display':'none'},['Sensor webcam']     
+        return {'display':'none'},[Lang['Sensor webcam']]     
 
 
 @app.callback([Output("show-live-graph-switch-label", "children")],
@@ -286,7 +292,7 @@ def toggle_show_live_plot(value):
     global SHOW_LIVE_GRAPH
     SHOW_LIVE_GRAPH=value
     
-    return ['Yes'] if value else ['No']
+    return [Lang['Yes']] if value else [Lang['No']]
     
 
 
@@ -342,7 +348,8 @@ def process_video(button_click, video_path):
                     video_path, 
                     args={'output': os.path.join(sensor_path,'output'),
                         'regions_params': params, 
-                        'log_counts': SHOW_LIVE_GRAPH, 
+                        'live_data': SHOW_LIVE_GRAPH, 
+                        'log_counts': True, 
                         'log_count_fcn': functions.log_count}), mimetype='multipart/x-mixed-replace; boundary=frame')
 
         server_thread = ServerThread(server)
@@ -394,9 +401,9 @@ def process_video(button_click, video_path):
                     html.Div(
                         className='col-md-12 mt-5 d-flex flex-column justify-content-center',
                         children=[
-                            html.H3('Scene Edition',
+                            html.H3(Lang['Scene Edition'],
                                     className='text-primary text-center'),
-                            html.P('Draw the regions you want to focus on',
+                            html.P(Lang['Draw the regions you want to focus on'],
                                    className='text-secondary text-center')
 
                         ]
@@ -435,10 +442,23 @@ def process_video(button_click, video_path):
 @app.callback(Output("sensor-live-count-plot", "figure"),
               [Input("sensor-interval-show-graphs", "n_intervals")])
 def update_count_plots(n):
-    global sensor_path
-    csv_file_path=os.path.join(os.path.join(sensor_path,'output'),'temp.csv')
-    df=functions.read_existing_data(csv_file_path)
-    xtext,ytext,title="Timestamp","Count","Live process plot"
+    global sensor_path,LIVE_DF
+    
+    csv_file_path=os.path.join(sensor_path,'output','temp.csv')
+    # df=functions.read_existing_data(csv_file_path)
+    if not QUEUE.empty():
+        df=LIVE_DF.append(QUEUE.get_nowait(),ignore_index=True)
+        LIVE_DF=df.copy()
+    else:
+        df=LIVE_DF 
+    # print(pd.to_datetime(df['timestamp']).dt)    
+    dtime=pd.to_datetime(df['timestamp'])
+    fcn=lambda x: x.date.__str__()+' '+str(x.hour)+':'+str(x.minute)+':'+str(x.second)
+    # df=df.groupby(dtime.apply(fcn)).mean()#agg({'value': 'mean'})       
+    df.set_index('timestamp',inplace=True)
+    df=df.resample('s').max()#agg({'value': 'mean'})       
+    # print(df,df.index)
+    xtext,ytext,title=Lang['Timestamp'],Lang['Count'],Lang['Live process plot']
     layout=dict(title={
         'text':title,
         'y':0.9,

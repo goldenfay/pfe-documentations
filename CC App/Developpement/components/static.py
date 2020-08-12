@@ -11,7 +11,11 @@ import dash_bootstrap_components as dbc
 import dash_player as player
 from textwrap import dedent
 import plotly.graph_objs as go
+    # User's modules
 import functions
+
+
+Lang=None
 
 
 def default_header():
@@ -23,9 +27,9 @@ def default_header():
                 'Crowd counting Monitor'
             ),
             html.P(
-                'This is a basic monitoring app that can be used in any sensor (such as RPI)'
+                Lang['This is a developement application to manage crowd counting processes']
             ),
-            html.Button("Learn More", id="learn-more-button",
+            html.Button(Lang['Learn More'], id="learn-more-button", className='border-0',
                         n_clicks=0)
         ]
     )
@@ -42,7 +46,7 @@ def markdown_popup():
                     html.Div(
                         className='close-container',
                         children=html.Button(
-                            "Close",
+                            Lang['Close'],
                             id="markdown_close",
                             n_clicks=0,
                             className="closeButton",
@@ -77,6 +81,22 @@ def markdown_popup():
         )
     )
 
+model_selection_options= lambda :[
+                    {'label': Lang['Detection models:'],
+                        'value': 'DM', 'disabled': True},
+                    {'label': 'Mobile SSD',
+                        'value': 'mobileSSD'},
+                    {'label': 'YOLO',
+                        'value': 'yolo'},
+                    {'label': Lang['Density map based models:'],
+                        'value': 'CNCC', 'disabled': True},
+                    {'label': 'MCNN',
+                        'value': 'MCNN'},
+                    {'label': 'CSRNet',
+                        'value': 'CSRNet'},
+                    {'label': 'SANet',
+                        'value': 'SANet'}
+                ]
 def default_footage_section():
     return [html.Div(
         className='video-outer-container',
@@ -120,7 +140,7 @@ def default_footage_section():
     )
     ]
 def history_count_figures(csv_file_path):
-    xtext,ytext="Timestamp","Count"
+    xtext,ytext='Timestamp','Count'
     layout=dict(title={
         'y':0.9,
         'x':0.5,
@@ -139,13 +159,13 @@ def history_count_figures(csv_file_path):
     hours_fig=go.Figure(data=go.Scatter(x=df_2h.index.tolist(),y=df_2h['value'].values.tolist()),layout=layout)
     
     week_fig.update_layout({
-        'title': {'text':'Last weeks counting analytics'}
+        'title': {'text':Lang['Last week''s counting analytics']}
     })
     day_fig.update_layout({
-        'title': {'text':'Last day counting analytics'}
+        'title': {'text':Lang['Last day counting analytics']}
     })
     hours_fig.update_layout({
-        'title': {'text':'Last 2 hours counting analytics'}
+        'title': {'text':Lang['Last 2 hours counting analytics']}
     })
     return week_fig,day_fig,hours_fig
 
@@ -154,7 +174,7 @@ def default_count_plots_modal(csv_file_path):
     
     return html.Div(
     [
-        dbc.Button("View history", id="view-count-plots-btn"),
+        dbc.Button(Lang['View history'], id="view-count-plots-btn"),
         dbc.Modal(
             [
                 dbc.ModalHeader(html.Div("History Analytics",className="text-center")),
@@ -170,7 +190,7 @@ def default_count_plots_modal(csv_file_path):
                 ]),
                 dbc.ModalFooter(
                     dbc.Button(
-                        "Close", id="count-plots-close-btn", className="ml-auto"
+                        Lang['Close'], id="count-plots-close-btn", className="ml-auto"
                     )
                 ),
             ],

@@ -3,13 +3,14 @@
 import os,sys,glob,inspect
 import multiprocessing
 from multiprocessing import Queue
-import pathos
+# import pathos
 # from pathos.multiprocessing import ProcessingPool as Pool
 from multiprocessing.pool import ThreadPool as Pool
 import imutils
 from imutils.video import VideoStream
 from imutils.video import FPS
 import numpy as np
+import pandas as pd
 import argparse,time,datetime
 import requests
 import cv2
@@ -147,6 +148,7 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 	
 	if log_count:
 		log_count_fcn=args.get('log_count_fcn',False)
+	queue=args is not None and args.get('queue',None)
 
 	ct = CentroidTracker(maxDisappeared=40, maxDistance=50)
 	trackers = []
@@ -164,12 +166,12 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 	(H, W) = frame.shape[:2]
 	writer=None
 	if write_output:
-		fourcc = cv2.VideoWriter_fourcc(*"H264")
+		fourcc = cv2.VideoWriter_fourcc(*"MJPG")
 		if args.get('output',False):
-			writer = cv2.VideoWriter(os.path.join(args['output'],os.path.basename(args['input'])), fourcc, 30,
+			writer = cv2.VideoWriter(os.path.join(args['output'],os.path.basename(args['input'].replace('.mp4','.avi'))), fourcc, 30,
 			(W, H), True)
 		else:
-			writer = cv2.VideoWriter(os.path.join(currentdir,'output',os.path.basename(args['input'])), fourcc, 30,
+			writer = cv2.VideoWriter(os.path.join(currentdir,'output',os.path.basename(args['input'].replace('.mp4','.avi'))), fourcc, 30,
 			(W, H), True)
 
 	fps = FPS().start()
@@ -280,11 +282,11 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 			cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
 		
 		
-		info=[("Total" , len(list(objects)))]
+		info=[("Current" , len(list(objects)))]
 		if show_regions:
 			info += [
-			("Up" if horizontal_splited else "Left", countUp),
-			("Down" if horizontal_splited else "Right", countDown)
+			("Up" if horizontal_splited else "Right", countUp),
+			("Down" if horizontal_splited else "Left", countDown)
 			]
 
 				# Show infos on he frame
@@ -313,7 +315,8 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 			cv2.imshow("Frame", frame)
 		if log_count:
 			log_count_fcn(os.path.join(args['output'],'temp.csv'),len(list(objects)))
-
+		if queue is not None:
+			queue.put_nowait({'timestamp': pd.Timestamp(datetime.datetime.now()),'value':len(list(objects))})
 		frame = vs.read()
 			#VideoStream returns a frame, VideoCapture returns a tuple
 		frame = frame[1] if len(frame)>1 else frame

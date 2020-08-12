@@ -7,7 +7,8 @@ import os
 # User's modules
 import config
 from modelmanager import ModelManager
-
+import languages
+  
 # scene_region_params=None
 scene_region_params={
     'tang': 1.9528301886792452,
