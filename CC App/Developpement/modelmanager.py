@@ -294,21 +294,8 @@ class ModelManager:
 
 
 
-<<<<<<< HEAD
-import os,sys
-import cv2,imutils
-ROOT_PATH='C:\\Users\\PC\\Desktop\\PFE related\\applications\\CC App\\Developpement'
-VIDEO_PATH='C:\\Users\\PC\\Downloads\\Video\\hadj.mp4'
-model_type='SANet'
-sys.path.append(ROOT_PATH)
-import config
-from modelmanager import ModelManager
-ModelManager.set_base_path(config.FROZEN_MODELS_BASE_PATH)
-ModelManager.load_external_model(model_type)
-#for x in ModelManager.process_video(VIDEO_PATH,args=dict(output=os.path.join(ROOT_PATH,'ressources','videos'))):
-    # cv2.imshow('frame22222',x)
- #   pass
-=======
+
+
 # import os,sys
 # import cv2,imutils
 # ROOT_PATH='C:\\Users\\PC\\Desktop\\PFE related\\applications\\CC App\\Developpement'
@@ -322,4 +309,4 @@ ModelManager.load_external_model(model_type)
 # for x in ModelManager.process_video(VIDEO_PATH,args=dict(output=os.path.join(ROOT_PATH,'ressources','videos'))):
 #     # cv2.imshow('frame22222',x)
 #     pass
->>>>>>> e43846e81c4698f5e3084541f1eb88202e22517b
+

@@ -102,9 +102,9 @@ def construct_combined_results(dirpath):
         try:
             with open(os.path.join(sdir,'temp.csv')) as csv_file:
                 csv_reader = csv.reader(csv_file, delimiter=',')
-                json[sdir]=[
-                    # for row in csv_reader
-                ]
+                json[sdir]=[]
+        except:
+            pass        
 
 
 def read_existing_data(filename)->pd.DataFrame:
