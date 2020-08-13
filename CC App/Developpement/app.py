@@ -2,6 +2,7 @@
 import dash
 import dash_bootstrap_components as dbc
 from flask import Flask, Response,send_from_directory,request,jsonify
+from flask_cors import CORS, cross_origin
 import multiprocessing
 import os
 # User's modules
@@ -124,6 +125,8 @@ app = dash.Dash(__name__,
                 suppress_callback_exceptions=True)
 app.title='Crowd Counting Monitor'
 
+cors = CORS(server, resources={r'/*': {'origins': '*'}})
+server.config['CORS_HEADERS'] = 'Content-Type'
 @server.route("/assets/<path>")
 def serve_file(path):
     fullpath=path.split('***')
@@ -150,7 +153,20 @@ def save_regions_params():
         'status':'ok',
         'statuscode':200
     }
-    
+print('kjhfhjfkjfhjghjghjfjf')    
+@server.route("/sensors/register",methods=['POST'])
+def register_sensor(): 
+    print('rec') 
+    params=request.json
+    print(params)
+    sensor_name=params['sensor_name']
+    if not os.path.exists(config.SENSORS_DEFAULT_BASE_PATH):
+        os.makedirs(config.SENSORS_DEFAULT_BASE_PATH)
+    if os.path.exists(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name)):
+        return Response('Sensor already registred',status=300)
+    os.makedirs(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name))   
+
+    return Response('Sensor registred',status=200)          
        
 
 # server = app.server
@@ -166,7 +182,7 @@ def get_regions_params():
 # Running the server
 if __name__ == '__main__':
 
-    app.run_server(dev_tools_hot_reload=False,
+    app.run_server(dev_tools_hot_reload=True,
                    debug=config.DEBUG, host='0.0.0.0')
 
     # model=ModelManager.load_external_model('CSRNet')
