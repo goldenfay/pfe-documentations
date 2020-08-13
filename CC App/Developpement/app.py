@@ -151,7 +151,17 @@ def save_regions_params():
         'statuscode':200
     }
     
-       
+@server.route("/sensors/register/",methods=['POST'])
+def register_sensor():  
+    params=request.values
+    sensor_name=params['sensor_name']
+    if not os.path.exists(config.SENSORS_DEFAULT_BASE_PATH):
+        os.makedirs(config.SENSORS_DEFAULT_BASE_PATH)
+    if os.path.exists(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name)):
+        return Response('Sensor already registred',status=300)
+    os.makedirs(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name))   
+
+    return Response('Sensor registred',status=200)          
 
 # server = app.server
 # server.run(port=4000)

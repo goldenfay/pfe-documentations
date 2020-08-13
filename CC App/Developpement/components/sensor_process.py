@@ -113,6 +113,8 @@ class SensorProcessView(Component):
         return True
     def initialize(self, app):
         global sensor_path,model_type,Lang
+        Lang=self.config.LANGUAGE_DICT
+        static.Lang=Lang
         self.reset_variables()
         if not self.validate_params():
             self.layout= error_layout('fa-exclamation-triangle',Lang['Invalid Parameters'],
@@ -126,8 +128,7 @@ class SensorProcessView(Component):
                              Lang['The requested sensor Id does not exist.'])
             return
         
-        Lang=self.config.LANGUAGE_DICT
-        static.Lang=Lang    
+            
         model_type=self.url_params['model_name'][0]
         
         list_vidoes = list(glob.glob(os.path.join(

@@ -2,7 +2,6 @@
 **/.vscode
 **/.idea
 **/yolo-coco
-**/videos
 **.prototxt
 **.caffemodel
 **.pth
