@@ -73,14 +73,6 @@
       "id": 10
     },
     {
-      "sensor_name": "Capteur11",
-      "sensor_zone": "Rue Ali la pointe",
-      "sensor_desc": "Security counting",
-      "sensor_type_name": "Scène moyen échelle",
-      "sensor_type_id": 2,
-      "id": 11
-    },
-    {
       "sensor_name": "Capteur12",
       "sensor_zone": "Rue Hassiba Ben BouAli",
       "sensor_desc": "Commercial zone",
@@ -89,12 +81,60 @@
       "id": 12
     },
     {
-      "sensor_name": "Capteur13",
-      "sensor_zone": "Rue Meriem Bouatoura",
-      "sensor_desc": "Another commercial area",
+      "sensor_name": "test",
+      "sensor_zone": "terst",
+      "sensor_desc": "tetete",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
+      "id": 13
+    },
+    {
+      "sensor_name": "de",
+      "sensor_zone": "de",
+      "sensor_desc": "de",
       "sensor_type_name": "Scène moyen échelle",
       "sensor_type_id": 2,
-      "id": 13
+      "id": 14
+    },
+    {
+      "sensor_name": "lplp",
+      "sensor_zone": "lplpl",
+      "sensor_desc": "plp",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 15
+    },
+    {
+      "sensor_name": "ppo",
+      "sensor_zone": "pop",
+      "sensor_desc": "opp",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 16
+    },
+    {
+      "sensor_name": "a",
+      "sensor_zone": "jj",
+      "sensor_desc": "jij",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 17
+    },
+    {
+      "sensor_name": "sa",
+      "sensor_zone": "sa",
+      "sensor_desc": "sss",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
+      "id": 18
+    },
+    {
+      "sensor_name": "Lol",
+      "sensor_zone": "XD",
+      "sensor_desc": "LOL",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
+      "id": 19
     }
   ]
 }

@@ -3,7 +3,7 @@
 		<CCol sm="12" md="12">
 			  <CCard>
 		        <CCardHeader>
-		          Sensor Processing {{test()}}
+		          Sensor Processing {{adress}}
 		        </CCardHeader>
 		        <CCardBody>
 		            <div class="embed-responsive embed-responsive-1by1">
@@ -16,7 +16,7 @@
 </template>
 
 <script>
-//this.server_url+'/process'+'?sensor_name='+sensor.name+'&sensor_id='+sensor.id+'&model_name=sensor.type'
+//this.server_url+'/process'+'?sensor_name='+sensor.name+'&sensor_id='++sensor.id+'&model_name=sensor.type'
 export default {
 	
   name: 'ProcessSensor',
@@ -30,7 +30,6 @@ export default {
   	}
   },
   created(){
-  	this.adress = "http://localhost:3000/crowds"
   	this.id_sensor = this.$route.params.id
   	this.name_sensor = this.$route.params.name
   	this.id_type_sensor = this.$route.params.type
@@ -38,8 +37,10 @@ export default {
   		this.type_sensor = "SANet"
   	}
   	else{
-  		this.type_sensor = "ssd"
+  		this.type_sensor = "mobileSSD"
   	}
+
+    this.adress = "http://localhost:8050/sensorprocess?sensor_name="+this.name_sensor+"&model_name="+this.type_sensor
 
   },
   methods:{

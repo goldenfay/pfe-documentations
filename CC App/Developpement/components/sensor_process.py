@@ -105,6 +105,7 @@ class SensorProcessView(Component):
             server_thread.raise_exception()
 
     def validate_params(self):
+            
         if not self.url_params.get('sensor_name',False):
             return False  
         if not self.url_params.get('model_name',False):
@@ -127,8 +128,6 @@ class SensorProcessView(Component):
             self.layout= error_layout('fa-question-circle',Lang['Sensor not registred'],
                              Lang['The requested sensor Id does not exist.'])
             return
-        
-            
         model_type=self.url_params['model_name'][0]
         
         list_vidoes = list(glob.glob(os.path.join(

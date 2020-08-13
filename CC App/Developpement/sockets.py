@@ -1,7 +1,9 @@
 import socketio
 
 
-class ClientSocket(socketio.Client):
+#class ClientSocket(socketio.Client):
+
+class ClientSocket():
 
     def __init__(self, **kwargs):
         super(ClientSocket,self).__init__(**kwargs)

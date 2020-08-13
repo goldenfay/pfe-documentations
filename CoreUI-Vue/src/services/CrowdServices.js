@@ -6,7 +6,17 @@ const apiClient = axios.create({
 	withCredentials: true,
 	headers:{
 		Accept: 'application/json',
-		'Content-Type': 'application/json'
+		'Content-Type': 'application/json',
+	}
+})
+const apiDash = axios.create({
+	
+	baseURL: `http://localhost:8050`,
+	headers:{
+		Accept: 'application/json',
+		'Content-Type': 'application/json',
+		'Access-Control-Allow-Origin': '*',
+		'Access-Control-Allow-Credentials': 'false'
 	}
 })
 export default{
@@ -26,6 +36,18 @@ export default{
 	},
 	deleteSensorRequest(id){
 		return apiClient.delete('/crowds/'+id)
+	},
+	registerSensor(name,type){
+		var the_type_s = ""
+		if (type.localeCompare("Scène large échelle") == 0){
+			the_type_s = "SANet"
+		}
+		else{
+			the_type_s = "mobileSSD"
+		}
+		var data = {}
+		data = {'sensor_name':name,'model_name':the_type_s}
+		return apiDash.post('/sensors/register',data)
 	}
 
 

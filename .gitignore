@@ -2,6 +2,7 @@
 **/.vscode
 **/.idea
 **/yolo-coco
+**/node_modules
 **.prototxt
 **.caffemodel
 **.pth

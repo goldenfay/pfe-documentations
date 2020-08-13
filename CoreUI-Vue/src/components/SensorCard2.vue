@@ -7,8 +7,8 @@
       </div>
 
       <div class="card-body text-center">
-           <h5 class="card-title">{{sensor.sensor_zone}}</h5>
-           <h6 class="card-title">{{sensor.sensor_name}}</h6>
+           <h5 class="card-title">{{sensor.sensor_name}}</h5>
+           <h6 class="card-title">{{sensor.sensor_zone}}</h6>
             <p class="card-text">
               <br/>
               {{sensor.sensor_desc}}
