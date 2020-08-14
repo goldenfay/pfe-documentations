@@ -6,10 +6,10 @@
         </CCardHeader>
 
         <CCardBody>
-        	<video class="img-fluid" controls>
+        	<!--video class="img-fluid" controls>
 			  <source :src="require('@/../public/video/'+name)" type="video/mp4">
 				Your browser does not support the video tag.
-			</video> 
+			</video--> 
             <img src="" class="img-fluid"/>
         </CCardBody>
 
@@ -18,13 +18,13 @@
 </template>	
 
 <script>
-	import CrowdServices from '@/services/CrowdServices.js'
+	/*import CrowdServices from '@/services/CrowdServices.js'
 	import {mapState} from 'vuex'
 
 	export default{
 		name : 'DisplayVideo',
 		data(){
-			return {imgUrl :require('@/../public/video/teb7iraVoyage.mp4')}
+			//return {imgUrl :require('@/../public/video/teb7iraVoyage.mp4')}
 
 
 		},
@@ -37,9 +37,9 @@
 		})
 
 
-	//end exporting	
-	//@/../../../../hads/Downloads/
+	end exporting	
+	@/../../../../hads/Downloads/
 	}
-
+*/
 
 </script>

@@ -14,6 +14,7 @@ const StatisticalCharts = () => import('@/views/my_charts/StatisticalCharts')
 const CreateSensor = () => import('@/views/crud/CreateSensor')
 const ListSensor = () => import('@/views/crud/ListSensor')
 const ProcessSensor = () => import('@/views/crud/ProcessSensor')
+const SensorExstat = () => import('@/views/crud/SensorExstat')
 
 const Colors = () => import('@/views/theme/Colors')
 const Typography = () => import('@/views/theme/Typography')
@@ -152,6 +153,21 @@ function configRoutes () {
               path: 'process-sensor/:id/:name/:type',
               name: 'ProcessSensor',
               component: ProcessSensor
+            }
+          ] 
+        },
+        {
+          path: 'exstat',
+          redirect: 'exstat/exstat-sensor',
+          name: 'SensorExstat',
+          component: {
+            render (c) { return c('router-view') }
+          },
+          children: [
+            {
+              path: 'process-sensor/:name',
+              name: 'SensorExstat',
+              component: SensorExstat
             }
           ] 
         },

@@ -277,7 +277,7 @@ class Global_Charts(Component):
                         dbc.Col(html.Div(first_card), width=3),
                         dbc.Col(html.Div(second_card), width=3),
                         dbc.Col(html.Div(
-                                dbc.Card(dbc.CardBody(
+                        dbc.Card(dbc.CardBody(
                                     [html.H1("Zone-Max", className="card-title"),
                                      html.P(children=[html.B("Heure(s):"),"8.0, 12.0, 13.0, 14.15, 17.0"], className="h3"),
                                      html.P(children=[html.B("Nombre de personnes par zone:"),"(Z1, 74), (Z2, 96), (Z2, 82), (Z3, 89), (Z1, 98)"], className="h3")   

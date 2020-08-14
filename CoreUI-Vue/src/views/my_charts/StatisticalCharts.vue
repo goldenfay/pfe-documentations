@@ -12,7 +12,7 @@
 		        </CCardBody>
 			  </CCard>	
 		</CCol>	
-		<CCol sm="12" md="12">
+		<!--CCol sm="12" md="12">
 			<CCard>
 		    <CCardBody>
 		        <div class="embed-responsive embed-responsive-21by9">
@@ -21,7 +21,7 @@
 	        	</div>
 		    </CCardBody>
 			</CCard>
-		</CCol>		
+		</CCol-->		
 	</div>
 </template>
 
