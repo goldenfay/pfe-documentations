@@ -127,7 +127,7 @@ class StatsView(Component):
                             children=[
                                 dbc.CardDeck(
                                     [
-                                        reusable.basic_stat_info_card('Most busy day',most_busy_days,'primary'),
+                                        reusable.basic_stat_info_card('Most busy days',most_busy_days,'primary'),
                                         reusable.basic_stat_info_card('Most dense crowd in one moment',max(valuesAxes.tolist()),'danger'),
                                         reusable.basic_stat_info_card('Peak hours',', '.join(most_busy_hours),'warning')
 

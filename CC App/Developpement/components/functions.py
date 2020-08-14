@@ -96,15 +96,16 @@ def log_count(filename, n):
 
 def construct_combined_results(dirpath):
     json={}
-    sensors_dirs=[dirname for dirname in os.listdir(self.sensor_path) if os.path.isdir(os.path.join(self.sensor_path,dirname))]
+    sensors_dirs=[dirname for dirname in os.listdir(dirpath) if os.path.isdir(os.path.join(dirpath,dirname))]
 
     for sdir in sensors_dirs:
         try:
-            with open(os.path.join(sdir,'temp.csv')) as csv_file:
-                csv_reader = csv.reader(csv_file, delimiter=',')
-                json[sdir]=[]
+            json[sdir]=read_existing_data(os.path.join(dirpath,sdir,'output','temp.csv'))
+            
         except:
-            pass        
+            pass 
+
+    return json           
 
 
 def read_existing_data(filename)->pd.DataFrame:
@@ -192,4 +193,3 @@ dataframe['value'] = pd.Series(dtype=np.int32)
 for i in range(10):
     dataframe=dataframe.append({'timestamp': pd.Timestamp(datetime.datetime.now()),'value':i},ignore_index=True) 
 dataframe.set_index('timestamp', inplace=True)
-print(dataframe)    

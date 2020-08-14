@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
+import imutils
 import dlib
 from imutils.video import VideoStream
 from imutils.video import FPS
@@ -210,7 +211,6 @@ def get_detected_items(layeroutputs, confidence_level, threshold, img_width, img
 
 
 def process_video(config=None, args=None):
-    print('fkjglfkjgdfmlkjgfldkjgflkdj')
     if config is None:
         print('[INFO] reading config file.')
         config_file = os.path.join(currentdir, 'config.ini')
@@ -245,18 +245,26 @@ def process_video(config=None, args=None):
 
         #get params from additional passed args
     silent=args['silent'] if args is not None and 'silent' in args else False
+    show_regions=False
+    tang,b=None,None
+    if args is not None and args.get('regions_params',False):
+        show_regions=args['regions_params'].get('show',False)
+        tang,b=args['regions_params'].get('tang',None),args['regions_params'].get('b',None)
+        line_eq=lambda x: int(tang*x+b)
+        horizontal_splited=abs(tang)<1
+
+    log_count=args is not None and args.get('log_counts',False)
+
+    if log_count:
+        log_count_fcn=args.get('log_count_fcn',False)
+    queue=args is not None and args.get('queue',None)
 
         # initialize a list of colors to represent each  class label
     np.random.seed(42)
     COLORS = np.random.randint(0, 255, size=(len(LABELS), 3), dtype="uint8")
 
-    # Initialise video ouptut writer
-    if save_video:
-        (writer, fps) = get_videowriter(config['OUTPUT']['Filename'], cam_width, cam_height,
-                                        int(config['OUTPUT']['FPS']))
-    else:
-        (writer, fps) = (None, 0)
-
+    
+    write_output=True
     if not silent:
             # Create output windows, but limit on 1440x810
         cv2.namedWindow('Video', cv2.WINDOW_NORMAL)
@@ -288,7 +296,18 @@ def process_video(config=None, args=None):
     frame = frame[1] if len(frame) > 1 else frame
 
     if frame is None:
-            raise Exception('[FATAL] Cannot read video stream')
+        raise Exception('[FATAL] Cannot read video stream')
+    frame = imutils.resize(frame, width=500)
+    (H, W) = frame.shape[:2]
+    writer=None
+    if write_output:
+        fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        if args.get('output',False):
+            writer = cv2.VideoWriter(os.path.join(args['output'],os.path.basename(args['input'].replace('.mp4','.avi'))), fourcc, 30,
+            (W, H), True)
+        else:
+            writer = cv2.VideoWriter(os.path.join(currentdir,'output',os.path.basename(args['input'].replace('.mp4','.avi'))), fourcc, 30,
+            (W, H), True)
 
     fps = FPS().start()
     totalFrames = 0
@@ -347,20 +366,28 @@ def process_video(config=None, args=None):
                 tracked_obj = TrackableObject(objectID, centroid)
 
             else:
-                    # get the object(person) direction the difference between the y-coordinate of the current
-                    # object and the mean of it previous centroids
-                y = [c[1] for c in tracked_obj.centroids]
-                direction = centroid[1] - np.mean(y)
                 tracked_obj.centroids.append(centroid)
+			
+                if show_regions:
+                        # determines wether direction will be based on x or y coordinate (horizontal/vertical splitting)
+                    coord_ref=1 if horizontal_splited else 0
 
-                
-                if not tracked_obj.counted:
-                    if direction < 0 and centroid[1] < H // 2:
-                        countUp += 1
-                        tracked_obj.counted = True
-                    elif direction > 0 and centroid[1] > H // 2:
-                        countDown += 1
-                        tracked_obj.counted = True
+                        # get the object(person) direction the difference between the y/x-coordinate of the current
+                        # object and the mean of it previous centroids
+                    coord = [c[coord_ref] for c in tracked_obj.centroids]
+                    direction = centroid[coord_ref] - np.mean(coord)
+
+
+                    if not tracked_obj.counted:
+                    
+                    
+                        if direction < 0 and centroid[coord_ref] < line_eq(centroid[coord_ref]):
+                            countUp += 1
+                            tracked_obj.counted = True
+                        elif direction > 0 and centroid[coord_ref] > line_eq(centroid[coord_ref]):
+                            countDown += 1
+                            tracked_obj.counted = True
+            
             trackableObjects[objectID] = tracked_obj
 
                 # draw both the ID of the object and the centroid of the
@@ -370,17 +397,23 @@ def process_video(config=None, args=None):
             cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
             #cv2.imshow("Frame", frame)
 
-        info = [
-        ("Up", countUp),
-        ("Down", countDown)
-        ]
 
-            # Show infos on he frame
-        for (i, (k, v)) in enumerate(info):
-            text = "{}: {}".format(k, v)
-            cv2.putText(frame, text, (10, H - ((i * 20) + 20)),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)	
+        info=[("Current" , len(list(objects)))]
+        if show_regions:
+            info += [
+            ("Up" if horizontal_splited else "Right", countUp),
+            ("Down" if horizontal_splited else "Left", countDown)
+            ]
 
+                # Show infos on he frame
+            for (i, (k, v)) in enumerate(info):
+                text = "{}: {}".format(k, v)
+                cv2.putText(frame, text, (10, H - ((i * 20) + 20)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            cv2.line(frame,(0,line_eq(0)),(frame.shape[1],line_eq(frame.shape[1])),(0,200,0),5)
+
+
+        
             # If we should write the resulted video, then write the treated frame
         if  writer is not None:
             writer.write(frame)
@@ -399,7 +432,11 @@ def process_video(config=None, args=None):
                 b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
         else:	# Otherwise, we display it in the standard openCV window
             cv2.imshow("Video", frame)
-     
+        if log_count:
+            log_count_fcn(os.path.join(args['output'],'temp.csv'),len(list(objects)))
+        if queue is not None:
+            queue.put_nowait({'timestamp': pd.Timestamp(datetime.datetime.now()),'value':len(list(objects))})
+        
             # Read next frame
         frame = vs.read()
             #VideoStream returns a frame, VideoCapture returns a tuple
@@ -413,7 +450,7 @@ def process_video(config=None, args=None):
     print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
 
         # release the file pointers
-    if save_video:
+    if write_output:
         writer.release()
     vs.release()
     cv2.destroyAllWindows()

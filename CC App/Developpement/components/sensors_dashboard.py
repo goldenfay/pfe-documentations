@@ -67,54 +67,62 @@ class SensorsDashboardView(Component):
     def initialize(self, app):
         
 
-        self.sensor_path=os.path.join(self.config.SENSORS_DEFAULT_BASE_PATH)
+        self.sensors_path=os.path.join(self.config.SENSORS_DEFAULT_BASE_PATH)
 
-        if not os.path.exists(self.sensor_path):
+        if not os.path.exists(self.sensors_path):
             self.layout= error_layout('fa-question-circle','Databade path not found',
                              'It seems that we have a problem with the database directory')
             return
             # Grap dataframe from the specific .csv file
-        csv_file=os.path.join(self.sensor_path,'all.csv')
-        if not os.path.exists(csv_file):
-            functions.construct_combined_results(self.sensor_path)
-        df=functions.read_existing_data(csv_file)
-
+        # csv_file=os.path.join(self.sensors_path,'all.csv')
+        # if not os.path.exists(csv_file):
+        #     functions.construct_combined_results(self.sensors_path)
         
-        valuesAxes=df['value'].values
-            # Calculate most busy days (day name, date)
-        most_busy_days=df.groupby(df.index.date).agg({'value': 'mean'})
-        most_busy_days.index=pd.to_datetime(most_busy_days.index)
-        most_busy_days=list(zip(functions.index_to_list_date(most_busy_days.index.tolist()),most_busy_days.index.day_name().tolist()))[:3]
-           
-            # Calculate Peak hours 
-        most_busy_hours=df.groupby(df.index.hour).agg({'value': 'max'})
-        most_busy_hours=['{}h'.format(el) for el in most_busy_hours.index.tolist()]
-        # most_busy_hours=list(zip(most_busy_hours.index.tolist(),most_busy_hours['value'].values.tolist()))
+        All_dfs=functions.construct_combined_results(self.sensors_path)
 
-            # Get last week, last day, last 2 hours data and map them to correponding figures
-        week_fig,day_fig,hours_fig=static.history_count_figures(csv_file)
-            # Define Graph layout options
-        
-        splitpoint=len(df)//4
-        parts=[splitpoint,2*splitpoint,3*splitpoint,len(df)]
-        frames=[] if True else [
-            go.Frame(data=[
-                go.Scatter(x=df.index.tolist()[:idx],y=valuesAxes.tolist()[:idx])
-            ])
-            for idx in parts
-        ]
-            # Define the full history graph figure
-        figure=go.Figure(data=go.Scatter(
-            x=df.index.tolist(),y=valuesAxes.tolist()
-        ),layout=figure_layout,frames=frames)
+        most_busy_days=[]
+        most_busy_hours=[]
+        crowded_sensors=[]
+        data=[]
+        min_date=None
+        max_date=None
+        max_crowd_number=0
+        for sensor in list(All_dfs):
+            df =All_dfs[sensor]
+            data.append(go.Scatter(
+                x=df.index.tolist(),y=df['value'].values.tolist(),name=sensor
+                ))
+
+            if min_date is None or min_date> df.index.min():
+                min_date=df.index.min()
+            if max_date is None or max_date< df.index.max():
+                max_date=df.index.max()
+            if max(df['value'].values.tolist())>=max_crowd_number:
+                max_crowd_number=max(df['value'].values.tolist())
+                crowded_sensors.append(sensor)
+                # Calculate most busy days (day name, date)
+            sensor_most_busy_days=df.groupby(df.index.date).agg({'value': 'mean'})
+            sensor_most_busy_days.index=pd.to_datetime(sensor_most_busy_days.index)
+            sensor_most_busy_days=list(zip(functions.index_to_list_date(sensor_most_busy_days.index.tolist()),sensor_most_busy_days.index.day_name().tolist()))
+            most_busy_days+=sensor_most_busy_days
+                # Calculate Peak hours 
+            sensor_most_busy_hours=df.groupby(df.index.hour).agg({'value': 'max'})
+            sensor_most_busy_hours=['{}h'.format(el) for el in sensor_most_busy_hours.index.tolist()]
+            most_busy_hours+=sensor_most_busy_hours
+
+        most_busy_days=list(set(most_busy_days))
+        most_busy_hours=list(set(most_busy_hours))
+       
+            # Define the full history graph of all sensors combined
+        figure=go.Figure(data=data,layout=figure_layout,frames=[])
 
             # Define default filtering start and end date
-        start_date=df.index.min()
-        end_date=df.index.max()
+        start_date=min_date#All_dfs.index.min()
+        end_date=max_date#All_dfs.index.max()
         delta=end_date-start_date
         delta_hours=delta/np.timedelta64(1,'h')
         
-        nbr_sensors=len([dirname for dirname in os.listdir(self.sensor_path) if os.path.isdir(os.path.join(self.sensor_path,dirname))])
+        nbr_sensors=len([dirname for dirname in os.listdir(self.sensors_path) if os.path.isdir(os.path.join(self.sensors_path,dirname))])
         self.layout = dbc.Container(
 
             className='mt-5',
@@ -126,9 +134,10 @@ class SensorsDashboardView(Component):
                             children=[
                                 dbc.CardDeck(
                                     [
-                                        reusable.basic_stat_info_card('Sensors number',nbr_sensors,'light'),
-                                        reusable.basic_stat_info_card('Most dense crowd in one moment',max(valuesAxes.tolist()),'danger'),
-                                        reusable.basic_stat_info_card('Peak hours',', '.join(most_busy_hours),'warning')
+                                        reusable.basic_outlined_stat_info_card('Total sensors number',nbr_sensors,'light',text_color='text-primary'),
+                                        reusable.basic_outlined_stat_info_card('Capturing since',min_date,'light',text_color='text-success'),
+                                        reusable.basic_outlined_stat_info_card('Total working hours',delta_hours,'light',text_color='text-warning'),
+                                        
 
 
                                     ]
@@ -148,12 +157,13 @@ class SensorsDashboardView(Component):
                                 dbc.Card(
                                     children=[
                                         dbc.CardBody(
+                                            
                                             children=[
                                                 html.Div(
                                                     children=[
                                                         html.Span('Filter results betwwen : '),
                                                         dcc.DatePickerRange(
-                                                            id='filter-date-picker-range',
+                                                            id='combined-filter-date-picker-range',
                                                             min_date_allowed=datetime.datetime(start_date.year,start_date.month,start_date.day).date(),
                                                             max_date_allowed=datetime.datetime.now().date(),
 
@@ -169,7 +179,7 @@ class SensorsDashboardView(Component):
                                                             type="circle",
                                                             children=[
                                                                 dbc.Container(
-                                                                        dcc.Graph(id='full-history-graph',className='container',figure=figure,responsive=True)
+                                                                        dcc.Graph(id='combined-full-history-graph',className='container',figure=figure,responsive=True)
 
                                                                 )
                                                             ]
@@ -186,34 +196,9 @@ class SensorsDashboardView(Component):
                                 )  
 
                             ],
-                            width=7
-                        ),
-                        dbc.Col(
-                            className='offset-md-1 d-flex flex-column justify-content-around',
-                            children=[
-                                dbc.Row(
-                                    children=[
-                                        dbc.Col(
-                                            reusable.basic_stat_info_card('Total active hours',delta_hours,'info')
-                                        )
-                                            
-
-                                    ]
-                                ),
-                                dbc.Row(
-                                    children=[
-                                        dbc.Col(
-                                            reusable.basic_stat_info_card('Last capture','{}h'.format(end_date.hour),'success')
-                                        )
-                                            
-
-                                    ]
-                                )
-
-                            ],
-
-                            width=4
+                            width=12
                         )
+                        
 
                     ]
                 ),
@@ -221,53 +206,75 @@ class SensorsDashboardView(Component):
                     className='mt-5',
                     children=[
                         dbc.Col(
+                            className='d-flex flex-column justify-content-around',
                             children=[
                                 dbc.CardDeck(
                                     [
-                                        reusable.basic_stat_plot_card(dcc.Graph(figure=week_fig,responsive=True)),
-                                        reusable.basic_stat_plot_card(dcc.Graph(figure=day_fig,responsive=True)),
-                                        reusable.basic_stat_plot_card(dcc.Graph(figure=hours_fig,responsive=True))
+                                            reusable.basic_outlined_stat_info_card('Most dense crowd in one moment',max_crowd_number,'light',text_color='text-info'),
+                                            reusable.basic_outlined_stat_info_card('Most busy days',most_busy_days[:3],'light',text_color='text-info'),
+                                            reusable.basic_outlined_stat_info_card('Peak hours',', '.join(most_busy_hours),'light',text_color='text-info'),
+                                            reusable.basic_outlined_stat_info_card('crowded sensors',', '.join(crowded_sensors),'light',text_color='text-info')
+                                        
 
 
                                     ]
                                 )
+                                
+
                             ],
+
                             width=12
                         )
+                    ]
+
+                ),
+                # dbc.Row(
+                #     className='mt-5',
+                #     children=[
+                #         dbc.Col(
+                #             children=[
+                #                 dbc.CardDeck(
+                #                     [
+                #                         reusable.basic_stat_plot_card(dcc.Graph(figure=week_fig,responsive=True)),
+                #                         reusable.basic_stat_plot_card(dcc.Graph(figure=day_fig,responsive=True)),
+                #                         reusable.basic_stat_plot_card(dcc.Graph(figure=hours_fig,responsive=True))
+
+
+                #                     ]
+                #                 )
+                #             ],
+                #             width=12
+                #         )
       
                    
 
-                    ]
-                )
+                #     ]
+                # )
                 
             ]
         )
-        SensorsDashboardView.df=df
+        SensorsDashboardView.df=All_dfs
 
 
 
-    def validate_params(self):
-        if not self.url_params.get('sensor_name',False):
-            return False  
-
-        return True     
+    
 
 
-@app.callback(
-    Output('full-history-graph', 'figure'),
-    [Input('filter-date-picker-range', 'start_date'),
-     Input('filter-date-picker-range', 'end_date')])
-def update_output(start_date, end_date):
+# @app.callback(
+#     Output('full-history-graph', 'figure'),
+#     [Input('filter-date-picker-range', 'start_date'),
+#      Input('filter-date-picker-range', 'end_date')])
+# def update_output(start_date, end_date):
 
 
-    start_date=SensorsDashboardView.df.index.min() if start_date is None else start_date
-    end_date=SensorsDashboardView.df.index.max() if end_date is None else end_date
+#     start_date=SensorsDashboardView.df.index.min() if start_date is None else start_date
+#     end_date=SensorsDashboardView.df.index.max() if end_date is None else end_date
      
-    if SensorsDashboardView.df is not None:
-        print(start_date,end_date,type(start_date))
-        df=SensorsDashboardView.df
-        df=df[np.logical_and(df.index<=end_date , df.index>=start_date)]
-        return go.Figure(data=go.Scatter(
-            x=df.index.tolist(),y=df['value'].values.tolist()
-        ),layout=figure_layout)
+#     if SensorsDashboardView.df is not None:
+#         print(start_date,end_date,type(start_date))
+#         df=SensorsDashboardView.df
+#         df=df[np.logical_and(df.index<=end_date , df.index>=start_date)]
+#         return go.Figure(data=go.Scatter(
+#             x=df.index.tolist(),y=df['value'].values.tolist()
+#         ),layout=figure_layout)
     

@@ -10,6 +10,7 @@ dash-player
 grasia-dash-components
 dash-defer-js-import
 Flask
+flask-cors
 python-socketio[asyncio_client]
 dill
 pathos

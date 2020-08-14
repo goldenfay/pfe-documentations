@@ -158,7 +158,7 @@ def params_card_test(hours, crowd_number, param_name, title1, title2):
     return dbc.CardBody(card_content)
 
 
-def basic_stat_info_card(title, value, color='light'):
+def basic_stat_info_card(title, value, color='light',**kwargs):
     if isinstance(value, list):
         value = [
             html.Div(
@@ -168,9 +168,9 @@ def basic_stat_info_card(title, value, color='light'):
             for el in value]
 
     return dbc.Card(
-        inverse=True,
+        inverse=True if 'inverse' not in kwargs else kwargs['inverse'],
         color=color,
-        className='shadow-sm',
+        className='shadow',
         children=[
             dbc.CardBody(
                 className='d-flex align-items-center justify-content-center',
@@ -187,13 +187,45 @@ def basic_stat_info_card(title, value, color='light'):
             )
         ]
     )
+def basic_outlined_stat_info_card(title, value, color='light',text_color='text-primary',**kwargs):
+    if isinstance(value, list):
+        
+        value = [
+            html.Div(
+                className=text_color,
+                children=[html.H5(str(el[1]), className='h5 text-center'),
+                 html.P(el[0], className='text-center')]
+            )
+            for el in value]
+        
+
+    return dbc.Card(
+        **kwargs,
+        color=color,
+        className='shadow',
+        children=[
+            dbc.CardBody(
+                className='d-flex align-items-center justify-content-center '+text_color,
+                children=[
+                    html.Div(
+                        children=[
+                            html.H4(
+                                title, className='card-title font-weight-bold text-center mt-5 '),
+                            html.H5(
+                                value, className='h4 text-center') if not isinstance(value, list) else html.Div(value),
+                        ]
+                    )
+                ]
+            )
+        ]
+    )
 
 
 def basic_stat_plot_card(figure, color='primary'):
 
     return dbc.Card(
 
-        className='shadow-sm',
+        className='shadow',
         children=[
             dbc.CardBody(
                 className='',

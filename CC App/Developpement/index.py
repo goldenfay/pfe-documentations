@@ -86,6 +86,25 @@ def display_page(pathname,search):
         component = components.SensorProcessView(app, config,args)
         
         return dbc.Container([component.layout], fluid=True)
+    elif pathname == '/sensors_dashboard':
+        
+        config.LANGUAGE_DICT=dict((key,key) for key in list(config.LANGUAGE_DICT))
+        parsed = urlparse.urlparse(search)
+        args=parse_qs(parsed.query)
+
+        component = components.SensorsDashboardView(app, config,args)
+        
+        return dbc.Container([component.layout], fluid=True)
+    
+    elif pathname == '/fr/sensors_dashboard':
+        
+       
+        parsed = urlparse.urlparse(search)
+        args=parse_qs(parsed.query)
+
+        component = components.SensorsDashboardView(app, config,args)
+        
+        return dbc.Container([component.layout], fluid=True)
     else:
         return dbc.Container([dbc.Row([
                                 html.H3([html.Span(className='fa fa-ban mr-3'),'404 Page not found'])
