@@ -143,8 +143,6 @@ def params_card_test(hours, crowd_number, param_name, title1, title2):
     zones = ""
     i = 1
     for hour in hours:
-        print("hi")
-        print(hour)
         '''if i < len(hours):
             string = string+hour[0]+", "
             zones = zones+"("+str(hour[1])+","+str(hour[2])+")"+", "

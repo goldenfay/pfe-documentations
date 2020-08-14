@@ -52,6 +52,7 @@ figure_layout=dict(title={
             'easing':'quad-in-out'
         }
         )
+Lang=None
 
 class StatsView(Component):
     layout = None
@@ -65,6 +66,9 @@ class StatsView(Component):
             
 
     def initialize(self, app):
+        global Lang
+        Lang=self.config.LANGUAGE_DICT
+        static.Lang=Lang
         if not self.validate_params():
             self.layout= error_layout('fa-exclamation-triangle','Invalid Parameters',
                              'The request contains invalid query parameters.')
@@ -79,7 +83,7 @@ class StatsView(Component):
             # Grap dataframe from the specific .csv file
         csv_file=os.path.join(self.sensor_path,'output','temp.csv')
         df=functions.read_existing_data(csv_file)
-
+        print(df)
         
         valuesAxes=df['value'].values
             # Calculate most busy days (day name, date)

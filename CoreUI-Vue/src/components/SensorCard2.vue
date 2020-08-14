@@ -28,9 +28,9 @@
           </slot>
 
           <slot name="edit_button">
-            <router-link :to="{name:'CreationSensor', hash:'#sensorTable'}" v-slot="{ href, route, navigate}">
+            <router-link :to="{name:'SensorExstat', params:{name:sensor.sensor_name}}" v-slot="{ href, route, navigate}">
                 <button :href="href" @click="navigate" class="btn btn-secondary btn-block" style="text" >
-                  Modification Capteur
+                  Plus d'informations
                 </button>
             </router-link>
           </slot>
@@ -65,5 +65,10 @@ export default {
     .btn-primary:hover{
       background-color:green;
       border-color: green;
+    }
+    .btn-secondary:hover{
+      background-color: rgba(239, 108, 0, 0.8);
+      border-color: rgba(239, 108, 0, 0.8); 
+      color: white;
     }
 </style>
