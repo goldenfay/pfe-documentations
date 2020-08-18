@@ -82,7 +82,7 @@
             </template>
             
             <router-link v-for="n in nbPages" :to="{ name: 'ListSensor', query: { page: n } }" rel="next" v-slot="{ href, route, navigate}" :key="n">
-                  <button  :href="href" @click="navigate" class="btn btn-secondary" style="text"  checked>{{n}}</button>
+                  <button  :id="n" :href="href" @click="navigate" class="btn btn-secondary" style="text"  checked>{{n}}</button>
             </router-link>
     
             <router-link v-if="hasNextPage" :to="{ name: 'ListSensor', query: { page: page + 1 } }" rel="next" v-slot="{ href, route, navigate}">
@@ -128,12 +128,18 @@ export default {
       default: "Highlight Links"
     }
   },
+  mounted(){
+      if( parseInt(this.$route.query.page) >= 1){    
+          var nb_current_page = parseInt(this.$route.query.page)
+          document.getElementById(nb_current_page).style.color = "white";
+          document.getElementById(nb_current_page).style.backgroundColor = "blue";
+      }
+  },
   created() {
   	this.$store.dispatch('fetchSensors',{
   		perPage: 3,
   		page: this.page
   	})
-  	
   },
   computed:{
   	page(){

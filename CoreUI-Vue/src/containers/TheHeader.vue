@@ -27,6 +27,12 @@
           Créer Capteur
         </CHeaderNavLink>
       </CHeaderNavItem>
+
+      <CHeaderNavItem class="px-3">
+        <CHeaderNavLink to="/update">
+          MAJ Capteur
+        </CHeaderNavLink>
+      </CHeaderNavItem>
     </CHeaderNav>
     <!--CHeaderNav class="mr-4">
       <CHeaderNavItem class="d-md-down-none mx-2">

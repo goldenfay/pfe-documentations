@@ -75,9 +75,9 @@
     {
       "sensor_name": "Capteur12",
       "sensor_zone": "Rue Hassiba Ben BouAli",
-      "sensor_desc": "Commercial zone",
-      "sensor_type_name": "Scène large échelle",
-      "sensor_type_id": 1,
+      "sensor_desc": "Commercial zone 12",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
       "id": 12
     },
     {

@@ -25,6 +25,12 @@ export default [
         icon: 'cil-star', 
       },
       {
+        _name: 'CSidebarNavItem',
+        name: 'Mise à jour capteurs',
+        to: '/update',
+        icon: 'cil-star', 
+      },
+      /*{
       	_name: 'CSidebarNavItem',
       	name:'Models',
       	to:'/models/models-list',
@@ -35,7 +41,7 @@ export default [
       	name:'Statistical_Chart',
       	to:'/mycharts',
       	icon: 'cil-chart-pie'
-      },/*
+      },
       {
         _name: 'CSidebarNavTitle',
         _children: ['Theme']
