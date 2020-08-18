@@ -38,6 +38,7 @@ res_img_list = []
 
 HTML_IMG_SRC_PREFIX = 'data:image/png;base64, '
 Lang = None
+path_video=None
 ONLINE_MODE = False
 SHOW_GRAPHS=True
 server = None
@@ -45,7 +46,7 @@ server_thread = None
 SERVER_URL = ''
 CLIENT_SOCKET = None
 best_performence_models = {
-    'MCNN': 'internal',
+    'MCNN': 'external',
     'CSRNet': 'external',
     'SANet': 'external',
     'CCNN': 'internal'
@@ -628,8 +629,9 @@ def process_frames(button_click, model_type, children):
               [State("dropdown-model-selection", "value"),
                State("dropdown-footage-selection", "value")])
 def process_video(button_click, model_type, video_path):
-    global server, server_thread, get_regions_params,SHOW_GRAPHS, SERVER_URL,CLIENT_SOCKET,ONLINE_MODE
+    global server, server_thread, get_regions_params,SHOW_GRAPHS, SERVER_URL,CLIENT_SOCKET,ONLINE_MODE,path_video
     if button_click > 0:
+        path_video=video_path
         print('Process server state : ',('not None' if server is not None else 'None'))
         if server_thread is not None:
             print('\t Thread alive ?: ',server_thread.isAlive())
@@ -693,14 +695,14 @@ def process_video(button_click, model_type, video_path):
 
                 @server.route('/stream')
                 def video_feed():
-                    global SHOW_GRAPHS
+                    global SHOW_GRAPHS,path_video
                 
                     params={
                         'show':True,
                         'tang': float(get_regions_params()['tang']),
                         'b': int(float(get_regions_params()['b']))
                     } if get_regions_params() is not None else None
-                    return Response(ModelManager.process_video(video_path,args={'regions_params':params,'log_counts':SHOW_GRAPHS,'log_count_fcn':functions.log_count}), mimetype='multipart/x-mixed-replace; boundary=frame')
+                    return Response(ModelManager.process_video(path_video,args={'regions_params':params,'log_counts':SHOW_GRAPHS,'log_count_fcn':functions.log_count}), mimetype='multipart/x-mixed-replace; boundary=frame')
 
             # server_thread=StoppableThread(target=launch_subprocess,args=(model_type,video_path,None))
             # server_thread.start()

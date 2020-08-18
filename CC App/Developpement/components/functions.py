@@ -143,43 +143,12 @@ def show_plots(data:pd.DataFrame,standalone_window=False):
     df_1w = df_1w.resample('1H').max()
     df_1d = df_1d.resample('15min').max()
 
-    # plt.gcf().clear()
-
-    # plt.subplot(2, 2, 1)
-    # plt.plot(df_1w.index.tolist(), df_1w['value'].tolist())
-    # plt.title("Laatste week")
-    # plt.ylabel("Personen")
-    # plt.xlabel("Tijdstip")
-
-    # plt.subplot(2, 2, 2)
-    # plt.plot(df_1d.index.tolist(), df_1d['value'].tolist())
-    # plt.title("Afgelopen 24 uur")
-    # plt.ylabel("Personen")
-    # plt.xlabel("Tijdstip")
-
-    # plt.subplot(2, 2, 3)
-    # plt.plot(df_8h.index.tolist(), df_8h['value'].tolist())
-    # plt.title("Afgelopen 8 uur")
-    # plt.ylabel("Personen")
-    # plt.xlabel("Tijdstip")
-
-    # plt.subplot(2, 2, 4)
-    # plt.plot(df_2h.index.tolist(), df_2h['value'].tolist())
-    # plt.title("Afgelopen 2 uur")
-    # plt.ylabel("Personen")
-    # plt.xlabel("Tijdstip")
-
-    # plt.gcf().autofmt_xdate()
+    
     if standalone_window:
         plt.show()
     else:
-        # fig= plt_tools.make_subplots(rows=3, cols=1, shared_xaxes=False,vertical_spacing=0.009,horizontal_spacing=0.009)
-        # fig.append_trace({'x':df_1w.index,'y':df_1w['value'].values.tolist(),'type':'scatter','name':'Week'},1,1)
-        # fig.append_trace({'x':df_1d.index,'y':df_1d['value'].values.tolist(),'type':'scatter','name':'Day'},2,1)
-        # fig.append_trace({'x':df_2h.index,'y':df_2h['value'].values.tolist(),'type':'scatter','name':'Hours'},3,1)
-        # return plt_tools.mpl_to_plotly(plt.gcf())    
+        
         return [df_2h,df_8h,df_1d,df_1w]   
-        # return fig 
 
 
 

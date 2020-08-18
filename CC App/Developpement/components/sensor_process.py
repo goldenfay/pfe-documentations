@@ -426,7 +426,7 @@ def process_video(button_click, video_path):
         ], [] if not SHOW_LIVE_GRAPH else [
             dcc.Interval(
                 id="sensor-interval-show-graphs",
-                interval=1000,
+                interval=10,
                 n_intervals=0
             ) if SHOW_LIVE_GRAPH else html.Div(),
             dcc.Graph(
@@ -449,6 +449,7 @@ def update_count_plots(n):
     if not QUEUE.empty():
         df=LIVE_DF.append(QUEUE.get_nowait(),ignore_index=True)
         LIVE_DF=df.copy()
+        
     else:
         df=LIVE_DF 
     # print(pd.to_datetime(df['timestamp']).dt)    

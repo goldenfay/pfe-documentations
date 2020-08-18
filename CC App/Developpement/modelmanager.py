@@ -38,7 +38,8 @@ class ModelManager:
     @staticmethod
     def get_instance(model_name):
         if model_name == "MCNN":
-            return MCNN(True)
+            # return MCNN(True)
+            return CSRNet(True)
         elif model_name == "CSRNet":
             return CSRNet(True)
         elif model_name == "SANet":
@@ -77,12 +78,15 @@ class ModelManager:
                 if len(frame.shape) == 3:
                     frame = frame.unsqueeze(0)
                 dmap = cls.model(frame)
-                dmap=dmap+(abs(dmap.min().item()))
+                print(dmap.min().item(),dmap.max().item())
+                # dmap=dmap+(abs(dmap.min().item()))
                 count = dmap.data.sum().item()
                 if cls.model.__class__.__name__ == 'SANet':
                     count = count//100
+                # elif cls.model.__class__.__name__ == 'CSRNet':
+                #     count = count//80
                 elif cls.model.__class__.__name__ == 'CSRNet':
-                    count = count//80
+                    count = count//15
             return dmap.squeeze().detach().cpu().numpy(), count
         else:  # It's a detection model
             return cls.model.forward(frame)
@@ -133,8 +137,10 @@ class ModelManager:
                 (H, W) = frame.shape[:2]
                 if totalFrame%30==0:
                     start=time.time()
-                    dmap,count=ModelManager.process_frame(rgb_frame)
+                    dmap,count=ModelManager.process_frame(frame)
                     elapsed=time.time()-start
+                    # if ModelManager.model.__class__.__name__=='CSRNet':
+                    #     count=count//4
                     if show_regions:
                         shape=dmap.shape
                         coord_ref=1 if horizontal_splited else 0
@@ -180,7 +186,7 @@ class ModelManager:
                     print('Processed in : ',elapsed,'s, ',text)            
                   
                 if output is not None and writer is None:
-                    min_height=min(dmap.shape[0],frame.shape[0])
+                    min_height=500#min(dmap.shape[0],frame.shape[0])
                     frame=imutils.resize(frame, height=min_height)
                     dmap = imutils.resize(dmap, height=min_height)
                     fourcc = cv2.VideoWriter_fourcc(*"MJPG")

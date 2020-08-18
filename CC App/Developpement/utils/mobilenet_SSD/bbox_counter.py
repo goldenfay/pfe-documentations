@@ -183,7 +183,6 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 		rgb_frame=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 		(H, W) = frame.shape[:2]
 		rects=[]
-		frame=rgb_frame
 		if totalFrames % skip_frames== 0: # Use model detection, expensive process
 				
 				trackers = []

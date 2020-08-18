@@ -6,6 +6,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import numpy as np
 import pandas as pd
+import plotly
 import plotly.graph_objs as go
 
 
@@ -83,16 +84,21 @@ class StatsView(Component):
             # Grap dataframe from the specific .csv file
         csv_file=os.path.join(self.sensor_path,'output','temp.csv')
         df=functions.read_existing_data(csv_file)
-        print(df)
-        
+        df=df.resample('s').max()
         valuesAxes=df['value'].values
             # Calculate most busy days (day name, date)
-        most_busy_days=df.groupby(df.index.date).agg({'value': 'mean'})
+        by_days_df=df.groupby(df.index.date).agg({'value': 'mean'})
+        most_busy_days=by_days_df.copy()
         most_busy_days.index=pd.to_datetime(most_busy_days.index)
+        most_busy_days=most_busy_days.sort_values('value',ascending=False)
+        most_busy_days=most_busy_days[most_busy_days['value']>0]
         most_busy_days=list(zip(functions.index_to_list_date(most_busy_days.index.tolist()),most_busy_days.index.day_name().tolist()))
            
             # Calculate Peak hours 
-        most_busy_hours=df.groupby(df.index.hour).agg({'value': 'max'})
+        by_hours_df=df.groupby(df.index.hour).agg({'value': 'mean'})
+        most_busy_hours=by_hours_df.copy()
+        most_busy_hours=most_busy_hours.sort_values('value',ascending=False)
+        most_busy_hours=most_busy_hours[most_busy_hours['value']>0]
         most_busy_hours=['{}h'.format(el) for el in most_busy_hours.index.tolist()]
         # most_busy_hours=list(zip(most_busy_hours.index.tolist(),most_busy_hours['value'].values.tolist()))
 
@@ -119,7 +125,36 @@ class StatsView(Component):
         delta=end_date-start_date
         delta_hours=delta/np.timedelta64(1,'h')
         
-        
+            # Define Bar and Pie charts for hours,days repartition
+        bar_figure=go.Figure(data=go.Bar(
+                x=by_hours_df.index.tolist(),y=by_hours_df['value'].values.tolist()
+            ),layout=dict(title={
+                'text': 'Total hourly people counting',
+                'y':0.9,
+                'x':0.5,
+                'xanchor': 'center'
+                },
+            xaxis_title='Hours',
+            yaxis_title='Average of cumulated counts',
+            hovermode="closest",
+            transition={
+                'easing':'quad-in-out'
+            }
+        ))
+        # by_week_day_df=df.assign(dayOfWeek = df.index.weekday_name).groupby(['dayOfWeek'])['value'].sum()
+        by_week_day_df=df.resample('B').sum()
+        pie_figure=go.Figure(data=go.Pie(
+            labels=by_week_day_df.index.day_name().tolist(),values=by_week_day_df['value'].values.tolist(),marker_colors=plotly.colors.cyclical.Twilight
+        ),layout=dict(title={
+                'text': 'Total hourly people counting',
+                'y':0.9,
+                'x':0.5,
+                'xanchor': 'center'
+                },
+            transition={
+                'easing':'quad-in-out'
+            }
+        ))
         self.layout = dbc.Container(
 
             className='mt-5',
@@ -131,7 +166,7 @@ class StatsView(Component):
                             children=[
                                 dbc.CardDeck(
                                     [
-                                        reusable.basic_stat_info_card('Most busy days',most_busy_days,'primary'),
+                                        reusable.basic_stat_info_card('Most busy days',most_busy_days[:3],'primary'),
                                         reusable.basic_stat_info_card('Most dense crowd in one moment',max(valuesAxes.tolist()),'danger'),
                                         reusable.basic_stat_info_card('Peak hours',', '.join(most_busy_hours),'warning')
 
@@ -142,6 +177,51 @@ class StatsView(Component):
                             width=12
                         )
 
+                    ]
+                ),
+                dbc.Row(
+                    className='mt-5',
+                    children=[
+                        
+                        dbc.Col(
+                            children=[
+                                dbc.CardDeck([
+
+                                    dbc.Card(
+                                        
+                                        children=[dcc.Loading(
+                                                
+                                                type="circle",
+                                                children=[
+                                                    dbc.Container(
+                                                            dcc.Graph(id='hours-repartition-graph',className='container',figure=bar_figure,responsive=True)
+
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    ),
+                                    
+                                    dbc.Card(
+                                                    
+                                        children=[dcc.Loading(
+                                                
+                                                type="circle",
+                                                children=[
+                                                    dbc.Container(
+                                                            dcc.Graph(id='days-repartition-graph',className='container',figure=pie_figure,responsive=True)
+
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    )
+                                ])
+                            
+                                
+                            ],
+                            width=12
+                        )
                     ]
                 ),
                 dbc.Row(

@@ -20,7 +20,11 @@ def define_equivalence_dict(key_list, couples_equivalence_list) -> dict:
     return equivalence_dict
 
 def get_dict_match(model_name):
-    external_model_statedict=torch.load(os.path.join(currentdir,'frozen','external',model_name+'.pth'), map_location='cpu')
+    if model_name=='MCNN':
+        external_model_statedict=torch.load(os.path.join(currentdir,'frozen','external','CSRNet2.pth'), map_location='cpu')
+
+
+    else: external_model_statedict=torch.load(os.path.join(currentdir,'frozen','external',model_name+'.pth'), map_location='cpu')
     if model_name=='CSRNet':
         match_dict= define_equivalence_dict(list(external_model_statedict),
                                            [('CCN.', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
@@ -31,6 +35,11 @@ def get_dict_match(model_name):
         match_dict= define_equivalence_dict(list(external_model_statedict),
                                            [('CCN.module.', ''), ('branch1x1', 'branch_1x1'), ('branch3x3', 'branch_3x3'), ('branch5x5', 'branch_5x5'), ('branch7x7', 'branch_7x7')])
 
+    elif model_name=='MCNN':
+        # match_dict= define_equivalence_dict(list(external_model_statedict),
+        #                                    [('DME.', ''), ('.conv', ''), ('branch1.2','branch1.3' ), ('branch1.4','branch1.6' ), ('branch1.5','branch1.8' ),('branch2.2','branch2.3' ),('branch2.4','branch2.6' ),('branch2.5','branch2.8' ),('branch3.2','branch3.3' ), ('branch3.4','branch3.6' ), ('branch3.5','branch3.8' )])                                       
+        match_dict= define_equivalence_dict(list(external_model_statedict),
+                                           [('CCN.module.', ''), ('frontend', 'frontEnd'), ('backend', 'backEnd'),(r'gs\.gaussian.*','')])
     return external_model_statedict,match_dict                                    
 # CSRNet_DICT_MATCH = {
 #     'CCN.output_layer.weight': 'output_layer.weight',

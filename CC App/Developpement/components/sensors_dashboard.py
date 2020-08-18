@@ -89,6 +89,7 @@ class SensorsDashboardView(Component):
         max_crowd_number=0
         for sensor in list(All_dfs):
             df =All_dfs[sensor]
+            df=df.resample('s').max()
             data.append(go.Scatter(
                 x=df.index.tolist(),y=df['value'].values.tolist(),name=sensor
                 ))
@@ -103,10 +104,15 @@ class SensorsDashboardView(Component):
                 # Calculate most busy days (day name, date)
             sensor_most_busy_days=df.groupby(df.index.date).agg({'value': 'mean'})
             sensor_most_busy_days.index=pd.to_datetime(sensor_most_busy_days.index)
+            sensor_most_busy_days=sensor_most_busy_days.sort_values('value',ascending=False)
+            sensor_most_busy_days=sensor_most_busy_days[sensor_most_busy_days['value']>0]
             sensor_most_busy_days=list(zip(functions.index_to_list_date(sensor_most_busy_days.index.tolist()),sensor_most_busy_days.index.day_name().tolist()))
+            
             most_busy_days+=sensor_most_busy_days
                 # Calculate Peak hours 
-            sensor_most_busy_hours=df.groupby(df.index.hour).agg({'value': 'max'})
+            sensor_most_busy_hours=df.groupby(df.index.hour).agg({'value': 'mean'})
+            sensor_most_busy_hours=sensor_most_busy_hours.sort_values('value',ascending=False)
+            sensor_most_busy_hours=sensor_most_busy_hours[sensor_most_busy_hours['value']>0]
             sensor_most_busy_hours=['{}h'.format(el) for el in sensor_most_busy_hours.index.tolist()]
             most_busy_hours+=sensor_most_busy_hours
 
@@ -213,7 +219,7 @@ class SensorsDashboardView(Component):
                                             reusable.basic_outlined_stat_info_card('Most dense crowd in one moment',max_crowd_number,'light',text_color='text-info'),
                                             reusable.basic_outlined_stat_info_card('Most busy days',most_busy_days[:3],'light',text_color='text-info'),
                                             reusable.basic_outlined_stat_info_card('Peak hours',', '.join(most_busy_hours),'light',text_color='text-info'),
-                                            reusable.basic_outlined_stat_info_card('crowded sensors',', '.join(crowded_sensors),'light',text_color='text-info')
+                                            reusable.basic_outlined_stat_info_card('Crowded zones',', '.join(crowded_sensors),'light',text_color='text-info')
                                         
 
 
