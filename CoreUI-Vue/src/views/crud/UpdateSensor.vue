@@ -110,6 +110,7 @@ export default {
           var myModal = cModal.getInstance(myModalEl)
           myModal.hide()  
         })
+      //CrowdServices.UpdateRegistredSensor(this.nameSensor,this.typeSc.text)
       editFormData: {}
     },
 

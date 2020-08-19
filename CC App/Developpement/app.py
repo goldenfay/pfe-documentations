@@ -1,4 +1,3 @@
-
 import dash
 import dash_bootstrap_components as dbc
 from flask import Flask, Response,send_from_directory,request,jsonify
