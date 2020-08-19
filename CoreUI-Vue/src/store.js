@@ -35,7 +35,7 @@ export default new Vuex.Store({
             state.video_name = video[0].title
         },
         ADD_VIDEOS(state,videos){
-            for(i=0;i<videos.length;i++){
+            for(let i=0;i<videos.length;i++){
               console.log('This is it: ',videos[i].title)
             }
         },
