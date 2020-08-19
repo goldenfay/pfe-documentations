@@ -126,6 +126,10 @@ app.title='Crowd Counting Monitor'
 
 cors = CORS(server, resources={r'/*': {'origins': '*'}})
 server.config['CORS_HEADERS'] = 'Content-Type'
+
+    #
+    # Server serving files routes
+    #
 @server.route("/assets/<path>")
 def serve_file(path):
     fullpath=path.split('***')
@@ -140,6 +144,9 @@ def serve_video(video_name):
     
     return send_from_directory(os.path.dirname(video_path),video_name)
 
+    #
+    # Video and image processing routes
+    #
 @server.route("/scene/regions/",methods=['POST'])
 def save_regions_params():
     global scene_region_params
@@ -153,7 +160,9 @@ def save_regions_params():
         'statuscode':200
     }
 
- 
+    #
+    # Sensors managment routes
+    #
 @server.route("/sensors/register",methods=['POST'])
 def register_sensor(): 
     print('rec') 
@@ -164,7 +173,38 @@ def register_sensor():
         os.makedirs(config.SENSORS_DEFAULT_BASE_PATH)
     if os.path.exists(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name)):
         return Response('Sensor already registred',status=300)
-    os.makedirs(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name))   
+    os.makedirs(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name))  
+    save_json(params,os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name,'infos.json')) 
+
+@server.route("/sensors/update",methods=['POST'])
+def update_sensor():
+    params=request.json
+    sensor_name=params['sensor_name']
+    if not os.path.exists(config.SENSORS_DEFAULT_BASE_PATH):
+        return Response('Error! Sensor does not exists.',status=300)
+    if os.path.exists(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name)):
+        return Response('Error! Sensor does not exists.',status=300)
+    dirname=os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name)
+    old=load_json(os.path.join(dirname,'infos.json'))
+    old.update(params)
+    save_json(old,os.path.join(dirname,'infos.json'))
+
+
+def save_json(dictionary,path):
+    '''
+        Save a dictionnary in json format.
+    '''
+    import json
+    with open(path,'w') as outFile:
+        json.dump(dictionary,outFile)
+
+def load_json(path):
+    '''
+        Load a dictionnary from a .json file.
+    '''
+    import json
+    with open(path,'r') as inFile:
+        return json.load(inFile)
 
 app.scripts.config.serve_locally = True
 app.css.config.serve_locally = True
