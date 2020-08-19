@@ -167,10 +167,8 @@ def register_sensor():
         return Response('Sensor already registred',status=300)
     os.makedirs(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name))   
 
- 
-# server = app.server
-# server.run(port=4000)
 app.scripts.config.serve_locally = True
+app.css.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 
 
