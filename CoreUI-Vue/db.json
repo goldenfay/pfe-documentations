@@ -12,8 +12,8 @@
       "sensor_name": "Capteur alpha",
       "sensor_zone": "Rue Didouche Morad",
       "sensor_desc": "Commercial & localization ",
-      "sensor_type_name": "Scène large échelle",
-      "sensor_type_id": 1,
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
       "id": 2
     },
     {
@@ -87,6 +87,14 @@
       "sensor_type_name": "Scène large échelle",
       "sensor_type_id": 1,
       "id": 19
+    },
+    {
+      "sensor_name": "Ko",
+      "sensor_zone": "ko",
+      "sensor_desc": "ko",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 20
     }
   ]
 }

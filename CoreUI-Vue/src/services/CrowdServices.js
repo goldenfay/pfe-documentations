@@ -37,7 +37,7 @@ export default{
 	deleteSensorRequest(id){
 		return apiClient.delete('/crowds/'+id)
 	},
-	registerSensor(name,type){
+	registerSensor(complete_data,name,type){
 		var the_type_s = ""
 		if (type.localeCompare("Scène large échelle") == 0){
 			the_type_s = "SANet"
@@ -46,10 +46,10 @@ export default{
 			the_type_s = "mobileSSD"
 		}
 		var data = {}
-		data = {'sensor_name':name,'model_name':the_type_s}
+		data = {...complete_data,'model_name':the_type_s}
 		return apiDash.post('/sensors/register',data)
 	},
-	UpdateRegistredSensor(name,type){
+	UpdateRegistredSensor(complete_data,name,type){
 		var the_type_s = ""
 		if (type.localeCompare("Scène large échelle") == 0){
 			the_type_s = "SANet"
@@ -58,8 +58,8 @@ export default{
 			the_type_s = "mobileSSD"
 		}
 		var data = {}
-		data = {'sensor_name':name,'model_name':the_type_s}
-		return apiDash.post('/sensors/register',data)
+		data = {...complete_data,'model_name':the_type_s}
+		return apiDash.post('/sensors/update',data)
 	}
 
 

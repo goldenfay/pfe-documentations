@@ -127,7 +127,7 @@ export default {
             myModal.show()
             this.getMySensors()
         })
-      CrowdServices.registerSensor(this.nameSensor,this.typeSc.text)
+      CrowdServices.registerSensor(data,this.nameSensor,this.typeSc.text)
       this.nameSensor = null;
       this.nameZone = null;
       this.sensorDesc = null;

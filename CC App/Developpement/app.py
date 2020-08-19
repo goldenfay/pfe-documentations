@@ -175,6 +175,7 @@ def register_sensor():
         return Response('Sensor already registred',status=300)
     os.makedirs(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name))  
     save_json(params,os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name,'infos.json')) 
+    return Response('Sensor succefully registred',status=200)
 
 @server.route("/sensors/update",methods=['POST'])
 def update_sensor():
@@ -182,12 +183,13 @@ def update_sensor():
     sensor_name=params['sensor_name']
     if not os.path.exists(config.SENSORS_DEFAULT_BASE_PATH):
         return Response('Error! Sensor does not exists.',status=300)
-    if os.path.exists(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name)):
+    if not os.path.exists(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name)):
         return Response('Error! Sensor does not exists.',status=300)
     dirname=os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name)
     old=load_json(os.path.join(dirname,'infos.json'))
     old.update(params)
     save_json(old,os.path.join(dirname,'infos.json'))
+    return Response('Sensor succefully updated',status=200)
 
 
 def save_json(dictionary,path):
