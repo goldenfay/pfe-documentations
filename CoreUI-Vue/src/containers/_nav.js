@@ -16,19 +16,19 @@ export default [
        _name: 'CSidebarNavItem',
         name: 'Créer capteur',
         to: '/creation',
-        icon: 'cil-calculator', 
+        icon: 'cil-people', 
       },
       {
         _name: 'CSidebarNavItem',
         name: 'Liste capteurs',
         to: '/list',
-        icon: 'cil-star', 
+        icon: 'cil-layers', 
       },
       {
         _name: 'CSidebarNavItem',
         name: 'Mise à jour capteurs',
         to: '/update',
-        icon: 'cil-star', 
+        icon: 'cil-pencil', 
       },
       /*{
       	_name: 'CSidebarNavItem',
