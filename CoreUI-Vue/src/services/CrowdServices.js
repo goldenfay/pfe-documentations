@@ -60,6 +60,9 @@ export default{
 		var data = {}
 		data = {...complete_data,'model_name':the_type_s}
 		return apiDash.post('/sensors/update',data)
+	},
+	DeleteRegistredSensor(sensor){
+		return apiDash.post('/sensors/delete',sensor)	
 	}
 
 

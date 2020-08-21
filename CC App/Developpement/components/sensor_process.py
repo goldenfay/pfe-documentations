@@ -103,6 +103,8 @@ class SensorProcessView(Component):
 
         if server_thread is not None and server_thread.isAlive():
             server_thread.raise_exception()
+        if server is not None:
+            server=None    
 
     def validate_params(self):
             
@@ -262,7 +264,8 @@ class SensorProcessView(Component):
                                 )]),
 
                     ]
-                )
+                ),
+                html.Script(src='http://localhost:8050/assets/js***sensor-process.js')
             ]
         )
 
@@ -415,7 +418,7 @@ def process_video(button_click, video_path):
                     html.Div(
                         className='col-md-12 mt-5 shadow-sm d-flex justify-content-center align-items-center',
                         children=[
-                            html.Button(id='sensor-confirm-draw-btn', className='btn-success', children=[
+                            html.Button(id='sensor-confirm-draw-btn',n_clicks=0, className='btn-success', children=[
                                         html.Span(className='fa fa-check')], title='Confirm zones plit')
                         ]
                     )
@@ -483,7 +486,7 @@ def update_count_plots(n):
 def setup_splitlines(n_clicks):
     global server, server_thread
 
-    if n_clicks is not None and n_clicks > 0:
+    if n_clicks > 0 :
         import requests
         server_thread.raise_exception()
        

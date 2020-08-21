@@ -92,6 +92,7 @@ export default {
             var myModal = cModal.getInstance(myModalEl)
             myModal.hide()  
         })
+      CrowdServices.DeleteRegistredSensor(this.deletedSensor)  
       //var myModal = new cModal(document.getElementById('deleteModal'))
       //var myModal = document.getElementById('deleteModal')  
     },

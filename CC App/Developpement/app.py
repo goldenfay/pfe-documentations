@@ -62,11 +62,16 @@ external_scripts = [
         'src': 'http://localhost:8050/assets/js***socketio.js',
      
     },
-    {
-        'src': 'http://localhost:8050/assets/js***view-custom.js',
-        'type': 'application/javascript'
+    #{
+     #   'src': 'http://localhost:8050/assets/js***view-custom.js',
+      #  'type': 'application/javascript'
 
-    }
+    #},
+    #{
+     #   'src': 'http://localhost:8050/assets/js***sensor-process.js',
+       # 'type': 'application/javascript'
+
+    #}
 
 ]
 
@@ -107,11 +112,11 @@ external_stylesheets = [
     {
         'href': "http://localhost:8050/assets/css***internal.css",
         'rel': "stylesheet"
-    }
-    # {
-    #     'href': "http://localhost:8050/assets/css***base.css",
-    #     'rel': "stylesheet"
-    # },
+    },
+     {
+         'href': "http://localhost:8050/assets/css***base.css",
+         'rel': "stylesheet"
+     },
     # 'https://codepen.io/chriddyp/pen/bWLwgP.css',
     
 ]
@@ -191,6 +196,25 @@ def update_sensor():
     save_json(old,os.path.join(dirname,'infos.json'))
     return Response('Sensor succefully updated',status=200)
 
+@server.route("/sensors/delete",methods=['POST'])
+def delete_sensor():
+    import shutil
+    params=request.json
+    sensor_name=params['sensor_name']
+    if not os.path.exists(config.SENSORS_DEFAULT_BASE_PATH):
+        return Response('Error! Sensor does not exists.',status=300)
+    if not os.path.exists(os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name)):
+        return Response('Error! Sensor does not exists.',status=300)
+    dirname=os.path.join(config.SENSORS_DEFAULT_BASE_PATH,sensor_name)
+    
+    try:
+        shutil.rmtree(dirname)
+        return Response('Sensor succefully deleted',status=200)
+    except:
+        return Response('Server Error! Could not delete the sensor.',status=500)    
+
+        
+
 
 def save_json(dictionary,path):
     '''
@@ -208,7 +232,7 @@ def load_json(path):
     with open(path,'r') as inFile:
         return json.load(inFile)
 
-app.scripts.config.serve_locally = True
+#app.scripts.config.serve_locally = True
 app.css.config.serve_locally = True
 app.config['suppress_callback_exceptions'] = True
 

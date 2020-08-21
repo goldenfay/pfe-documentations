@@ -2,7 +2,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
 # import grasia_dash_components as gdc
-# import dash_defer_js_import as dji
+import dash_defer_js_import as dji
 from dash.dependencies import Input, Output
 
 from flask import request
@@ -37,8 +37,8 @@ def display_page(pathname,search):
         component = components.View(app, config)
         # app.callback_map = component.app.callback_map.copy()
         
-        # import_js=dji.Import(src="test.js")
-        return dbc.Container([component.layout], fluid=True)
+        import_js=dji.Import(src="http://localhost:8050/assets/js***view-custom.js")
+        return dbc.Container([component.layout,import_js], fluid=True)
     elif pathname == '/fr/view':
         component = components.View(app, config)
         
@@ -71,10 +71,10 @@ def display_page(pathname,search):
         parsed = urlparse.urlparse(search)
         args=parse_qs(parsed.query)
         print(args)
-
+        import_js=dji.Import(src="http://localhost:8050/assets/js***sensor-process.js")
         component = components.SensorProcessView(app, config,args)
         
-        return dbc.Container([component.layout], fluid=True)
+        return dbc.Container([component.layout,import_js], fluid=True)
     
     elif pathname == '/fr/sensorprocess':
         
