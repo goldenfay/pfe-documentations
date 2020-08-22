@@ -15,7 +15,7 @@
 	export default{
 		name: 'ImageDensity',
 		data(){
-			return {imgUrl : require('/home/hads/Downloads/density.png')}
+			return {imgUrl : 'empty'}
 
 		}
 	}
