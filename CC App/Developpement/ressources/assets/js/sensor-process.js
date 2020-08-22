@@ -28,52 +28,22 @@ const callback = function (mutationsList, observer) {
       // Toggle Loading spinner
     
       for (let addNode of mutation.addedNodes) {
-        $("#upload-loading").remove();
-        if ($(addNode).find('h5,img').length){
-          $("#drop-div").removeClass("d-none");
-        }
+        console.log('dfkjsdfhkjsdhfkjsdhkjfshdkfjhsdkjfhdkfjshdkjh')
         
-          // Process images button Capture
-        var processbtn = $(addNode).find("#process-imgs-button");
-        if (processbtn.length) {
-          
-          // if (addNode.id === "process-imgs-button") {
-          console.log("Button targeted");
+        
 
-          processbtn.click(function (e) {
-            if ($("#usage-switch").hasClass("toggled-on")) {
-              // console.log("Clicked");
-              $('#output-image-process').focus();
-              send_to_server();
-            }
-          });
-        }
-          // Process video button Capture
-        var processVideobtn = $(addNode).find("#process-video-button");
-        if (processVideobtn.length) {
-          
-          // if (addNode.id === "process-imgs-button") {
-          console.log("Video Button targeted");
-
-          processVideobtn.click(function (e) {
-            if ($("#usage-switch").hasClass("toggled-on")) {
-              send_video_to_server();
-            }
-          });
-        }
-
-        var drawVLineCanvasBtn = $(addNode).find("#line-canvas-button");
+        var drawVLineCanvasBtn = $(addNode).find("#sensor-line-canvas-button");
         if (drawVLineCanvasBtn.length) {
           // if (addNode.id === "line-canvas-button") {
           console.log("captured");
           // Draw current scene on the canvas from the frame
-          var canvas = document.querySelector("#scene-canvas");
+          var canvas = document.querySelector("#sensor-scene-canvas");
           // var canvas = document.createElement("canvas");
           var ctx = canvas.getContext("2d");
-          var currentImg = document.querySelector("#process-video-output-flow");
+          var currentImg = document.querySelector("#sensor-process-video-output-flow");
           // Define Click handler
           $(drawVLineCanvasBtn).click(function (e) {
-            $("#edit-canvas-area").removeClass("d-none");
+            $("#sensor-edit-canvas-area").removeClass("d-none");
 
             canvas.height = currentImg.height;
             canvas.width = currentImg.width;
@@ -124,25 +94,26 @@ const callback = function (mutationsList, observer) {
           });
         }
           // Get reset canvas button
-        var resetCanvasBtn = $(addNode).find("#clear-canvas-button");
+        var resetCanvasBtn = $(addNode).find("#sensor-clear-canvas-button");
         if (resetCanvasBtn.length) {
             // Add click event handler
           // if (addNode.id === "clear-canvas-button") {
           $(resetCanvasBtn).click((e) => {
-            $("#edit-canvas-area").addClass("d-none");
+            $("#sensor-edit-canvas-area").addClass("d-none");
             // ctx.clearRect(0, 0, currentImg.width, currentImg.height);
             clearCanvasShapes(ctx, currentImg);
           });
         }
             // Get Confirm canvas draw button
-        var confirmDrawBtn = $(addNode).find("#confirm-draw-btn");
+        var confirmDrawBtn = $(addNode).find("#sensor-confirm-draw-btn");
         if (confirmDrawBtn.length) {
             // Add click event handler
           // if (addNode.id === "confirm-draw-btn") {
           $(confirmDrawBtn).click((e) => {
             console.log(tang,b)
-            $("#edit-canvas-area").addClass("d-none");
-            // $("#process-video-output-flow").remove();
+            $("#sensor-edit-canvas-area").addClass("d-none");
+            $("#sensor-process-video-output-flow").remove();
+            
             // $('#output-video-process').append('<p id="hidden-splitLine-input" class="d-none">'+tang+'/'+b+'</p>')
             // $('#hidden-splitLine-input').get(0).innerHTML=`${tang}/${b}`;
             $.post("http://localhost:8050/scene/regions/",
@@ -151,14 +122,14 @@ const callback = function (mutationsList, observer) {
                 b: b
               },
               function(data, status){
-                console.log('Received ', data, ' status', status)
+                console.log('Received ', data, ' status', status);
+                location.reload();
+
             });
           });
         }
       }
-    } else if (mutation.type === "attributes") {
-      //console.log('The ' + mutation.attributeName + ' attribute was modified.');
-    }
+    } 
   }
 };
 
@@ -201,21 +172,7 @@ const instantiate_socket=(url)=>{
     );
     this.disconnect();
   });
-  socket.on("process-done", function (data) {
-    console.log(data);
-    
-    $('#output-image-process').append(x)
-    errors = data["errors"];
-    if (errors && errors[0]) {
-      console.log("Processing frame resulted some errors.");
-
-      $(document).append(
-        error_alert("An error occured on the server.", errors[0])
-      );
-    }
-  });
-  socket.on("send-image", (data) => processImageResponse(data));
-
+  
     // Video process events
   socket.on("send-frame",(data)=>{
     $('#process-video-output-flow').attr('src',data['data'])
@@ -283,114 +240,16 @@ const send_to_server = function () {
   }
 };
 
-const send_video_to_server=()=>{
-  var url_input = $("#server-url-control input");
-  if (url_input) {
-    if (url_input.val()) {// If server URL is provided
-        // If socket not initialized yet, connect and create handlers.
-      if (socket === null || socket.disconnected) {
-        instantiate_socket(url_input.val())
-      }
-     
 
-    } else {
-      // Output error showing that must type server URL.
-      url_input.addClass(
-        "border border-danger  animate__animated animate__shakeX"
-      );
-      setTimeout(
-        () =>
-          url_input.removeClass(
-            "border border-danger  animate__animated animate__shakeX"
-          ),
-        10000
-      );
-    }
-  }
-
-
-}
-// Socket handlers functions
-function processImageResponse(data) {
-  console.log("message received from server ", data);
-  //  $('<div/>', {
-  //          class: 'row'
-  //      })
-  //      .append(
-  //          $('<div/>', {
-  //              class: 'col-md justify-content-center animate__animated animate__fadeInRight'
-  //          }).append(
-  //              $('<div/>', {
-  //                  class: 'd-flex justify-content-center'
-  //              }).append(
-
-  //                  $('<h4/>', {
-  //                      text: 'Original',
-  //                      class: 'muted'
-  //                  })
-  //              )
-  //          ).append(
-  //              $('<img/>', {
-  //                  id: 'img',
-  //                  src: data
-  //              })
-
-  //          )
-  //      )
-  //      .appendTo('#output-image-process');
- 
-  $("#output-image-process").append(
-    `<div class="row mt-5">
-            <div class="col-md d-flex justify-content-center animate__animated animate__fadeInRight">
-                <div class="d-flex flex-column align-items-center">
-                    <h4 class="muted text-center"> Original </h4>
-                    <img class="img-fluid" src="${decodeURI( "data:image/png;base64, "+imgList.find(el=>el.id===data["id"]).data)}">
-                </div>
-            </div>
-            <div class="col-md d-flex justify-content-center animate__animated animate__fadeInRight">
-                <div class="d-flex flex-column align-items-center">
-                    <h4 class="muted text-center"> Estimated count : ${data["count"]} </h4>
-                    <img class="img-fluid" src="${data["data"]}">
-                </div>
-            </div>
-        </div>
-        `
-  );
-}
 // Create an observer instance linked to the callback function
 var observer = new MutationObserver(callback);
 
-  console.log('salutiiii');
+          console.log('dfkjsdfhkjsdhfkjsdhkjfshdkfjhsdkjfhdkfjshdkjh')
+
   // Start observing the target node for configured mutations
   observer.observe(document.body, config);
   // Later, you can stop observing
   // observer.disconnect();
 
 
-document.ondrop = function () {
-  console.log("dropped");
-  $("#drop-div").addClass("d-none");
-  let uploadDiv = document.getElementById("upload-image");
-  console.log(uploadDiv)
-  let loadingSpin = document.createElement("div");
-  loadingSpin.innerHTML +='<div class="text-center align-self-center d-flex align-items-center justify-content-center" id="upload-loading"><div class="spinner-border text-primary" style="width: 7rem; height: 7rem;" role="status"><span class="sr-only">Loading...</span></div></div>';
-  let a = document.createElement("div");
-  a.id='upload-loading';
-  a.className='text-center align-self-center d-flex align-items-center justify-content-center'
-  let b = document.createElement("div");
-  b.className='spinner-border text-primary'
-  b.attributes.role='status'
-  b.style.width='7em';
-  b.style.height='7em';
-  let c = document.createElement("div");
-  b.appendChild(c);
-  a.appendChild(b);
-  loadingSpin.appendChild(a);
-  uploadDiv.appendChild(loadingSpin);
 
-  // Select the node that will be observed for mutations
-  var targetNode = $("#output-image-upload");
-
-  //   // Start observing the target node for configured mutations
-     //observer.observe(document.body, config);
-};

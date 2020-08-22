@@ -92,6 +92,7 @@ export default {
             var myModal = cModal.getInstance(myModalEl)
             myModal.hide()  
         })
+      CrowdServices.DeleteRegistredSensor(this.deletedSensor)  
       //var myModal = new cModal(document.getElementById('deleteModal'))
       //var myModal = document.getElementById('deleteModal')  
     },
@@ -110,6 +111,7 @@ export default {
           var myModal = cModal.getInstance(myModalEl)
           myModal.hide()  
         })
+      CrowdServices.UpdateRegistredSensor(data,this.nameSensor,editedD.sensor_type_name)
       editFormData: {}
     },
 

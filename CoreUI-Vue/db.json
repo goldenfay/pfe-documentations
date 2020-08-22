@@ -1,92 +1,52 @@
 {
   "crowds": [
     {
-      "sensor_name": "Capteur1",
-      "sensor_zone": "Rue Larbi Ben Mhidi",
-      "sensor_desc": "Surveillance sensors",
+      "sensor_name": "MB-03",
+      "sensor_zone": "Musée National du Bardo, Bloc 03",
+      "sensor_desc": "Caméra de surveillance, entrée principale.",
       "sensor_type_name": "Scène moyen échelle",
       "sensor_type_id": 2,
       "id": 1
     },
     {
-      "sensor_name": "Capteur alpha",
-      "sensor_zone": "Rue Didouche Morad",
-      "sensor_desc": "Commercial & localization ",
+      "sensor_name": "JARD-HAM-AN",
+      "sensor_zone": "Jardin d'essai Hamma, Zone des annimaux",
+      "sensor_desc": "Capture pour des statistiques de Marketing.",
       "sensor_type_name": "Scène large échelle",
       "sensor_type_id": 1,
       "id": 2
     },
     {
-      "sensor_name": "Capteur Beta",
-      "sensor_zone": "Rue Mohammed Boudiaf",
-      "sensor_desc": "Management & security purposes",
-      "sensor_type_name": "Scène moyen échelle",
-      "sensor_type_id": 2,
+      "sensor_name": "GRAN-POST",
+      "sensor_zone": "La grande poste, Alger",
+      "sensor_desc": "Comptage des manifestant. Surveillence et sécurité.",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
       "id": 3
     },
     {
-      "sensor_name": "Capteur alpha5",
-      "sensor_zone": "Rue Mostafa Benbouali",
-      "sensor_desc": "Commercial & localization ",
+      "sensor_name": "REG-MIL1",
+      "sensor_zone": "Salle d'attente, Caserne militaire de Bab El Oued",
+      "sensor_desc": "Comptage des personnes présents à l'espace inscription pour des raisons organisationelles.",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
+      "id": 4
+    },
+    {
+      "sensor_name": "MONUMENT-01",
+      "sensor_zone": "Monument des martyrs.",
+      "sensor_desc": "Comptage de nombre des visiteurs,\ngestion d'acceuil et services.",
       "sensor_type_name": "Scène large échelle",
       "sensor_type_id": 1,
       "id": 5
     },
     {
-      "sensor_name": "Capteur Beta6",
-      "sensor_zone": "Rue Larbi Tebassi",
-      "sensor_desc": "Management & security purposes",
+      "sensor_name": "BN",
+      "sensor_zone": "Bibliothèque nationale (BN) ",
+      "sensor_desc": "Veiller et surveiller la capacité d'acceuil, \nControle et évaluation d'état de la bibliothèque.",
       "sensor_type_name": "Scène moyen échelle",
       "sensor_type_id": 2,
       "id": 6
-    },
-    {
-      "sensor_name": "Capteur7",
-      "sensor_zone": "Rue Saad Dahleb",
-      "sensor_desc": "Surveillance sensors",
-      "sensor_type_name": "Scène moyen échelle",
-      "sensor_type_id": 2,
-      "id": 7
-    },
-    {
-      "sensor_name": "Capteur alpha8",
-      "sensor_zone": "Rue Didouche Morad",
-      "sensor_desc": "Commercial & localization ",
-      "sensor_type_name": "Scène large échelle",
-      "sensor_type_id": 1,
-      "id": 8
-    },
-    {
-      "sensor_name": "Capteur Beta9",
-      "sensor_zone": "Rue Mohammed Boudiaf",
-      "sensor_desc": "Management & security purposes",
-      "sensor_type_name": "Scène moyen échelle",
-      "sensor_type_id": 2,
-      "id": 9
-    },
-    {
-      "sensor_name": "Capteur10",
-      "sensor_zone": "Rue Colonel Lotfi",
-      "sensor_desc": "Marketing & Localization purposes ",
-      "sensor_type_name": "Scène large échelle",
-      "sensor_type_id": 1,
-      "id": 10
-    },
-    {
-      "sensor_name": "Capteur12",
-      "sensor_zone": "Rue Hassiba Ben BouAli",
-      "sensor_desc": "Commercial zone 12",
-      "sensor_type_name": "Scène moyen échelle",
-      "sensor_type_id": 2,
-      "id": 12
-    },
-    {
-      "sensor_name": "Lol",
-      "sensor_zone": "XD",
-      "sensor_desc": "LOL",
-      "sensor_type_name": "Scène large échelle",
-      "sensor_type_id": 1,
-      "id": 19
     }
   ]
 }

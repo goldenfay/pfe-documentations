@@ -209,7 +209,7 @@ class View(Component):
                                                 el), 'value': el}
                                             for el in list_vidoes
                                         ],
-                                            list_vidoes[0],
+                                            list_vidoes[0] if len(list_vidoes)>0 else None,
                                             id="dropdown-footage-selection"
 
 

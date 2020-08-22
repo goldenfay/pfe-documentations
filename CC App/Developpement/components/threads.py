@@ -22,9 +22,9 @@ class StoppableThread(threading.Thread):
 
 class ServerThread(threading.Thread):
 
-    def __init__(self, srv: Flask):
+    def __init__(self, srv: Flask,port=4000):
         threading.Thread.__init__(self)
-        self.srv = make_server('127.0.0.1', 4000, srv)
+        self.srv = make_server('127.0.0.1', port, srv)
         # self.srv = srv
         self._stopper = threading.Event()
         self.ctx = srv.app_context()
@@ -67,6 +67,7 @@ class ServerThread(threading.Thread):
         if res > 1:
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             print('Exception raise failure')
+        raise Exception('Forcing thread to terminate')    
 
 
 def run_dill_encoded(payload):

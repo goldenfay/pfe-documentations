@@ -87,7 +87,7 @@ class ModelManager:
                 #     count = count//80
                 elif cls.model.__class__.__name__ == 'CSRNet':
                     count = count//15
-            return dmap.squeeze().detach().cpu().numpy(), count
+            return dmap.squeeze().detach().cpu().numpy(), int(float(count))
         else:  # It's a detection model
             return cls.model.forward(frame)
 
@@ -216,7 +216,7 @@ class ModelManager:
 
 
                 if log_count:
-                    log_count_fcn(os.path.join(args['output'],'temp.csv'),len(list(objects)))
+                    log_count_fcn(os.path.join(args['output'],'temp.csv'),count)
 
                 key = cv2.waitKey(1) & 0xFF
 

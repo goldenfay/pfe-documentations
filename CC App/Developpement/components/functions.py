@@ -100,7 +100,8 @@ def construct_combined_results(dirpath):
 
     for sdir in sensors_dirs:
         try:
-            json[sdir]=read_existing_data(os.path.join(dirpath,sdir,'output','temp.csv'))
+            if os.path.exists(os.path.join(dirpath,sdir,'output','temp.csv')):
+                json[sdir]=read_existing_data(os.path.join(dirpath,sdir,'output','temp.csv'))
             
         except:
             pass 
@@ -116,7 +117,7 @@ def read_existing_data(filename)->pd.DataFrame:
             csv_reader = csv.reader(csvfile, delimiter=',')
             for row in csv_reader:
                 times.append(datetime.datetime.strptime(row[0], "%Y%m%d_%H-%M-%S "))
-                values.append(int(row[1]))
+                values.append(int(float(row[1])))
     dataframe = pd.DataFrame()
     dataframe['timestamp'] = pd.Series(dtype='datetime64[ns]')
     dataframe['value'] = pd.Series(dtype=np.int32)
