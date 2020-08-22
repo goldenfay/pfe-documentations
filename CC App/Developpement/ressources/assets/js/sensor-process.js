@@ -112,7 +112,8 @@ const callback = function (mutationsList, observer) {
           $(confirmDrawBtn).click((e) => {
             console.log(tang,b)
             $("#sensor-edit-canvas-area").addClass("d-none");
-            // $("#process-video-output-flow").remove();
+            $("#sensor-process-video-output-flow").remove();
+            
             // $('#output-video-process').append('<p id="hidden-splitLine-input" class="d-none">'+tang+'/'+b+'</p>')
             // $('#hidden-splitLine-input').get(0).innerHTML=`${tang}/${b}`;
             $.post("http://localhost:8050/scene/regions/",
@@ -121,7 +122,9 @@ const callback = function (mutationsList, observer) {
                 b: b
               },
               function(data, status){
-                console.log('Received ', data, ' status', status)
+                console.log('Received ', data, ' status', status);
+                location.reload();
+
             });
           });
         }

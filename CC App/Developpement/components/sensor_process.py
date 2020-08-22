@@ -10,8 +10,8 @@ import pandas as pd
 import plotly.graph_objs as go
 import cv2,imutils
 import re,time,base64,os,sys,glob,datetime,traceback,inspect
-from flask import Flask, Response
-
+from flask import Flask, Response, request
+import requests
 import threading
 
 
@@ -32,6 +32,19 @@ from app import app,get_regions_params
 
 
 is_detectionModel= lambda model: model.lower() in ['mobilessd','yolo']
+def kill_server_thread(serv_th):
+    try:
+        serv_th.raise_exception()
+        x=requests.post('http://localhost:4000/shutdown')
+        print(x)
+        
+
+    except:
+        print('[Server] Server killed.')
+        pass
+
+
+
 
 def load_model(model_type):
     if model_type in ['mobileSSD', 'yolo']:
@@ -102,7 +115,7 @@ class SensorProcessView(Component):
         LIVE_DF['value'] = pd.Series(dtype=np.int32)
 
         if server_thread is not None and server_thread.isAlive():
-            server_thread.raise_exception()
+            kill_server_thread(server_thread)
         if server is not None:
             server=None    
 
@@ -336,6 +349,10 @@ def process_video(button_click, video_path):
             def test():
                 return 'jfhskdjfhskjdhfkjshdkjfhskdjhf'
 
+            @server.route('/shutdown', methods=['POST'])
+            def shut_it():
+                raise RuntimeError('Flask server killed via request')
+
             
             @server.route('/stream')
             def video_feed():
@@ -355,7 +372,12 @@ def process_video(button_click, video_path):
                         'log_counts': True, 
                         'log_count_fcn': functions.log_count}), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-        server_thread = ServerThread(server)
+            try:
+                server_thread = ServerThread(server)
+            except OSError as e:
+                requests.post('http://localhost:4000/shutdown')
+
+
         server_thread.start()
 
         return [
@@ -488,8 +510,8 @@ def setup_splitlines(n_clicks):
 
     if n_clicks > 0 :
         import requests
-        server_thread.raise_exception()
+        kill_server_thread(server_thread)
        
         server_thread.shutdown() 
-        server = None
+        #server = None
     return 'd-none'
