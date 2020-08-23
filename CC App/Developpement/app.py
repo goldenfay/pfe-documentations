@@ -11,8 +11,8 @@ import languages
   
 # scene_region_params=None
 scene_region_params={
-    'tang': 1.9528301886792452,
-    'b': -272
+    'tang': 37.5,
+    'b': -10002.1875
 }
 
 STATIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ressources','assets')
@@ -158,6 +158,7 @@ def save_regions_params():
     if scene_region_params is None:
         scene_region_params=dict()
     params=request.values
+    print('Params: ',params)
     scene_region_params['tang']=params['tang']
     scene_region_params['b']=params['b']
     return {

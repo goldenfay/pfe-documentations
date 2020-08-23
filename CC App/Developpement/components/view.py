@@ -469,6 +469,7 @@ def update_output(uploaded_filenames, uploaded_file_contents):
 def update_count_plots(n):
     csv_file_path=os.path.join(ModelManager.outputs_path,'temp.csv')
     df=functions.read_existing_data(csv_file_path)
+    df.dropna(subset = ["value"], inplace=True)
     xtext,ytext,title=Lang['Timestamp'],Lang['Count'],Lang['Live process plot']
     layout=dict(title={
         'text':title,

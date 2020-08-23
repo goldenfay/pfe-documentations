@@ -18,6 +18,7 @@ const error_alert = function (errorTitle, errorMessage) {
 const clearCanvasShapes = (context, fillImg) => {
   context.clearRect(0, 0, fillImg.width, fillImg.height);
   context.drawImage(fillImg, 0, 0, fillImg.width, fillImg.height);
+  return context
 };
 // Callback function to execute when mutations are observed
 const callback = function (mutationsList, observer) {
@@ -86,7 +87,10 @@ const callback = function (mutationsList, observer) {
                     ctx.lineTo(endP.x, endP.y);
                     ctx.stroke();
                     ctx.closePath();
+                    b=b/canvas.height;
                   }
+                  console.log(tang,b)
+
                 }
               },
               false
@@ -101,7 +105,7 @@ const callback = function (mutationsList, observer) {
           $(resetCanvasBtn).click((e) => {
             $("#sensor-edit-canvas-area").addClass("d-none");
             // ctx.clearRect(0, 0, currentImg.width, currentImg.height);
-            clearCanvasShapes(ctx, currentImg);
+            ctx=clearCanvasShapes(ctx, currentImg);
           });
         }
             // Get Confirm canvas draw button
@@ -113,7 +117,7 @@ const callback = function (mutationsList, observer) {
             console.log(tang,b)
             $("#sensor-edit-canvas-area").addClass("d-none");
             $("#sensor-process-video-output-flow").remove();
-            
+            $('#sensor-edit-canvas-panel').hide();
             // $('#output-video-process').append('<p id="hidden-splitLine-input" class="d-none">'+tang+'/'+b+'</p>')
             // $('#hidden-splitLine-input').get(0).innerHTML=`${tang}/${b}`;
             $.post("http://localhost:8050/scene/regions/",
@@ -244,7 +248,6 @@ const send_to_server = function () {
 // Create an observer instance linked to the callback function
 var observer = new MutationObserver(callback);
 
-          console.log('dfkjsdfhkjsdhfkjsdhkjfshdkfjhsdkjfhdkfjshdkjh')
 
   // Start observing the target node for configured mutations
   observer.observe(document.body, config);

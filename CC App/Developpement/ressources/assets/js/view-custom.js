@@ -142,7 +142,8 @@ const callback = function (mutationsList, observer) {
           $(confirmDrawBtn).click((e) => {
             console.log(tang,b)
             $("#edit-canvas-area").addClass("d-none");
-            // $("#process-video-output-flow").remove();
+            $("#process-video-output-flow").remove();
+            $('#edit-canvas-panel').hide();
             // $('#output-video-process').append('<p id="hidden-splitLine-input" class="d-none">'+tang+'/'+b+'</p>')
             // $('#hidden-splitLine-input').get(0).innerHTML=`${tang}/${b}`;
             $.post("http://localhost:8050/scene/regions/",

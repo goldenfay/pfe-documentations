@@ -27,11 +27,20 @@ translate_dict={
     'Estimated count : ':'Nombre estimé : ',
     'Timestamp':'Horodatage',
     'Count':'Comptage',
+    'No data to display':'Aucune donnée à afficher',
+    'It seems like the sensor hasn\'t been executed yet.':'Le capteur n\'a effectué aucune capture',
     'Full counting history':'Historique complet du comptage',
     'Last week''s counting analytics':'Résultats de la dernère semaine',
     'Last day counting analytics':'Résultats des dernièrres 24 heures',
     'Last 2 hours counting analytics':'Résultats des 2 heures récentes',
     'View history':'Visualiser l''historique',
+    'Most dense crowd in one moment':'Plus grande foule enregistrée',
+    'Most busy days': 'Jours les plus chargés',
+    'Peak hours': 'Heures de pointe',
+    'Last capture':'Dernière capture',
+    'Total active hours':'Total des heures de capture',
+    'Crowded zones': 'Régions les plus chargées',
+    'Filter results betwwen : ':'Filtrer les résultats entre :',
     'History Analytics':'History Analytics',
     'Live process plot':'Graph du traitement en temps réel',
     'Draw a split line':'Tracez une ligne de séparation',
@@ -45,7 +54,12 @@ translate_dict={
     'Process settings':'Paramètres',
     'Sample video':'Vidéo échantillon',
     'Video source':'Source de vidéo',
-    'Sensor webcam':'Caméra du capteur'
+    'Sensor webcam':'Caméra du capteur',
+    'Databade not found':'La base de données est introuvable',
+    'It seems that we have a problem with the database directory':'Il semble que nous rencontrons un problème de trouver le répértoire de la base des données',
+    'Total sensors number':'Nombre total des capteurs',
+    'Capturing since':'Capture depuis',
+    'Total working hours':'Total des heures de capture'
 
 
 

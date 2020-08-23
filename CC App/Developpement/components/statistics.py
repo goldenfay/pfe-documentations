@@ -29,7 +29,7 @@ import functions
 
 from app import app
 config = None
-
+Lang=None
 
 error_layout=lambda icon, title,subtitle: dbc.Container([dbc.Row([
                 html.Div(children=[
@@ -40,20 +40,20 @@ error_layout=lambda icon, title,subtitle: dbc.Container([dbc.Row([
                             ],
             fluid=True,style={'height':'100vh'}) 
 
-figure_layout=dict(title={
-            'text': 'Full counting history',
+figure_layout=lambda : dict(title={
+            'text': Lang['Full counting history'],
             'y':0.9,
             'x':0.5,
             'xanchor': 'center'
             },
-        xaxis_title='Timestamp',
-        yaxis_title='Count',
+        xaxis_title=Lang['Timestamp'],
+        yaxis_title=Lang['Count'],
         hovermode="closest",
         transition={
             'easing':'quad-in-out'
         }
         )
-Lang=None
+
 
 class StatsView(Component):
     layout = None
@@ -71,15 +71,15 @@ class StatsView(Component):
         Lang=self.config.LANGUAGE_DICT
         static.Lang=Lang
         if not self.validate_params():
-            self.layout= error_layout('fa-exclamation-triangle','Invalid Parameters',
-                             'The request contains invalid query parameters.')
+            self.layout= error_layout('fa-exclamation-triangle',Lang['Invalid Parameters'],
+                             Lang['The request contains invalid query parameters.'])
             return
 
         self.sensor_path=os.path.join(self.config.SENSORS_DEFAULT_BASE_PATH,self.url_params['sensor_name'][0])
 
         if not os.path.exists(self.sensor_path):
-            self.layout= error_layout('fa-question-circle','Sensor not registred',
-                             'The requested sensor Id does not exist')
+            self.layout= error_layout('fa-question-circle',Lang['Sensor not registred'],
+                             Lang['The requested sensor Id does not exist'])
             return
             # Grap dataframe from the specific .csv file
         csv_file=os.path.join(self.sensor_path,'output','temp.csv')
@@ -89,6 +89,7 @@ class StatsView(Component):
             hasdata=True    
             df=functions.read_existing_data(csv_file)
             df=df.resample('s').max()
+            df.dropna(subset = ["value"], inplace=True)
             valuesAxes=df['value'].values
                 # Calculate most busy days (day name, date)
             by_days_df=df.groupby(df.index.date).agg({'value': 'mean'})
@@ -121,7 +122,7 @@ class StatsView(Component):
                 # Define the full history graph figure
             figure=go.Figure(data=go.Scatter(
                 x=df.index.tolist(),y=valuesAxes.tolist()
-            ),layout=figure_layout,frames=frames)
+            ),layout=figure_layout(),frames=frames)
 
                 # Define default filtering start and end date
             start_date=df.index.min()
@@ -146,11 +147,11 @@ class StatsView(Component):
                 }
             ))
             # by_week_day_df=df.assign(dayOfWeek = df.index.weekday_name).groupby(['dayOfWeek'])['value'].sum()
-            by_week_day_df=df.resample('B').sum()
+            by_week_day_df=df.resample('D').sum()
             pie_figure=go.Figure(data=go.Pie(
                 labels=by_week_day_df.index.day_name().tolist(),values=by_week_day_df['value'].values.tolist(),marker_colors=plotly.colors.cyclical.Twilight
             ),layout=dict(title={
-                    'text': 'Total hourly people counting',
+                    'text': 'Week days distribution',
                     'y':0.9,
                     'x':0.5,
                     'xanchor': 'center'
@@ -162,7 +163,7 @@ class StatsView(Component):
             StatsView.df=df
 
             # Set component layout
-        self.layout = error_layout('fa-cancel','No data to display','It seems like the sensor hasn\'t been executed yet.') if not hasdata \
+        self.layout = error_layout('fa-cancel',Lang['No data to display'],Lang['It seems like the sensor hasn\'t been executed yet.']) if not hasdata \
         else dbc.Container(
 
             className='mt-5',
@@ -174,9 +175,9 @@ class StatsView(Component):
                             children=[
                                 dbc.CardDeck(
                                     [
-                                        reusable.basic_stat_info_card('Most busy days',most_busy_days[:3],'primary'),
-                                        reusable.basic_stat_info_card('Most dense crowd in one moment',max(valuesAxes.tolist()),'danger'),
-                                        reusable.basic_stat_info_card('Peak hours',', '.join(most_busy_hours),'warning')
+                                        reusable.basic_stat_info_card(Lang['Most busy days'],most_busy_days[:3],'primary'),
+                                        reusable.basic_stat_info_card(Lang['Most dense crowd in one moment'],max(valuesAxes.tolist()),'danger'),
+                                        reusable.basic_stat_info_card(Lang['Peak hours'],', '.join(most_busy_hours[:5]),'warning')
 
 
                                     ]
@@ -244,7 +245,7 @@ class StatsView(Component):
                                             children=[
                                                 html.Div(
                                                     children=[
-                                                        html.Span('Filter results betwwen : '),
+                                                        html.Span(Lang['Filter results betwwen : ']),
                                                         dcc.DatePickerRange(
                                                             id='filter-date-picker-range',
                                                             min_date_allowed=datetime.datetime(start_date.year,start_date.month,start_date.day).date(),
@@ -287,7 +288,7 @@ class StatsView(Component):
                                 dbc.Row(
                                     children=[
                                         dbc.Col(
-                                            reusable.basic_stat_info_card('Total active hours',delta_hours,'info')
+                                            reusable.basic_stat_info_card(Lang['Total active hours'],delta_hours,'info')
                                         )
                                             
 
@@ -296,7 +297,7 @@ class StatsView(Component):
                                 dbc.Row(
                                     children=[
                                         dbc.Col(
-                                            reusable.basic_stat_info_card('Last capture','{}h'.format(end_date.hour),'success')
+                                            reusable.basic_stat_info_card(Lang['Last capture'],'{}h'.format(end_date.hour),'success')
                                         )
                                             
 
@@ -362,5 +363,5 @@ def update_output(start_date, end_date):
         df=df[np.logical_and(df.index<=end_date , df.index>=start_date)]
         return go.Figure(data=go.Scatter(
             x=df.index.tolist(),y=df['value'].values.tolist()
-        ),layout=figure_layout)
+        ),layout=figure_layout())
     

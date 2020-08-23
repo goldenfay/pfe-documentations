@@ -356,7 +356,7 @@ def process_video(button_click, video_path):
             
             @server.route('/stream')
             def video_feed():
-                global SHOW_LIVE_GRAPH
+                global SHOW_LIVE_GRAPH,QUEUE
 
                 params = {
                     'show': True,
@@ -370,12 +370,13 @@ def process_video(button_click, video_path):
                         'regions_params': params, 
                         'live_data': SHOW_LIVE_GRAPH, 
                         'log_counts': True, 
-                        'log_count_fcn': functions.log_count}), mimetype='multipart/x-mixed-replace; boundary=frame')
+                        'log_count_fcn': functions.log_count},queue=QUEUE), mimetype='multipart/x-mixed-replace; boundary=frame')
 
             try:
                 server_thread = ServerThread(server)
             except OSError as e:
-                requests.post('http://localhost:4000/shutdown')
+                pass
+                # requests.post('http://localhost:4000/shutdown')
 
 
         server_thread.start()
@@ -451,7 +452,7 @@ def process_video(button_click, video_path):
         ], [] if not SHOW_LIVE_GRAPH else [
             dcc.Interval(
                 id="sensor-interval-show-graphs",
-                interval=10,
+                interval=1000,
                 n_intervals=0
             ) if SHOW_LIVE_GRAPH else html.Div(),
             dcc.Graph(
@@ -468,37 +469,41 @@ def process_video(button_click, video_path):
               [Input("sensor-interval-show-graphs", "n_intervals")])
 def update_count_plots(n):
     global sensor_path,LIVE_DF
-    
-    csv_file_path=os.path.join(sensor_path,'output','temp.csv')
-    # df=functions.read_existing_data(csv_file_path)
-    if not QUEUE.empty():
-        df=LIVE_DF.append(QUEUE.get_nowait(),ignore_index=True)
-        LIVE_DF=df.copy()
-        
-    else:
-        df=LIVE_DF 
-    # print(pd.to_datetime(df['timestamp']).dt)    
-    dtime=pd.to_datetime(df['timestamp'])
-    fcn=lambda x: x.date.__str__()+' '+str(x.hour)+':'+str(x.minute)+':'+str(x.second)
-    # df=df.groupby(dtime.apply(fcn)).mean()#agg({'value': 'mean'})       
-    df.set_index('timestamp',inplace=True)
-    df=df.resample('s').max()#agg({'value': 'mean'})       
-    # print(df,df.index)
-    xtext,ytext,title=Lang['Timestamp'],Lang['Count'],Lang['Live process plot']
-    layout=dict(title={
-        'text':title,
-        'y':0.9,
-        'x':0.5,
-        'xanchor': 'center'
-        },
-    xaxis_title=xtext,
-    yaxis_title=ytext,
-    hovermode="closest",
-    transition={
-        'easing':'quad-in-out'
-    }
-    )
-    return go.Figure(data=go.Scatter(x=df.index.tolist(),y=df['value'].values.tolist()),layout=layout)
+    df=None
+    try:
+        # csv_file_path=os.path.join(sensor_path,'output','temp.csv')
+        # df=functions.read_existing_data(csv_file_path)
+        if not QUEUE.empty():
+            print('Get from the que'+'*'*50)
+            LIVE_DF=LIVE_DF.append(QUEUE.get_nowait(),ignore_index=True)
+            # LIVE_DF=df.copy()
+            
+        # else:
+        #     df=LIVE_DF 
+        # dtime=pd.to_datetime(df['timestamp'])
+        fcn=lambda x: x.date.__str__()+' '+str(x.hour)+':'+str(x.minute)+':'+str(x.second)
+        # df=df.groupby(dtime.apply(fcn)).mean()#agg({'value': 'mean'})       
+        df=LIVE_DF.set_index('timestamp')
+        df=df.resample('s').max()#agg({'value': 'mean'}) 
+        df.dropna(subset = ["value"], inplace=True)
+        # print(df,df.index)
+        xtext,ytext,title=Lang['Timestamp'],Lang['Count'],Lang['Live process plot']
+        layout=dict(title={
+            'text':title,
+            'y':0.9,
+            'x':0.5,
+            'xanchor': 'center'
+            },
+        xaxis_title=xtext,
+        yaxis_title=ytext,
+        hovermode="closest",
+        transition={
+            'easing':'quad-in-out'
+        }
+        )
+        return go.Figure(data=go.Scatter(x=df.index.tolist(),y=df['value'].values.tolist()),layout=layout)
+    except:
+        traceback.print_exc()
 
 
 @app.callback(

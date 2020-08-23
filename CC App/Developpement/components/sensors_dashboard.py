@@ -28,7 +28,7 @@ import functions
 
 from app import app
 config = None
-
+Lang=None
 
 error_layout=lambda icon, title,subtitle: dbc.Container([dbc.Row([
                 html.Div(children=[
@@ -39,14 +39,14 @@ error_layout=lambda icon, title,subtitle: dbc.Container([dbc.Row([
                             ],
             fluid=True,style={'height':'100vh'}) 
 
-figure_layout=dict(title={
-            'text': 'Full counting history',
+figure_layout=lambda : dict(title={
+            'text': Lang['Full counting history'],
             'y':0.9,
             'x':0.5,
             'xanchor': 'center'
             },
-        xaxis_title='Timestamp',
-        yaxis_title='Count',
+        xaxis_title=Lang['Timestamp'],
+        yaxis_title=Lang['Count'],
         hovermode="closest",
         transition={
             'easing':'quad-in-out'
@@ -65,13 +65,16 @@ class SensorsDashboardView(Component):
             
 
     def initialize(self, app):
+        global Lang
+        Lang=self.config.LANGUAGE_DICT
+        static.Lang=Lang
         
 
         self.sensors_path=os.path.join(self.config.SENSORS_DEFAULT_BASE_PATH)
 
         if not os.path.exists(self.sensors_path):
-            self.layout= error_layout('fa-question-circle','Databade path not found',
-                             'It seems that we have a problem with the database directory')
+            self.layout= error_layout('fa-question-circle',Lang['Database not found'],
+                             Lang['It seems that we have a problem with the database directory'])
             return
             # Grap dataframe from the specific .csv file
         # csv_file=os.path.join(self.sensors_path,'all.csv')
@@ -90,6 +93,7 @@ class SensorsDashboardView(Component):
         for sensor in list(All_dfs):
             df =All_dfs[sensor]
             df=df.resample('s').max()
+            df.dropna(subset = ["value"], inplace=True)
             data.append(go.Scatter(
                 x=df.index.tolist(),y=df['value'].values.tolist(),name=sensor
                 ))
@@ -117,10 +121,10 @@ class SensorsDashboardView(Component):
             most_busy_hours+=sensor_most_busy_hours
 
         most_busy_days=list(set(most_busy_days))
-        most_busy_hours=list(set(most_busy_hours))
+        most_busy_hours=sorted(list(set(most_busy_hours)),reverse=True)
        
             # Define the full history graph of all sensors combined
-        figure=go.Figure(data=data,layout=figure_layout,frames=[])
+        figure=go.Figure(data=data,layout=figure_layout(),frames=[])
 
             # Define default filtering start and end date
         start_date=min_date#All_dfs.index.min()
@@ -140,9 +144,9 @@ class SensorsDashboardView(Component):
                             children=[
                                 dbc.CardDeck(
                                     [
-                                        reusable.basic_outlined_stat_info_card('Total sensors number',nbr_sensors,'light',text_color='text-primary'),
-                                        reusable.basic_outlined_stat_info_card('Capturing since',min_date,'light',text_color='text-success'),
-                                        reusable.basic_outlined_stat_info_card('Total working hours',delta_hours,'light',text_color='text-warning'),
+                                        reusable.basic_outlined_stat_info_card(Lang['Total sensors number'],nbr_sensors,'light',text_color='text-primary'),
+                                        reusable.basic_outlined_stat_info_card(Lang['Capturing since'],min_date,'light',text_color='text-success'),
+                                        reusable.basic_outlined_stat_info_card(Lang['Total working hours'],delta_hours,'light',text_color='text-warning'),
                                         
 
 
@@ -167,7 +171,7 @@ class SensorsDashboardView(Component):
                                             children=[
                                                 html.Div(
                                                     children=[
-                                                        html.Span('Filter results betwwen : '),
+                                                        html.Span(Lang['Filter results betwwen : ']),
                                                         dcc.DatePickerRange(
                                                             id='combined-filter-date-picker-range',
                                                             min_date_allowed=datetime.datetime(start_date.year,start_date.month,start_date.day).date(),
@@ -216,10 +220,10 @@ class SensorsDashboardView(Component):
                             children=[
                                 dbc.CardDeck(
                                     [
-                                            reusable.basic_outlined_stat_info_card('Most dense crowd in one moment',max_crowd_number,'light',text_color='text-info'),
-                                            reusable.basic_outlined_stat_info_card('Most busy days',most_busy_days[:3],'light',text_color='text-info'),
-                                            reusable.basic_outlined_stat_info_card('Peak hours',', '.join(most_busy_hours),'light',text_color='text-info'),
-                                            reusable.basic_outlined_stat_info_card('Crowded zones',', '.join(crowded_sensors),'light',text_color='text-info')
+                                            reusable.basic_outlined_stat_info_card(Lang['Most dense crowd in one moment'],max_crowd_number,'light',text_color='text-info'),
+                                            reusable.basic_outlined_stat_info_card(Lang['Most busy days'],most_busy_days[:3],'light',text_color='text-info'),
+                                            reusable.basic_outlined_stat_info_card(Lang['Peak hours'],', '.join(most_busy_hours[:5]),'light',text_color='text-info'),
+                                            reusable.basic_outlined_stat_info_card(Lang['Crowded zones'],', '.join(crowded_sensors),'light',text_color='text-info')
                                         
 
 
@@ -282,5 +286,5 @@ class SensorsDashboardView(Component):
 #         df=df[np.logical_and(df.index<=end_date , df.index>=start_date)]
 #         return go.Figure(data=go.Scatter(
 #             x=df.index.tolist(),y=df['value'].values.tolist()
-#         ),layout=figure_layout)
+#         ),layout=figure_layout())
     

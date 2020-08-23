@@ -16,6 +16,8 @@ import utils.YOLO_V3.yolo_model as yolo_detector
 import utils.mobilenet_SSD.bbox_counter as ssd_detector
 from utils.detection_model import DetectionModel
 import store.models.equivalence as equivalence
+import pandas as pd
+import datetime
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 QUEUE=queue.Queue()
@@ -101,13 +103,11 @@ class ModelManager:
 
             # If the current model is a density map based model
         if is_densitymap_model(cls.model):
-            print('\t Passing :',args)
             show_regions=False
             tang,b=None,None
             if args is not None and args.get('regions_params',False):
                 show_regions=args['regions_params'].get('show',False)
                 tang,b=args['regions_params'].get('tang',None),args['regions_params'].get('b',None)
-                line_eq=lambda x: int(tang*x+b)
                 horizontal_splited=abs(tang)<1
 
             log_count=args is not None and args.get('log_counts',False)
@@ -130,7 +130,8 @@ class ModelManager:
             writer=None
             fps = FPS().start()
             totalFrame=0
-          
+            if show_regions:
+                line_eq=lambda x: int(tang*x+b*H)
             while True:
                 # frame = imutils.resize(frame, height=500)
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -168,7 +169,7 @@ class ModelManager:
                         if cls.model.__class__.__name__ == 'SANet':
                             countA = countA//100
                             countB = countB//100
-                        print(countA,countB)
+                        print('Count in Zone A',countA,'Count in Zone b',countB)
                         # cv2.imshow("Surveillence", zoneA)
                         # cv2.imshow("Surveillence2", zoneB)
 
@@ -177,16 +178,18 @@ class ModelManager:
                         if 'zoneA' in locals() and 'zoneA' in locals():
                             cv2.putText(frame, 'Zone A :  {}'.format(countA), (10,20),
 					                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2) 
-                            cv2.putText(frame, 'Zone B : {}'.format(countB), (frame.shape[1]-50,frame.shape[0]-20),
+                            # x,y=10,line_eq(10) if horizontal_splited else line_eq(frame.shape[1])+10,frame.shape[0]-10
+                            cv2.putText(frame, 'Zone B : {}'.format(countB), (frame.shape[1]-200,frame.shape[0]-10),
 					                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2) 
 
                     text = "Estimated count : {}".format(count)
                     cv2.putText(frame, text, (10, H - 20),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-                    print('Processed in : ',elapsed,'s, ',text)            
+                    print('Processed in : ',elapsed,'s, ',text) 
+                    # cv2.imshow('Img',frame)           
                   
                 if output is not None and writer is None:
-                    min_height=500#min(dmap.shape[0],frame.shape[0])
+                    min_height=min(dmap.shape[0],frame.shape[0])
                     frame=imutils.resize(frame, height=min_height)
                     dmap = imutils.resize(dmap, height=min_height)
                     fourcc = cv2.VideoWriter_fourcc(*"MJPG")
@@ -208,7 +211,6 @@ class ModelManager:
                     concated[:,frame.shape[1]:]=dmap[:,:,:3]
                     writer.write(concated)
                     if args is not None and args.get('silent',True):
-                        print('silent')
                         encoded=cv2.imencode('.jpg', concated)[1].tobytes()
                         yield (b'--frame\r\n'
                                 b'Content-Type: image/jpeg\r\n\r\n' + encoded + b'\r\n\r\n')
@@ -216,8 +218,10 @@ class ModelManager:
 
 
                 if log_count:
-                    log_count_fcn(os.path.join(args['output'],'temp.csv'),count)
+                    log_count_fcn(os.path.join(output,'temp.csv'),count)
 
+                if queue is not None:
+                    queue.put_nowait({'timestamp': pd.Timestamp(datetime.datetime.now()),'value':count})
                 key = cv2.waitKey(1) & 0xFF
 
                 if key == ord("q"):
@@ -236,6 +240,8 @@ class ModelManager:
 
             if writer is not None:
                 writer.release()
+
+
         else:  # It's a detection model
             params = {
                     'input': video_path,
