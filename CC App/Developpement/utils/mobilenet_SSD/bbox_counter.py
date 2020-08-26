@@ -73,7 +73,7 @@ def load_network():
 	protopath = os.path.join(modelfolder, "MobileNetSSD_deploy.prototxt")
 	download_if_not_present("https://github.com/djmv/MobilNet_SSD_opencv/blob/master/MobileNetSSD_deploy.prototxt?raw=true", protopath)
 		# load our serialized model from disk
-	print("[INFO] loading model...")
+	print("[INFO] loading model ...")
 	return cv2.dnn.readNetFromCaffe(protopath, caffepath)
 
 
@@ -337,7 +337,7 @@ def process_to_queue(net,frame,conf,bbox_flag,index,queue):
 def stream_video(args):
 		
 		# load SSD model from disk
-	print("[INFO] loading model...")
+	print("[INFO] loading model ...")
 	if not args.get("prototxt",False)  or  not args.get("model",False):
 		net=load_network()
 	else:

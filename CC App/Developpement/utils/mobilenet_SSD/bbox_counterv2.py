@@ -99,7 +99,7 @@ if __name__=='__main__':
 
 		
 		# load SSD model from disk
-	print("[INFO] loading model...")
+	print("[INFO] loading model ...")
 	if not args.get("prototxt",False)  or  not args.get("model",False):
 		net=load_network()
 	else:

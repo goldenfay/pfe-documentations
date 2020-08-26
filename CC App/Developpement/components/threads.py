@@ -31,13 +31,13 @@ class ServerThread(threading.Thread):
         # self.ctx.push()
 
     def run(self):
-        print('starting process server')
+        print('[ServerThread] Starting process server')
 
-        try:
-            # self.srv.run('127.0.0.1', 4000)
-            self.srv.serve_forever()
-        except:
-            self._stopper.set()
+        
+        # self.srv.run('127.0.0.1', 4000)
+        self.srv.serve_forever()
+    
+        self._stopper.set()
 
         # self.srv.serve_forever()
 

@@ -265,6 +265,20 @@ const send_to_server = function () {
         images: imgList,
       });
       console.log("Socket emitted.");
+      $(document.body).append(`<div class="animate__animated animate__bounceInUp toast fade show shadow bg-info" role="alert" aria-live="assertive" aria-atomic="true" 
+      data-autohide="false" style="position:fixed; bottom:3%; right:3%;"id="server-toast">
+      <div class="toast-header text-info" style="min-width-350px;">
+        
+        <strong class="mr-auto">Communication with server</strong>
+        
+        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="toast-body bg-light">
+        Sending image(s) to the server ...
+      </div>
+    </div>`)
       if( ! $('#output-image-process h3').length){
         $('#output-image-process').prepend('<h3 class="ml-5 text-primary font-weight-bold flex-break">Output</h3>')
       }
@@ -358,14 +372,13 @@ function processImageResponse(data) {
         `
   );
 }
-// Create an observer instance linked to the callback function
+  // Create an observer instance linked to the callback function
 var observer = new MutationObserver(callback);
 
-  console.log('salutiiii');
   // Start observing the target node for configured mutations
-  observer.observe(document.body, config);
+observer.observe(document.body, config);
   // Later, you can stop observing
-  // observer.disconnect();
+// observer.disconnect();
 
 
 document.ondrop = function () {

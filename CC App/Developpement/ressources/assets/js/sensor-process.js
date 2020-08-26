@@ -23,7 +23,11 @@ const clearCanvasShapes = (context, fillImg) => {
 // Callback function to execute when mutations are observed
 const callback = function (mutationsList, observer) {
   var  tang=null,
-  b=null;
+  b=null,
+  canvas=null;
+  var point1 = null,
+      point2 = null;
+      
   for (let mutation of mutationsList) {
     if (mutation.type === "childList" || mutation.type === "subtree") {
       // Toggle Loading spinner
@@ -38,7 +42,7 @@ const callback = function (mutationsList, observer) {
           // if (addNode.id === "line-canvas-button") {
           console.log("captured");
           // Draw current scene on the canvas from the frame
-          var canvas = document.querySelector("#sensor-scene-canvas");
+          canvas = document.querySelector("#sensor-scene-canvas");
           // var canvas = document.createElement("canvas");
           var ctx = canvas.getContext("2d");
           var currentImg = document.querySelector("#sensor-process-video-output-flow");
@@ -50,9 +54,7 @@ const callback = function (mutationsList, observer) {
             canvas.width = currentImg.width;
             ctx.drawImage(currentImg,0,0,currentImg.width,currentImg.height);
 
-            var point1 = null,
-              point2 = null
-             ;
+            
             ctx.fillStyle = "#e31414";
             ctx.strokeStyle = "#e31414";
             ctx.lineWidth = 4;
@@ -87,7 +89,7 @@ const callback = function (mutationsList, observer) {
                     ctx.lineTo(endP.x, endP.y);
                     ctx.stroke();
                     ctx.closePath();
-                    b=b/canvas.height;
+                    // b=b/canvas.height;
                   }
                   console.log(tang,b)
 
@@ -123,11 +125,15 @@ const callback = function (mutationsList, observer) {
             $.post("http://localhost:8050/scene/regions/",
               {
                 tang: tang,
-                b: b
+                b: b,
+                // p1: point1,
+                // p2:point2
+                p1: {'x': point1.x/canvas.width,'y':point1.y/canvas.height},
+                p2: {'x': point2.x/canvas.width,'y':point2.y/canvas.height}
               },
               function(data, status){
                 console.log('Received ', data, ' status', status);
-                location.reload();
+                // location.reload();
 
             });
           });

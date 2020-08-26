@@ -242,6 +242,7 @@ class View(Component):
         )
 
 def load_model(model_type):
+    print('[INFO] Loading Model ',model_type,' ...')
     if model_type in ['mobileSSD', 'yolo']:
         x = ModelManager.load_detection_model(model_type)
         print(type(x))
@@ -384,30 +385,33 @@ def toggle_display(value,selected_video):
     return [Lang['Footage'] if not value else Lang['Still images']], children, {'display': 'block'} if not value else {'display': 'none'},{'display': 'block'} if not value else {'display': 'none'}
 
     # Footage Selection
-@app.callback(Output("video-preview", "url"),
+@app.callback([Output("video-preview", "url")],
               [Input('dropdown-footage-selection', 'value')])
 def select_footage(footage):
-   
-     return 'http://localhost:8050/videos/{}'.format(os.path.basename(footage))
+    print(footage)
+     
+    return ['http://localhost:8050/videos/{}'.format(os.path.basename(footage))]
 
     # Model selection
-@app.callback([Output("dummy-div", "style"),
-                Output("dropdown-footage-selection", "options"),
+@app.callback([Output("dropdown-footage-selection", "options"),
                 Output("dropdown-footage-selection", "value")],
-              [Input("dropdown-model-selection", "value")])
-def change_model(model_type):
-    if ONLINE_MODE:
-        return {"display": "none"}
-    print('[INFO] Loading model : ', model_type, ' ...')
+              [Input("dropdown-model-selection", "value")],
+              [State("mode-switch", "value")
+              ])
+def change_model(model_type,value):
+    load_model(model_type)
+    # if value:
+    #     print('issue here')
+    #     return [],[]
+        
     list_vidoes = list(glob.glob(os.path.join(
             View.config.VIDEOS_DIR_PATH,'sparse videos' if model_type in ['mobileSSD', 'yolo'] else 'crowd videos', '*.mp4')))
     options=[{'label': os.path.basename(
                     el), 'value': el}
                 for el in list_vidoes
             ]
-    load_model(model_type)
     print(list_vidoes[0])
-    return {"display": "none"},options,list_vidoes[0]
+    return options,list_vidoes[0]
 
    # Show graphs toggle
 @app.callback([Output("graph-switch-label", "children")],
@@ -559,13 +563,13 @@ def process_frames(button_click, model_type, children):
             def server_error_response(data):
                 error_msg = data['message']
                 server_error = True
-            if CLIENT_SOCKET is None:
-                CLIENT_SOCKET = ClientSocket(reconnection=False)
-                CLIENT_SOCKET.on('server-error', handler=server_error_response)
-                CLIENT_SOCKET.on('send-image', handler=append_res_img)
-                CLIENT_SOCKET.on('process-done', handler=response_received)
-            if not CLIENT_SOCKET.connected:
-                CLIENT_SOCKET.connect(SERVER_URL)
+            # if CLIENT_SOCKET is None:
+            #     CLIENT_SOCKET = ClientSocket(reconnection=False)
+            #     CLIENT_SOCKET.on('server-error', handler=server_error_response)
+            #     CLIENT_SOCKET.on('send-image', handler=append_res_img)
+            #     CLIENT_SOCKET.on('process-done', handler=response_received)
+            # if not CLIENT_SOCKET.connected:
+            #     CLIENT_SOCKET.connect(SERVER_URL)
 
             images = [{
                 'id': 'img'+str(idx),

@@ -35,18 +35,20 @@ is_detectionModel= lambda model: model.lower() in ['mobilessd','yolo']
 def kill_server_thread(serv_th):
     try:
         serv_th.raise_exception()
-        x=requests.post('http://localhost:4000/shutdown')
-        print(x)
+        serv_th.join()
+        # x=requests.post('http://localhost:4000/shutdown')
+        # print(x)
         
 
-    except:
-        print('[Server] Server killed.')
-        pass
+    except Exception as e:
+        print('[ServerThread] Thread killed.')
+        print(e)
 
 
 
 
 def load_model(model_type):
+    print('[INFO] Loading Model ',model_type,' ...')
     if model_type in ['mobileSSD', 'yolo']:
         x = ModelManager.load_detection_model(model_type)
         print(type(x))
@@ -64,6 +66,7 @@ def load_model(model_type):
 Lang=None
 model_type=None
 sensor_path=None
+VIDEO_path=None
 server = None
 server_thread = None
 SHOW_LIVE_GRAPH=False
@@ -185,6 +188,8 @@ class SensorProcessView(Component):
                                                                 html.H3(Lang['Preview'],className='text-center text-primary font-weight-bold'),
                                                                 player.DashPlayer(
                                                                     id='sensor-video-preview',
+                                                                    playsinline=True,
+
                                                                     # style={'position': 'absolute', 'width': '100%',
                                                                     #     'height': '100%', 'top': '0', 'left': '0', 'bottom': '0', 'right': '0'},
                                                                     url='http://localhost:8050/videos/{}'.format(os.path.basename(list_vidoes[0])),
@@ -269,7 +274,7 @@ class SensorProcessView(Component):
                                         ),
                                             id='sensor-footage-selection-control'
                                         ),
-                                        reusable.toggleswitch_control(Lang['Show live graph'],'show-live-graph-switch','show-live-graph-switch-label',True,Lang['Yes'],'#00c853')
+                                        reusable.toggleswitch_control(Lang['Show live graph'],'show-live-graph-switch','show-live-graph-switch-label',False,Lang['Yes'],'#00c853')
                                         ,
                                         html.Div(id="sensor-display-plots-div",children=[]),
                                         
@@ -320,6 +325,8 @@ def toggle_show_live_plot(value):
                 [Input("sensor-dropdown-footage-selection","value")]
             )
 def change_video_footage(value):
+    global VIDEO_path
+    VIDEO_path=value
     return ['http://localhost:8050/videos/{}'.format(os.path.basename(value))]
 
 
@@ -338,76 +345,64 @@ def process_video(button_click, video_path):
     global model_type,server, server_thread, get_regions_params
     if button_click > 0:
         
-        load_model(model_type)
+        # load_model(model_type)
 
-        if server is None:
-            print('[SERVER] Creating a server instance ...')
-            from flask import request
-            server = Flask('SensorProcessServer')
+        # if server is None:
+        #     print('[SERVER] Creating a server instance ...')
+        #     from flask import request
+        #     server = Flask('SensorProcessServer')
 
-            @server.route('/test', methods=['GET'])
-            def test():
-                return 'jfhskdjfhskjdhfkjshdkjfhskdjhf'
+        #     @server.route('/test', methods=['GET'])
+        #     def test():
+        #         return 'jfhskdjfhskjdhfkjshdkjfhskdjhf'
 
-            @server.route('/shutdown', methods=['POST'])
-            def shut_it():
-                raise RuntimeError('Flask server killed via request')
+        #     @server.route('/shutdown', methods=['POST'])
+        #     def shut_it():
+        #         raise RuntimeError('Flask server killed via request')
 
             
-            @server.route('/stream')
-            def video_feed():
-                global SHOW_LIVE_GRAPH,QUEUE
+        #     @server.route('/stream')
+        #     def video_feed():
+        #         global SHOW_LIVE_GRAPH,QUEUE
 
-                params = {
-                    'show': True,
-                    'tang': float(get_regions_params()['tang']),
-                    'b': int(float(get_regions_params()['b'])),
+        #         params = {
+        #             'show': True,
+        #             'tang': float(get_regions_params()['tang']),
+        #             'b': int(float(get_regions_params()['b'])),
+        #             'p1': get_regions_params()['p1'],
+        #             'p2': get_regions_params()['p2'],
                     
-                } if get_regions_params() is not None else None
-                return Response(ModelManager.process_video(
-                    video_path, 
-                    args={'output': os.path.join(sensor_path,'output'),
-                        'regions_params': params, 
-                        'live_data': SHOW_LIVE_GRAPH, 
-                        'log_counts': True, 
-                        'log_count_fcn': functions.log_count},queue=QUEUE), mimetype='multipart/x-mixed-replace; boundary=frame')
+        #         } if get_regions_params() is not None else None
+        #         return Response(ModelManager.process_video(
+        #             video_path, 
+        #             args={'output': os.path.join(sensor_path,'output'),
+        #                 'regions_params': params, 
+        #                 'live_data': SHOW_LIVE_GRAPH, 
+        #                 'log_counts': True, 
+        #                 'log_count_fcn': functions.log_count},queue=QUEUE), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-            try:
-                server_thread = ServerThread(server)
-            except OSError as e:
-                pass
-                # requests.post('http://localhost:4000/shutdown')
+        #     try:
+        #         server_thread = ServerThread(server)
+        #     except OSError as e:
+        #         pass
+        #         # requests.post('http://localhost:4000/shutdown')
 
 
-        server_thread.start()
+        # server_thread.start()
 
         return [
 
-
             html.Div(
-                className='row shadow-sm',
-                children=[
-                    html.Div(
-                        className='col-md-12 d-flex justify-content-center align-items-center',
-                        id='sensor-edit-canvas-panel',
-                        children=[
-                            html.Button(id='sensor-line-canvas-button', children=[html.Span(
-                                className='fa fa-pencil-alt')], className='btn mr-5', title='Draw a separation line'),
-                            html.Button(children=[html.Span(
-                                className='fa fa-times')], className='btn ml-5', id='sensor-clear-canvas-button', title='Cancel')
-
-                        ]
-                    )
-                ]
-
+                [html.H3(Lang['Output'],className='text-center text-primary font-weight-bold')]
             ),
             html.Div(
                 className="row mt-5 mb-5",
                 children=[
                     html.Div(
-                        className='col-md-12 d-flex justify-content-center align-items-center',
+                        className='col-md-12 d-flex justify-content-center align-items-center p-3',
                         children=[
-                            html.Img(src='http://localhost:4000/stream?t='+str(datetime.datetime.now()),
+                            html.Img(src='/stream?t='+str(datetime.datetime.now()),
+                                    # src='http://localhost:4000/stream?t='+str(datetime.datetime.now()),
                                      id='sensor-process-video-output-flow',
                                      className='img-fluid'),
                         ]
@@ -415,6 +410,23 @@ def process_video(button_click, video_path):
 
 
                 ]
+            ),
+            html.Div(
+                className='row shadow-sm p-3 mb-5',
+                children=[
+                    html.Div(
+                        className='col-md-12 d-flex justify-content-center align-items-center',
+                        id='sensor-edit-canvas-panel',
+                        children=[
+                            html.Button(id='sensor-line-canvas-button', children=[html.Span(
+                                className='fa fa-pencil-alt fa-lg text-secondary')], className='btn mr-5', title='Draw a separation line'),
+                            html.Button(children=[html.Span(
+                                className='fa fa-times fa-lg text-secondary')], className='btn ml-5', id='sensor-clear-canvas-button', title='Cancel')
+
+                        ]
+                    )
+                ]
+
             ),
 
             html.Div(
@@ -442,7 +454,7 @@ def process_video(button_click, video_path):
                         className='col-md-12 mt-5 shadow-sm d-flex justify-content-center align-items-center',
                         children=[
                             html.Button(id='sensor-confirm-draw-btn',n_clicks=0, className='btn-success', children=[
-                                        html.Span(className='fa fa-check')], title='Confirm zones plit')
+                                        html.Span(className='fa fa-check fa-lg')], title='Confirm zones plit')
                         ]
                     )
                 ]
@@ -514,9 +526,39 @@ def setup_splitlines(n_clicks):
     global server, server_thread
 
     if n_clicks > 0 :
-        import requests
-        kill_server_thread(server_thread)
+        pass
+        # import requests
+        # kill_server_thread(server_thread)
        
-        server_thread.shutdown() 
-        #server = None
+        # server_thread.shutdown() 
+        # server = None
     return 'd-none'
+
+
+
+
+@app.server.route('/stream')
+def video_feed():
+    global SHOW_LIVE_GRAPH,QUEUE,sensor_path,VIDEO_path,model_type,get_regions_params
+
+    try:
+        if ModelManager.model is None:
+            load_model(model_type)
+        # params = None
+        params = {
+            'show': True,
+            'tang': float(get_regions_params()['tang']),
+            'b': int(float(get_regions_params()['b'])),
+            'p1': get_regions_params()['p1'],
+            'p2': get_regions_params()['p2'],
+            
+        } if get_regions_params() is not None else None
+        return Response(ModelManager.process_video(
+            VIDEO_path, 
+            args={'output': os.path.join(sensor_path,'output'),
+                'regions_params': params, 
+                'live_data': SHOW_LIVE_GRAPH, 
+                'log_counts': True, 
+                'log_count_fcn': functions.log_count},queue=QUEUE), mimetype='multipart/x-mixed-replace; boundary=frame')
+    except Exception as e:
+        traceback.print_exc()

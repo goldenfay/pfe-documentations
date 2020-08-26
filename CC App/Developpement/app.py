@@ -12,7 +12,15 @@ import languages
 # scene_region_params=None
 scene_region_params={
     'tang': 37.5,
-    'b': -10002.1875
+    'b': -10002.1875,
+    'p1':{
+        'x':0.3,
+        'y':0.2
+    },
+    'p2':{
+        'x':30,
+        'y':37.5*30-10002.1875
+    }
 }
 
 STATIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ressources','assets')
@@ -154,13 +162,20 @@ def serve_video(video_name):
     #
 @server.route("/scene/regions/",methods=['POST'])
 def save_regions_params():
+    import json
     global scene_region_params
     if scene_region_params is None:
         scene_region_params=dict()
     params=request.values
     print('Params: ',params)
+    p1=dict(x=float(params['p1[x]']),y=float(params['p1[y]']))
+    p2=dict(x=float(params['p2[x]']),y=float(params['p2[y]']))
+    # tang=(p1['y']-p2['y'])/(p1['x']-p2['x'])
     scene_region_params['tang']=params['tang']
     scene_region_params['b']=params['b']
+    scene_region_params['p1']=p1
+    scene_region_params['p2']=p2
+    # scene_region_params=params
     return {
         'status':'ok',
         'statuscode':200

@@ -131,7 +131,12 @@ class ModelManager:
             fps = FPS().start()
             totalFrame=0
             if show_regions:
-                line_eq=lambda x: int(tang*x+b*H)
+                p1=args['regions_params']['p1']
+                p2=args['regions_params']['p2']
+                # tang=(p1['y']-p2['y'])*H/(p1['x']-p2['x'])/W
+                b=p1['y']*H - p1['x']*W * tang
+                line_eq=lambda x: int(float(tang*x+b))
+                print('*'*100,'Line equation','a=',tang,'b=',b)
             while True:
                 # frame = imutils.resize(frame, height=500)
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -206,7 +211,7 @@ class ModelManager:
                     # concated = cv2.vconcat(frame, dmap)
                     nb_rows= int(dmap.shape[0]+frame.shape[0])
                     nb_cols= int(dmap.shape[1]+frame.shape[1])
-                    concated = np.zeros(shape=(frame.shape[0], nb_cols, 3), dtype=np.uint8)
+                    concated = np.zeros(shape=(min_height, nb_cols, 3), dtype=np.uint8)
                     concated[:,:frame.shape[1]]=frame
                     concated[:,frame.shape[1]:]=dmap[:,:,:3]
                     writer.write(concated)

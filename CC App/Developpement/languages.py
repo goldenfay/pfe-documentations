@@ -23,6 +23,7 @@ translate_dict={
     'No':'Non',
     'Start processing video':'Commencer le traitement de la vidéo',
     'Preview':'Aperçu',
+    'Output': 'Résultat',
     'Original':'Image originale',
     'Estimated count : ':'Nombre estimé : ',
     'Timestamp':'Horodatage',
