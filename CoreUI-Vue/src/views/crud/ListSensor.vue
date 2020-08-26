@@ -64,7 +64,8 @@
     <CRow >
         <CCol sm="4" md="4" v-for="sensor in sensors" :key="sensor.id">
           <SensorCard2 :key="sensor.id" :sensor="sensor">
-              <img slot="card_image" src="@/../public/img/avatars/crowd3.jpg" class="card-img-top" alt="...">
+              <img v-if="sensor.sensor_type_id == 2" slot="card_image" src="@/../public/img/avatars/crowd0.jpg" class="card-img-top" alt="...">
+              <img v-else slot="card_image" src="@/../public/img/avatars/crowd3.jpg" class="card-img-top" alt="...">
           </SensorCard2>
         </CCol>  
     </CRow>    
@@ -75,7 +76,7 @@
             <template v-if="page != 1">
               <router-link :to="{ name: 'ListSensor', query: { page: page - 1 } }" rel="prev" v-slot="{ href, route, navigate}">
                 <button :href="href" @click="navigate" class="btn btn-secondary" style="text" >
-                    Prev Page
+                    Page précédente
                 </button>    
               </router-link>
               <!--template v-if="hasNextPage"> | </template-->
@@ -87,7 +88,7 @@
     
             <router-link v-if="hasNextPage" :to="{ name: 'ListSensor', query: { page: page + 1 } }" rel="next" v-slot="{ href, route, navigate}">
               <button :href="href" @click="navigate" class="btn btn-secondary" style="text" >
-                  Next Page
+                  Page suivante
               </button>
             </router-link>
         </div> 

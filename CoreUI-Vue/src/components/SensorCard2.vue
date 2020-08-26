@@ -14,7 +14,12 @@
               {{sensor.sensor_desc}}
             </p>
 
-              <BaseIcon name="users" width=20 height=20>{{sensor.sensor_type_name}}</BaseIcon>
+              <BaseIcon v-if="sensor.sensor_type_id==2" name="users" width=20 height=20>
+              Scène à moyenne échelle
+          	  </BaseIcon>
+          	  <BaseIcon v-else name="users" width=20 height=20>
+              Scène à grande échelle
+          	  </BaseIcon>
       </div>
 
       <div class="card-body">
