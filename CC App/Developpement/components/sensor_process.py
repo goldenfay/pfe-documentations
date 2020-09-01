@@ -401,7 +401,7 @@ def process_video(button_click, video_path):
                     html.Div(
                         className='col-md-12 d-flex justify-content-center align-items-center p-3',
                         children=[
-                            html.Img(src='/stream?t='+str(datetime.datetime.now()),
+                            html.Img(src='/streamsensor?t='+str(datetime.datetime.now()),
                                     # src='http://localhost:4000/stream?t='+str(datetime.datetime.now()),
                                      id='sensor-process-video-output-flow',
                                      className='img-fluid'),
@@ -486,7 +486,6 @@ def update_count_plots(n):
         # csv_file_path=os.path.join(sensor_path,'output','temp.csv')
         # df=functions.read_existing_data(csv_file_path)
         if not QUEUE.empty():
-            print('Get from the que'+'*'*50)
             LIVE_DF=LIVE_DF.append(QUEUE.get_nowait(),ignore_index=True)
             # LIVE_DF=df.copy()
             
@@ -537,13 +536,18 @@ def setup_splitlines(n_clicks):
 
 
 
-@app.server.route('/stream')
+@app.server.route('/streamsensor')
 def video_feed():
     global SHOW_LIVE_GRAPH,QUEUE,sensor_path,VIDEO_path,model_type,get_regions_params
 
+        # Free any stuck data in the queue
+    if QUEUE is not None :
+        print('[SERVER] Cleaning stucked data in the queue ....')
+        while not QUEUE.empty():
+            QUEUE.get_nowait()
+
     try:
-        if ModelManager.model is None:
-            load_model(model_type)
+        load_model(model_type)
         # params = None
         params = {
             'show': True,

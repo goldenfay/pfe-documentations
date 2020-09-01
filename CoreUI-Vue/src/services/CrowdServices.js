@@ -49,7 +49,7 @@ export default{
 		data = {...complete_data,'model_name':the_type_s}
 		return apiDash.post('/sensors/register',data)
 	},
-	UpdateRegistredSensor(complete_data,name,type){
+	UpdateRegistredSensor(complete_data,old_name,type){
 		var the_type_s = ""
 		if (type.localeCompare("Scène large échelle") == 0){
 			the_type_s = "SANet"
@@ -58,7 +58,7 @@ export default{
 			the_type_s = "mobileSSD"
 		}
 		var data = {}
-		data = {...complete_data,'model_name':the_type_s}
+		data = {...complete_data,'old_name':old_name,'model_name':the_type_s}
 		return apiDash.post('/sensors/update',data)
 	},
 	DeleteRegistredSensor(sensor){

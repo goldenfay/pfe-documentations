@@ -3,7 +3,7 @@
 		<CCol sm="12" md="12">
 			  <CCard>
 		        <CCardHeader>
-		          Sensor Statics  {{adress}}
+		          Sensor Statistics  
 		        </CCardHeader>
 		        <CCardBody>
 		            <div class="embed-responsive embed-responsive-1by1">
@@ -16,7 +16,7 @@
 </template>
 
 <script>
-//#http://localhost:8050/statistics?sensor_name=sensor_1
+//#http://localhost:8050/fr/statistics?sensor_name=sensor_1
 export default {
 	
   name: 'SensorExstat',
@@ -28,7 +28,7 @@ export default {
   },
   created(){
     this.sensor_name = this.$route.params.name
-    this.adress = "http://localhost:8050/statistics?sensor_name="+this.sensor_name
+    this.adress = "http://localhost:8050/fr/statistics?sensor_name="+this.sensor_name
   },
   methods:{
   },
