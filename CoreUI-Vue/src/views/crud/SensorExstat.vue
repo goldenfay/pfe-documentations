@@ -3,7 +3,7 @@
 		<CCol sm="12" md="12">
 			  <CCard>
 		        <CCardHeader>
-		          Sensor Statics  {{adress}}
+		          Sensor Statics 
 		        </CCardHeader>
 		        <CCardBody>
 		            <div class="embed-responsive embed-responsive-1by1">

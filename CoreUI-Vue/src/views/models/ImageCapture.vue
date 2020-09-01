@@ -25,7 +25,7 @@
 	export default{
 		name : 'ImageCapture',
 		data(){
-			return {imgUrl :require('@/../public/video/teb7iraVoyage.mp4')}
+			return {imgUrl :'empty'}
 
 
 		},
