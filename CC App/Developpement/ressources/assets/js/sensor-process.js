@@ -33,7 +33,6 @@ const callback = function (mutationsList, observer) {
       // Toggle Loading spinner
     
       for (let addNode of mutation.addedNodes) {
-        console.log('dfkjsdfhkjsdhfkjsdhkjfshdkfjhsdkjfhdkfjshdkjh')
         
         
 

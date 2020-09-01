@@ -16,13 +16,13 @@ export default [
        _name: 'CSidebarNavItem',
         name: 'Créer capteur',
         to: '/creation',
-        icon: 'cil-people', 
+        icon : 'cil-plus', 
       },
       {
         _name: 'CSidebarNavItem',
         name: 'Liste capteurs',
         to: '/list',
-        icon: 'cil-layers', 
+        icon: 'cil-list', 
       },
       {
         _name: 'CSidebarNavItem',

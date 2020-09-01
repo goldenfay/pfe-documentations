@@ -22,7 +22,10 @@ const clearCanvasShapes = (context, fillImg) => {
 // Callback function to execute when mutations are observed
 const callback = function (mutationsList, observer) {
   var  tang=null,
-  b=null;
+  b=null,
+  canvas=null;
+  var point1 = null,
+      point2 = null;
   for (let mutation of mutationsList) {
     if (mutation.type === "childList" || mutation.type === "subtree") {
       // Toggle Loading spinner
@@ -56,7 +59,10 @@ const callback = function (mutationsList, observer) {
           console.log("Video Button targeted");
 
           processVideobtn.click(function (e) {
+            if($('#process-video-output-flow').length)
+              $("#process-video-output-flow").show();
             if ($("#usage-switch").hasClass("toggled-on")) {
+              
               send_video_to_server();
             }
           });
@@ -67,7 +73,7 @@ const callback = function (mutationsList, observer) {
           // if (addNode.id === "line-canvas-button") {
           console.log("captured");
           // Draw current scene on the canvas from the frame
-          var canvas = document.querySelector("#scene-canvas");
+          canvas = document.querySelector("#scene-canvas");
           // var canvas = document.createElement("canvas");
           var ctx = canvas.getContext("2d");
           var currentImg = document.querySelector("#process-video-output-flow");
@@ -79,9 +85,7 @@ const callback = function (mutationsList, observer) {
             canvas.width = currentImg.width;
             ctx.drawImage(currentImg,0,0,currentImg.width,currentImg.height);
 
-            var point1 = null,
-              point2 = null
-             ;
+           
             ctx.fillStyle = "#e31414";
             ctx.strokeStyle = "#e31414";
             ctx.lineWidth = 4;
@@ -90,6 +94,7 @@ const callback = function (mutationsList, observer) {
               "click",
               (e) => {
                 if (point1 === null) {
+                  console.log('first')
                   point1 = {
                     x: e.clientX - canvas.getBoundingClientRect().x,
                     y: e.clientY - canvas.getBoundingClientRect().y,
@@ -97,6 +102,7 @@ const callback = function (mutationsList, observer) {
                   return;
                 } else {
                   if (point2 === null) {
+                    console.log('second')
                     point2 = {
                       x: e.clientX - canvas.getBoundingClientRect().x,
                       y: e.clientY - canvas.getBoundingClientRect().y,
@@ -117,6 +123,7 @@ const callback = function (mutationsList, observer) {
                     ctx.stroke();
                     ctx.closePath();
                   }
+                  
                 }
               },
               false
@@ -129,6 +136,8 @@ const callback = function (mutationsList, observer) {
             // Add click event handler
           // if (addNode.id === "clear-canvas-button") {
           $(resetCanvasBtn).click((e) => {
+            point1=null;
+            point2=null;
             $("#edit-canvas-area").addClass("d-none");
             // ctx.clearRect(0, 0, currentImg.width, currentImg.height);
             clearCanvasShapes(ctx, currentImg);
@@ -140,18 +149,23 @@ const callback = function (mutationsList, observer) {
             // Add click event handler
           // if (addNode.id === "confirm-draw-btn") {
           $(confirmDrawBtn).click((e) => {
+            if(point1===null || point2===null) return;
             console.log(tang,b)
             $("#edit-canvas-area").addClass("d-none");
-            $("#process-video-output-flow").remove();
+            $("#process-video-output-flow").hide();
             $('#edit-canvas-panel').hide();
             // $('#output-video-process').append('<p id="hidden-splitLine-input" class="d-none">'+tang+'/'+b+'</p>')
             // $('#hidden-splitLine-input').get(0).innerHTML=`${tang}/${b}`;
             $.post("http://localhost:8050/scene/regions/",
               {
                 tang: tang,
-                b: b
+                b: b,
+                p1: {'x': point1.x/canvas.width,'y':point1.y/canvas.height},
+                p2: {'x': point2.x/canvas.width,'y':point2.y/canvas.height}
               },
               function(data, status){
+                point1=null;
+                point2=null;
                 console.log('Received ', data, ' status', status)
             });
           });

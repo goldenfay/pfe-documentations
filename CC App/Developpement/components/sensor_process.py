@@ -223,7 +223,7 @@ class SensorProcessView(Component):
                                                     ]
                                                 ),
                                                 html.Div(id='sensor-output-video-process',
-                                                         className='container')
+                                                         className='container mt-5')
                                             ])
                                     ],
                                     className='col-md-12 mt-5'

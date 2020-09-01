@@ -39,6 +39,7 @@ res_img_list = []
 HTML_IMG_SRC_PREFIX = 'data:image/png;base64, '
 Lang = None
 path_video=None
+MODEL_NAME=None
 ONLINE_MODE = False
 SHOW_GRAPHS=True
 server = None
@@ -227,7 +228,7 @@ class View(Component):
                                             ]
                                         ),
                                         html.Div(id="display-plots-div",children=[]),
-                                        static.default_count_plots_modal(os.path.join(ModelManager.outputs_path,'results_history.csv')),
+                                        # static.default_count_plots_modal(os.path.join(ModelManager.outputs_path,'results_history.csv')),
                                         html.Div(id="div-detection-mode"),
                                         html.Div(
                                             id="socket-errors-div", children=[]),
@@ -242,6 +243,9 @@ class View(Component):
         )
 
 def load_model(model_type):
+    global MODEL_NAME
+    MODEL_NAME=model_type
+
     print('[INFO] Loading Model ',model_type,' ...')
     if model_type in ['mobileSSD', 'yolo']:
         x = ModelManager.load_detection_model(model_type)
@@ -374,11 +378,11 @@ def toggle_display(value,selected_video):
                             'height': '300px',
                         }
                     ),
-                    dcc.Loading(
+                    html.Div([dcc.Loading(
                         type='circle',
                         children=[html.Div(id='output-video-process',
                                 className='container')]
-                    )
+                    )],className='mt-5')
                 ])
         ]
         # static.default_footage_section()
@@ -388,8 +392,8 @@ def toggle_display(value,selected_video):
 @app.callback([Output("video-preview", "url")],
               [Input('dropdown-footage-selection', 'value')])
 def select_footage(footage):
-    print(footage)
-     
+    global path_video
+    path_video=footage     
     return ['http://localhost:8050/videos/{}'.format(os.path.basename(footage))]
 
     # Model selection
@@ -684,36 +688,38 @@ def process_video(button_click, model_type, video_path):
             socket_thread=StoppableThread(target=emit_by_frame,args=(video_path,model_type,))
             socket_thread.start()
 
-        else:
-            if server is None:
-                print('[SERVER] Creating a server instance ...')
-                from flask import request
-                server = Flask('StreamServer')
+        else:pass
+            # if server is None:
+            #     print('[SERVER] Creating a server instance ...')
+            #     from flask import request
+            #     server = Flask('StreamServer')
 
-                @server.route('/test', methods=['GET'])
-                def test():
-                    return 'jfhskdjfhskjdhfkjshdkjfhskdjhf'
+            #     @server.route('/test', methods=['GET'])
+            #     def test():
+            #         return 'jfhskdjfhskjdhfkjshdkjfhskdjhf'
 
-                @server.route('/terminate', methods=['GET'])
-                def stop_server():
-                    raise threading.ThreadError("the thread is not active")
+            #     @server.route('/terminate', methods=['GET'])
+            #     def stop_server():
+            #         raise threading.ThreadError("the thread is not active")
 
-                @server.route('/stream')
-                def video_feed():
-                    global SHOW_GRAPHS,path_video
+            #     @server.route('/stream')
+            #     def video_feed():
+            #         global SHOW_GRAPHS,path_video
                 
-                    params={
-                        'show':True,
-                        'tang': float(get_regions_params()['tang']),
-                        'b': int(float(get_regions_params()['b']))
-                    } if get_regions_params() is not None else None
-                    return Response(ModelManager.process_video(path_video,args={'regions_params':params,'log_counts':SHOW_GRAPHS,'log_count_fcn':functions.log_count}), mimetype='multipart/x-mixed-replace; boundary=frame')
+            #         params={
+            #             'show':True,
+            #             'tang': float(get_regions_params()['tang']),
+            #             'b': int(float(get_regions_params()['b'])),
+            #             'p1': get_regions_params()['p1'],
+            #             'p2': get_regions_params()['p2'],
+            #         } if get_regions_params() is not None else None
+            #         return Response(ModelManager.process_video(path_video,args={'regions_params':params,'log_counts':SHOW_GRAPHS,'log_count_fcn':functions.log_count}), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-            # server_thread=StoppableThread(target=launch_subprocess,args=(model_type,video_path,None))
+            # # server_thread=StoppableThread(target=launch_subprocess,args=(model_type,video_path,None))
+            # # server_thread.start()
+            # server_thread = ServerThread(server)
+            # # server_thread.setDaemon(True)
             # server_thread.start()
-            server_thread = ServerThread(server)
-            # server_thread.setDaemon(True)
-            server_thread.start()
 
             # pool = Pool(2)
             # job=apply_async(pool,launch_subprocess,(model_type,video_path,QUEUE))
@@ -725,32 +731,18 @@ def process_video(button_click, model_type, video_path):
             # server_thread.start()
        
         return [
-            
-            
             html.Div(
-                className='row shadow-sm',
-                children=[
-                    html.Div(
-                        className='col-md-12 d-flex justify-content-center align-items-center',
-                        id='edit-canvas-panel',
-                        children=[
-                            html.Button(id='line-canvas-button', children=[html.Span(
-                                className='fa fa-pencil-alt')], className='btn mr-5', title=Lang['Draw a split line']),
-                            html.Button(children=[html.Span(
-                                className='fa fa-times')], className='btn ml-5', id='clear-canvas-button', title='Cancel')
-
-                        ]
-                    )
-                ]
-
+                [html.H3(Lang['Output'],className='text-center text-primary font-weight-bold')]
             ),
+            
             html.Div(
                 className="row mt-5 mb-5",
                 children=[
                     html.Div(
                         className='col-md-12 d-flex justify-content-center align-items-center',
                         children=[
-                            html.Img(src=('http://localhost:4000'if not ONLINE_MODE else SERVER_URL)+'/stream?t='+str(datetime.datetime.now()),
+                            html.Img(src=(''if not ONLINE_MODE else SERVER_URL)+'/stream?t='+str(datetime.datetime.now()),
+                                # src=('http://localhost:4000'if not ONLINE_MODE else SERVER_URL)+'/stream?t='+str(datetime.datetime.now()),
                                      id='process-video-output-flow',
                                      className='img-fluid'),
                             # html.Iframe(src='http://localhost:4000/stream')
@@ -759,6 +751,23 @@ def process_video(button_click, model_type, video_path):
 
 
                 ]
+            ),
+            html.Div(
+                className='row shadow-sm p-3 mb-5',
+                children=[
+                    html.Div(
+                        className='col-md-12 d-flex justify-content-center align-items-center',
+                        id='edit-canvas-panel',
+                        children=[
+                            html.Button(id='line-canvas-button', children=[html.Span(
+                                className='fa fa-pencil-alt fa-lg text-secondary')], className='btn mr-5', title=Lang['Draw a split line']),
+                            html.Button(children=[html.Span(
+                                className='fa fa-times fa-lg text-secondary')], className='btn ml-5', id='clear-canvas-button', title='Cancel')
+
+                        ]
+                    )
+                ]
+
             ),
 
             html.Div(
@@ -784,7 +793,7 @@ def process_video(button_click, model_type, video_path):
                         className='col-md-12 mt-5 shadow-sm d-flex justify-content-center align-items-center',
                         children=[
                             html.Button(id='confirm-draw-btn', className='btn-success', children=[
-                                        html.Span(className='fa fa-check')], title='Confirm zones plit')
+                                        html.Span(className='fa fa-check fa-lg')], title='Confirm zones plit')
                         ]
                     )
                 ]
@@ -829,19 +838,46 @@ def setup_splitlines(n_clicks):
     global server, server_thread
     
     if n_clicks is not None and n_clicks > 0:
+        pass
         # server_thread.shutdown()
-        import requests
-        server_thread.raise_exception()
-        # server_thread.join()
-        # requests.get('http://localhost:4000/terminate')
-        server_thread.shutdown()
-        # server_thread.join()
-        print(server_thread.isAlive())
-        # server_thread.terminate()
-        # server_thread.stop()
-        server = None
+        # import requests
+        # server_thread.raise_exception()
+        # # server_thread.join()
+        # # requests.get('http://localhost:4000/terminate')
+        # server_thread.shutdown()
+        # # server_thread.join()
+        # print(server_thread.isAlive())
+        # # server_thread.terminate()
+        # # server_thread.stop()
+        # server = None
     return 'd-none'
 
+
+@app.server.route('/stream')
+def fee_video():
+    global SHOW_GRAPHS,path_video,MODEL_NAME,get_regions_params
+
+       
+    try:
+        if ModelManager.model is None:
+            load_model(MODEL_NAME)
+        # params = None
+        params = {
+            'show': True,
+            'tang': float(get_regions_params()['tang']),
+            'b': int(float(get_regions_params()['b'])),
+            'p1': get_regions_params()['p1'],
+            'p2': get_regions_params()['p2'],
+            
+        } if get_regions_params() is not None else None
+        return Response(ModelManager.process_video(
+            path_video, 
+            args={
+                'regions_params': params, 
+                'log_counts': True, 
+                'log_count_fcn': functions.log_count}), mimetype='multipart/x-mixed-replace; boundary=frame')
+    except Exception as e:
+        traceback.print_exc()
 
 
     # Sockets errors collapsing handler
@@ -865,113 +901,8 @@ def update_click_output(button_click, close_click):
         return {"display": "none"}
 
 
-if False:
-    pass
-    # Updating Figures
 
-    # @app.callback(Output("count-evolution-graph", "figure"),
-    #                 [Input("interval-detection-mode", "n_intervals")],
-    #                 [State("video-display", "currentTime"),
-    #                 State('dropdown-footage-selection', 'value'),
-    #                 State('slider-fps', 'value')])
-    # def update_score_bar(n, current_time, footage, threshold):
-    #     layout = go.Layout(
-    #         showlegend=False,
-    #         paper_bgcolor='rgb(249,249,249)',
-    #         plot_bgcolor='rgb(249,249,249)',
-    #         xaxis={
-    #             'automargin': True,
-    #         },
-    #         yaxis={
-    #             'title': 'Score',
-    #             'automargin': True,
-    #             'range': [0, 1]
-    #         }
-    #     )
-
-    #     if current_time is not None:
-    #         current_frame = round(current_time * config.FRAMERATE)
-
-    #         if n > 0 and current_frame > 0:
-    #             pass
-
-    #             figure = go.Figure({
-    #                 'data': [{'hoverinfo': 'x+text',
-    #                           'name': 'Detection Scores',
-    #                           'text': y_text,
-    #                           'type': 'bar',
-    #                           'x': objects_wc,
-    #                           'marker': {'color': colors},
-    #                           'y': frame_df["score"].tolist()}],
-    #                 'layout': {'showlegend': False,
-    #                            'autosize': False,
-    #                            'paper_bgcolor': 'rgb(249,249,249)',
-    #                            'plot_bgcolor': 'rgb(249,249,249)',
-    #                            'xaxis': {'automargin': True, 'tickangle': -45},
-    #                            'yaxis': {'automargin': True, 'range': [0, 1], 'title': {'text': 'Score'}}}
-    #                 }
-    #             )
-    #             return figure
-
-    #     # Returns empty bar
-    #     return go.Figure(data=[go.Bar()], layout=layout)
-
-    # @app.callback(Output("pie-object-count", "figure"),
-    #               [Input("interval-visual-mode", "n_intervals")],
-    #               [State("video-display", "currentTime"),
-    #                State('dropdown-footage-selection', 'value'),
-    #                State('slider-fps', 'value')])
-    # def update_object_count_pie(n, current_time, footage, threshold):
-    #     layout = go.Layout(
-    #         showlegend=True,
-    #         paper_bgcolor='rgb(249,249,249)',
-    #         plot_bgcolor='rgb(249,249,249)',
-    #         autosize=False,
-    #         margin=go.layout.Margin(
-    #             l=10,
-    #             r=10,
-    #             t=15,
-    #             b=15
-    #         )
-    #     )
-
-    #     if current_time is not None:
-    #         current_frame = round(current_time * FRAMERATE)
-
-    #         if n > 0 and current_frame > 0:
-    #             video_info_df = data_dict[footage]["video_info_df"]
-
-    #             # Select the subset of the dataset that correspond to the current frame
-    #             frame_df = video_info_df[video_info_df["frame"] == current_frame]
-
-    #             # Select only the frames above the threshold
-    #             threshold_dec = threshold / 100  # Threshold in decimal
-    #             frame_df = frame_df[frame_df["score"] > threshold_dec]
-
-    #             # Get the count of each object class
-    #             class_counts = frame_df["class_str"].value_counts()
-
-    #             classes = class_counts.index.tolist()  # List of each class
-    #             counts = class_counts.tolist()  # List of each count
-
-    #             text = [f"{count} detected" for count in counts]
-
-    #             # Set colorscale to piechart
-    #             colorscale = ['#fa4f56', '#fe6767', '#ff7c79', '#ff908b', '#ffa39d', '#ffb6b0', '#ffc8c3', '#ffdbd7',
-    #                           '#ffedeb', '#ffffff']
-
-    #             pie = go.Pie(
-    #                 labels=classes,
-    #                 values=counts,
-    #                 text=text,
-    #                 hoverinfo="text+percent",
-    #                 textinfo="label+percent",
-    #                 marker={'colors': colorscale[:len(classes)]}
-    #             )
-    #             return go.Figure(data=[pie], layout=layout)
-
-    #     return go.Figure(data=[go.Pie()], layout=layout)  # Returns empty pie chart
-
+    
 ##############################################################################################################
 ##############################################################################################################
 ############################################SOCKETS HANDLERS #################################################

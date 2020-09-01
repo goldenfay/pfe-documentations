@@ -30,7 +30,7 @@
 
       <CHeaderNavItem class="px-3">
         <CHeaderNavLink to="/update">
-          MAJ Capteur
+          Mise à jour Capteur
         </CHeaderNavLink>
       </CHeaderNavItem>
     </CHeaderNav>

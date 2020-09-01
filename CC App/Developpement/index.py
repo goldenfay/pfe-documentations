@@ -20,7 +20,7 @@ import components
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=True),
-    dcc.Loading(html.Div(id='page-content'),type='circle')
+    html.Div(id='page-content')
 ])
 
 @app.callback(Output('page-content', 'children'),
