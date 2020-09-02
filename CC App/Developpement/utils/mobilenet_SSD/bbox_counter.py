@@ -258,17 +258,20 @@ def process_video(net,vs,write_output=False,min_confidence=0.4,skip_frames=10,si
 
 						# get the object(person) direction the difference between the y/x-coordinate of the current
 						# object and the mean of it previous centroids
-					coord = [c[coord_ref] for c in tracked_obj.centroids]
-					direction = centroid[coord_ref] - np.mean(coord)
+					#coord = [c[coord_ref] for c in tracked_obj.centroids]
+					#direction = centroid[coord_ref] - np.mean(coord)
 				
 
 					if not tracked_obj.counted:
 					
 					
-						if direction < 0 and centroid[coord_ref] < line_eq(centroid[coord_ref]):
+						if centroid[coord_ref] < line_eq(centroid[coord_ref]):
+
+						#if direction < 0 and centroid[coord_ref] < line_eq(centroid[coord_ref]):
 							countUp += 1
 							tracked_obj.counted = True
-						elif direction > 0 and centroid[coord_ref] > line_eq(centroid[coord_ref]):
+						else:
+						#elif direction > 0 and centroid[coord_ref] > line_eq(centroid[coord_ref]):
 							countDown += 1
 							tracked_obj.counted = True
 						
