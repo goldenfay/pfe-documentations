@@ -74,6 +74,7 @@ export default {
     editSensorModal(Sensor){
       var myModal = new cModal(document.getElementById('exampleModal'))
       this.editFormData = Object.assign({},Sensor)
+      this.nameSensor = Sensor.sensor_name
       myModal.show()
     },
 
@@ -104,6 +105,7 @@ export default {
               'sensor_type_name': editedD.sensor_type_name,
               'sensor_type_id': editedD.sensor_type_id
       }
+      CrowdServices.UpdateRegistredSensor(data,this.nameSensor,editedD.sensor_type_name)
       CrowdServices.postEditData(editedD.id,data).
         then(()=>{
           this.getMySensors()
@@ -111,7 +113,7 @@ export default {
           var myModal = cModal.getInstance(myModalEl)
           myModal.hide()  
         })
-      CrowdServices.UpdateRegistredSensor(data,this.nameSensor,editedD.sensor_type_name)
+      console.log(this.nameSensor+' this is the name')
       editFormData: {}
     },
 

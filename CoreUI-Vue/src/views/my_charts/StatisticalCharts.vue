@@ -2,12 +2,12 @@
 	<div>
 		<CCol sm="12" md="12">
 			  <CCard>
-		        <CCardHeader>
-		          Global Statistical Charts
+		        <CCardHeader class="h4">
+		          Dashboard
 		        </CCardHeader>
 		        <CCardBody>
 		            <div class="embed-responsive embed-responsive-1by1">
-	        		<iframe class="embed-responsive-item" src="http://127.0.0.1:8050/sensors_dashboard" allowfullscreen></iframe>
+	        		<iframe class="embed-responsive-item" src="http://127.0.0.1:8050/fr/sensors_dashboard" allowfullscreen></iframe>
 	        		</div>
 		        </CCardBody>
 			  </CCard>	

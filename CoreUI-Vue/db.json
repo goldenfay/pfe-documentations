@@ -33,20 +33,44 @@
       "id": 4
     },
     {
-      "sensor_name": "MONUMENT-01",
-      "sensor_zone": "Monument des martyrs.",
-      "sensor_desc": "Comptage de nombre des visiteurs,\ngestion d'acceuil et services.",
-      "sensor_type_name": "Scène large échelle",
-      "sensor_type_id": 1,
-      "id": 5
-    },
-    {
       "sensor_name": "BN",
       "sensor_zone": "Bibliothèque nationale (BN) ",
       "sensor_desc": "Veiller et surveiller la capacité d'acceuil, \nControle et évaluation d'état de la bibliothèque.",
       "sensor_type_name": "Scène moyen échelle",
       "sensor_type_id": 2,
       "id": 6
+    },
+    {
+      "sensor_name": "CapteurTest",
+      "sensor_zone": "Village USTHB",
+      "sensor_desc": "Comptage des étudients au resto et au diférents services de village de la fac ",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 8
+    },
+    {
+      "sensor_name": "cam123",
+      "sensor_zone": "da",
+      "sensor_desc": "dz",
+      "sensor_type_name": "Scène moyen échelle",
+      "sensor_type_id": 2,
+      "id": 9
+    },
+    {
+      "sensor_name": "asdfZ",
+      "sensor_zone": "tree",
+      "sensor_desc": "fsdgd",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
+      "id": 10
+    },
+    {
+      "sensor_name": "saZE",
+      "sensor_zone": "sas",
+      "sensor_desc": "asa",
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
+      "id": 11
     }
   ]
 }

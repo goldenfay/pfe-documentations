@@ -136,7 +136,6 @@ class ModelManager:
                 # tang=(p1['y']-p2['y'])*H/(p1['x']-p2['x'])/W
                 b=p1['y']*H - p1['x']*W * tang
                 line_eq=lambda x: int(float(tang*x+b))
-                print('*'*100,'Line equation','a=',tang,'b=',b)
             while True:
                 # frame = imutils.resize(frame, height=500)
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

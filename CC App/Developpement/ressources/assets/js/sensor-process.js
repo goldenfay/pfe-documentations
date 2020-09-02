@@ -40,13 +40,15 @@ const callback = function (mutationsList, observer) {
         if (drawVLineCanvasBtn.length) {
           // if (addNode.id === "line-canvas-button") {
           console.log("captured");
-          // Draw current scene on the canvas from the frame
-          canvas = document.querySelector("#sensor-scene-canvas");
-          // var canvas = document.createElement("canvas");
-          var ctx = canvas.getContext("2d");
-          var currentImg = document.querySelector("#sensor-process-video-output-flow");
-          // Define Click handler
+          
           $(drawVLineCanvasBtn).click(function (e) {
+            // Draw current scene on the canvas from the frame
+            canvas = document.querySelector("#sensor-scene-canvas");
+            // var canvas = document.createElement("canvas");
+            var ctx = canvas.getContext("2d");
+            var currentImg = document.querySelector("#sensor-process-video-output-flow");
+            // Define Click handler
+
             $("#sensor-edit-canvas-area").removeClass("d-none");
 
             canvas.height = currentImg.height;
@@ -117,7 +119,7 @@ const callback = function (mutationsList, observer) {
           $(confirmDrawBtn).click((e) => {
             console.log(tang,b)
             $("#sensor-edit-canvas-area").addClass("d-none");
-            $("#sensor-process-video-output-flow").remove();
+            //$("#sensor-process-video-output-flow").remove();
             $('#sensor-edit-canvas-panel').hide();
             // $('#output-video-process').append('<p id="hidden-splitLine-input" class="d-none">'+tang+'/'+b+'</p>')
             // $('#hidden-splitLine-input').get(0).innerHTML=`${tang}/${b}`;
@@ -131,6 +133,8 @@ const callback = function (mutationsList, observer) {
                 p2: {'x': point2.x/canvas.width,'y':point2.y/canvas.height}
               },
               function(data, status){
+                point1=null;
+                point2=null;
                 console.log('Received ', data, ' status', status);
                 // location.reload();
 
