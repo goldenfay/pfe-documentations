@@ -41,7 +41,7 @@
       "id": 6
     },
     {
-      "sensor_name": "CapteurTest",
+      "sensor_name": "CapteurTest1",
       "sensor_zone": "Village USTHB",
       "sensor_desc": "Comptage des étudients au resto et au diférents services de village de la fac ",
       "sensor_type_name": "Scène moyen échelle",
@@ -49,28 +49,12 @@
       "id": 8
     },
     {
-      "sensor_name": "cam123",
-      "sensor_zone": "da",
-      "sensor_desc": "dz",
-      "sensor_type_name": "Scène moyen échelle",
-      "sensor_type_id": 2,
+      "sensor_name": "czp",
+      "sensor_zone": null,
+      "sensor_desc": null,
+      "sensor_type_name": "Scène large échelle",
+      "sensor_type_id": 1,
       "id": 9
-    },
-    {
-      "sensor_name": "asdfZ",
-      "sensor_zone": "tree",
-      "sensor_desc": "fsdgd",
-      "sensor_type_name": "Scène large échelle",
-      "sensor_type_id": 1,
-      "id": 10
-    },
-    {
-      "sensor_name": "saZE",
-      "sensor_zone": "sas",
-      "sensor_desc": "asa",
-      "sensor_type_name": "Scène large échelle",
-      "sensor_type_id": 1,
-      "id": 11
     }
   ]
 }
