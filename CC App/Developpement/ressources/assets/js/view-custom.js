@@ -219,7 +219,7 @@ const instantiate_socket=(url)=>{
   socket.on("process-done", function (data) {
     console.log(data);
     
-    $('#output-image-process').append(x)
+    // $('#output-image-process').append(x)
     errors = data["errors"];
     if (errors && errors[0]) {
       console.log("Processing frame resulted some errors.");
@@ -227,6 +227,8 @@ const instantiate_socket=(url)=>{
       $(document).append(
         error_alert("An error occured on the server.", errors[0])
       );
+    }else{
+      $('#server-toast .toast-body').html(`<span class="mr-3"> Process done.</span> <span class=" text-success fa fa-check-circle"></span>`);
     }
   });
   socket.on("send-image", (data) => processImageResponse(data));
@@ -242,8 +244,9 @@ const send_to_server = function () {
     if (url_input.val()) {// If server URL is provided
       imgList = Array();
         // If socket not initialized yet, connect and create handlers.
-      if (socket === null || socket.disconnected) {
-        instantiate_socket(url_input.val())
+      if (socket === null || socket.disconnected|| socket.io.uri!==url_input.val()) {
+        
+        instantiate_socket(url_input.val());
       }
      
       var imgs = document.querySelectorAll("#output-image-upload img");
@@ -279,8 +282,9 @@ const send_to_server = function () {
         images: imgList,
       });
       console.log("Socket emitted.");
+      $('#server-toast').remove();
       $(document.body).append(`<div class="animate__animated animate__bounceInUp toast fade show shadow bg-info" role="alert" aria-live="assertive" aria-atomic="true" 
-      data-autohide="false" style="position:fixed; bottom:3%; right:3%;"id="server-toast">
+      data-autohide="false" style="position:fixed; bottom:3%; right:3%; min-width:350px;" id="server-toast">
       <div class="toast-header text-info" style="min-width-350px;">
         
         <strong class="mr-auto">Communication with server</strong>
@@ -293,9 +297,15 @@ const send_to_server = function () {
         Sending image(s) to the server ...
       </div>
     </div>`)
+
       if( ! $('#output-image-process h3').length){
         $('#output-image-process').prepend('<h3 class="ml-5 text-primary font-weight-bold flex-break">Output</h3>')
       }
+      $('#output-image-process .row.mt-5').remove();
+
+      
+
+
     } else {
       // Output error showing that must type server URL.
       url_input.addClass(
@@ -317,9 +327,28 @@ const send_video_to_server=()=>{
   if (url_input) {
     if (url_input.val()) {// If server URL is provided
         // If socket not initialized yet, connect and create handlers.
-      if (socket === null || socket.disconnected) {
+      if (socket === null || socket.disconnected|| socket.io.uri!==url_input.val()) {
         instantiate_socket(url_input.val())
       }
+
+      console.log("VIDEOSocket emitted.");
+      $('#server-toast').remove();
+      $(document.body).append(`<div class="animate__animated animate__bounceInUp toast fade show shadow bg-info" role="alert" aria-live="assertive" aria-atomic="true" 
+      data-autohide="false" style="position:fixed; bottom:3%; right:3%; min-width:350px;" id="server-toast">
+      <div class="toast-header text-info" style="min-width-350px;">
+        
+        <strong class="mr-auto">Communication with server</strong>
+        
+        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <div class="toast-body bg-light">
+        Sending image(s) to the server ...
+      </div>
+    </div>`)
+
+  
      
 
     } else {
@@ -342,32 +371,8 @@ const send_video_to_server=()=>{
 // Socket handlers functions
 function processImageResponse(data) {
   console.log("message received from server ", data);
-  //  $('<div/>', {
-  //          class: 'row'
-  //      })
-  //      .append(
-  //          $('<div/>', {
-  //              class: 'col-md justify-content-center animate__animated animate__fadeInRight'
-  //          }).append(
-  //              $('<div/>', {
-  //                  class: 'd-flex justify-content-center'
-  //              }).append(
-
-  //                  $('<h4/>', {
-  //                      text: 'Original',
-  //                      class: 'muted'
-  //                  })
-  //              )
-  //          ).append(
-  //              $('<img/>', {
-  //                  id: 'img',
-  //                  src: data
-  //              })
-
-  //          )
-  //      )
-  //      .appendTo('#output-image-process');
- 
+  
+  $('#server-toast .toast-body').html('Result image received.');
   $("#output-image-process").append(
     `<div class="row mt-5">
             <div class="col-md d-flex justify-content-center animate__animated animate__fadeInRight">
@@ -395,8 +400,13 @@ observer.observe(document.body, config);
 // observer.disconnect();
 
 
-document.ondrop = function () {
+document.ondrop = function (e) {
+  if(!(e.currentTarget.id==='upload-image')){
+    e.preventDefault();
+    return;
+  }
   console.log("dropped");
+  console.log(e.target);
   $("#drop-div").addClass("d-none");
   let uploadDiv = document.getElementById("upload-image");
   console.log(uploadDiv)

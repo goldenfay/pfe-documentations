@@ -3,9 +3,10 @@ import socketio
 
 #class ClientSocket(socketio.Client):
 
-class ClientSocket():
+class ClientSocket(socketio.Client):
 
-    def __init__(self, **kwargs):
+    def __init__(self,*args, **kwargs):
+        print(dict(**kwargs))
         super(ClientSocket,self).__init__(**kwargs)
         self.init_handlers()
 

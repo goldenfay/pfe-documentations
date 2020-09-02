@@ -1,12 +1,14 @@
 from flask import Flask
 from engineio.payload import Payload
 from flask_socketio import SocketIO, emit, join_room, leave_room
-import sys,os,glob,inspect,time,traceback,json
+import sys,os,glob,inspect,time,traceback,json,base64
 import numpy as np
 import torch
 import cv2 
+
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 sys.path.append(currentdir)
+    # Custom modules
 import server_config
 from thread_server import ServerThread
 sys.path.append(server_config.BASIC_TOOLS_ROOT_PATH)
@@ -26,7 +28,7 @@ app.config['SECRET_KEY'] = secret
 app.logger.critical("secret: %s" % secret)
 
 
-Payload.max_decode_packets = 500
+Payload.max_decode_packets = 50000000
 socketio = SocketIO(app,async_handlers=True,cors_allowed_origins="*",ping_timeout=600000,ping_interval=100)
 
 HTML_IMG_SRC_PARAMETERS = 'data:image/png;base64, '
@@ -62,36 +64,15 @@ def video_feed():
     else:   
         return Response(ModelManager.process_video('temp.avi'), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/hello')
-def hello():
-    global server,server_thread
-    if server is None:
-            print('[SERVER] Creating a server instance ...')
-            from flask import request
-            server = Flask('StreamServer')
-
-            @server.route('/test', methods=['GET'])
-            def test():
-                return 'jfhskdjfhskjdhfkjshdkjfhskdjhf'
-            PORT=4000
-            server_thread = ServerThread(server,PORT)
-            os.system('./ngrok http {} &'.format(PORT))
-            os.system("curl  http://localhost:4040/api/tunnels > tunnels.json")
-            with open('tunnels.json') as data_file:    
-                datajson = json.load(data_file)
-            listurls=[el['public_url'] for el in datajson['tunnels']]    
-            print(listurls)
-            server_thread.start()            
-    return "Hello World!"
 
     # Basic default socket event handlers
 @socketio.on('connect')
 def connected():
-    print('connect')
+    print('Client connected')
     
 @socketio.on('disconnect')
 def disconnect():
-    print('disconnect')
+    print('Client disconnected')
 
     # Count and process images event handlers
 
@@ -109,7 +90,6 @@ def imageUpload(data):
     for image in images_list:
         image['data']=process_functions.b64_to_numpy(image['data'])
     print('Done.') 
-    print('Getting ',len(images_list)) 
     errors=[]
     print('[image-upload] Processing images ...')
     for id, frame in enumerate(images_list):
@@ -119,7 +99,6 @@ def imageUpload(data):
                 start = time.time()
                 res_img, count = ModelManager.process_frame(frame['data'])
                 inference_time = time.time()-start
-
                 print('\t Done. ')
                 encoded_img = HTML_IMG_SRC_PARAMETERS+(process_functions.numpy_to_b64(
                     res_img, model_type not in ['mobileSSD', 'yolo']))
@@ -173,10 +152,13 @@ def imageUpload(data):
         start = time.time()
         res_img, count = ModelManager.process_frame(frame)
         inference_time = time.time()-start
-
+        
+        
         print('\t Done. ')
-        encoded_img = HTML_IMG_SRC_PARAMETERS+(process_functions.numpy_to_b64(
-            res_img, model_type not in ['mobileSSD', 'yolo']))
+        # encoded_img = HTML_IMG_SRC_PARAMETERS+(process_functions.numpy_to_b64(
+        #     res_img, model_type not in ['mobileSSD', 'yolo']))
+        cnt = cv2.imencode('.png',res_img)[1]
+        encoded_img = HTML_IMG_SRC_PARAMETERS+base64.b64encode(cnt).decode('utf-8')
         data={
             'data': encoded_img,
             'count': count,
@@ -265,4 +247,22 @@ def imageUpload(data):
     
         
 if __name__ == '__main__':
+    # config.print_ascii_large('Crowd Countinf Process Server',font_size=7)
+    print('''
+ ██████ ██████   ██████  ██     ██ ██████       ██████  ██████  ██    ██ ███    ██ ████████ ██ ███    ██  ██████  
+██      ██   ██ ██    ██ ██     ██ ██   ██     ██      ██    ██ ██    ██ ████   ██    ██    ██ ████   ██ ██       
+██      ██████  ██    ██ ██  █  ██ ██   ██     ██      ██    ██ ██    ██ ██ ██  ██    ██    ██ ██ ██  ██ ██   ███ 
+██      ██   ██ ██    ██ ██ ███ ██ ██   ██     ██      ██    ██ ██    ██ ██  ██ ██    ██    ██ ██  ██ ██ ██    ██ 
+ ██████ ██   ██  ██████   ███ ███  ██████       ██████  ██████   ██████  ██   ████    ██    ██ ██   ████  ██████  
+                                                                                                                  
+                                                                                                                  
+██████  ██████   ██████   ██████ ███████ ███████ ███████     ███████ ███████ ██████  ██    ██ ███████ ██████      
+██   ██ ██   ██ ██    ██ ██      ██      ██      ██          ██      ██      ██   ██ ██    ██ ██      ██   ██     
+██████  ██████  ██    ██ ██      █████   ███████ ███████     ███████ █████   ██████  ██    ██ █████   ██████      
+██      ██   ██ ██    ██ ██      ██           ██      ██          ██ ██      ██   ██  ██  ██  ██      ██   ██     
+██      ██   ██  ██████   ██████ ███████ ███████ ███████     ███████ ███████ ██   ██   ████   ███████ ██   ██     
+                                                                                                                  
+                                                                                                                  
+''')
     socketio.run(app,port=5000, debug=True)
+    

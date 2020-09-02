@@ -429,7 +429,7 @@ def toggle_show_graph(value):
     # Upload image
 @app.callback(Output('output-image-upload', 'children'),
               [Input('upload-image', 'filename'), Input('upload-image', 'contents')])
-def update_output(list_of_names, list_of_contents):
+def upload_image(list_of_names, list_of_contents):
     global ONLINE_MODE,images_list
     images_list=[]
     if list_of_contents is not None:
@@ -493,40 +493,7 @@ def update_count_plots(n):
     }
     )
     return go.Figure(data=go.Scatter(x=df.index.tolist(),y=df['value'].values.tolist()),layout=layout)
-#     #Show graphs interval elapsed
-# @app.callback([Output("week-count-plot", "figure"),
-#                 Output("day-count-plot", "figure"),
-#                 Output("hours-count-plot", "figure")],
-#               [Input("interval-show-graphs", "n_intervals")])
-# def update_count_plots(n):
-#     csv_file_path=os.path.join(ModelManager.outputs_path,'results_history.csv')
-#     # return functions.show_plots(functions.read_existing_data(csv_file_path))
-#     # dfs=functions.show_plots(functions.read_existing_data(csv_file_path))
-#     [df_2h,df_8h,df_1d,df_1w]=functions.show_plots(functions.read_existing_data(csv_file_path))
-#     # print([df["value"].values.tolist() for df in dfs])
-#     week_fig=go.Figure(data=go.Scatter(x=df_1w.index.tolist(),y=df_1w['value'].values.tolist(),text='gfjhfhgfjhgfjhfhgf',name='ooooooooooo'))
-#     day_fig=go.Figure(data=go.Scatter(x=df_1d.index.tolist(),y=df_1d['value'].values.tolist()))
-#     hours_fig=go.Figure(data=go.Scatter(x=df_2h.index.tolist(),y=df_2h['value'].values.tolist()))
-    
-#     return week_fig,day_fig,hours_fig
-
-#     return  go.Figure({
-#                 'data': [{'hoverinfo': 'x+text',
-#                           'name': 'Counting history',
-#                           'text': [f'{count}' for count in df['value'].values.tolist()],
-#                           'type': 'bar',
-#                           'x': df.index.tolist(),
-#                         #   'marker': {'color': colors},
-#                           'y': df["value"].values.tolist()} for df in dfs],
-#                 'layout': {'showlegend': True,
-#                            'autosize': True,
-#                            'paper_bgcolor': 'rgb(249,249,249)',
-#                            'plot_bgcolor': 'rgb(249,249,249)',
-#                            'xaxis': {'automargin': True, 'tickangle': -45},
-#                            'yaxis': {'automargin': True, 'title': {'text': 'Count'}}}
-#                 } )
-
-    
+  
 ##############################################################################################
 #           Buttons clicks event handlers
 ##############################################################################################
@@ -676,7 +643,7 @@ def process_video(button_click, model_type, video_path):
 
         if ONLINE_MODE:
             if CLIENT_SOCKET is None:
-                CLIENT_SOCKET = ClientSocket(reconnection=False)
+                CLIENT_SOCKET = ClientSocket(reconnection=True)
             if not CLIENT_SOCKET.connected:
                 CLIENT_SOCKET.connect(SERVER_URL)
             vs=cv2.VideoCapture(video_path)    
@@ -912,18 +879,26 @@ def update_click_output(button_click, close_click):
 def emit_by_frame(video_path,model_type):
     global CLIENT_SOCKET
     vs = cv2.VideoCapture(video_path)
+    i=0
     while True:
-        frame = vs.read()
-            #VideoStream returns a frame, VideoCapture returns a tuple
-        frame = frame[1] if len(frame)>1 else frame
-        if frame is None:
-            break
-        frame = imutils.resize(frame, width=500)
-        frame=HTML_IMG_SRC_PREFIX+functions.numpy_to_b64(
-            frame, model_type not in ['mobileSSD', 'yolo'])
-        frame=frame.encode("utf-8").split(b";base64,")[1]
-        CLIENT_SOCKET.emit('frame-upload',{'frame':frame})
-        # CLIENT_SOCKET.emit('process-frame',{'frame':frame})
+        if i%3!=0: i+=1
+        else:
+            frame = vs.read()
+                #VideoStream returns a frame, VideoCapture returns a tuple
+            frame = frame[1] if len(frame)>1 else frame
+            if frame is None:
+                break
+            
+            frame = imutils.resize(frame, width=500)
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame=rgb_frame
+            # frame=HTML_IMG_SRC_PREFIX+functions.numpy_to_b64(
+            #     frame, False)
+            # frame=frame.encode("utf-8").split(b";base64,")[1]
+            cnt = cv2.imencode('.png',frame)[1]
+            frame = base64.b64encode(cnt)
+            #CLIENT_SOCKET.emit('frame-upload',{'frame':frame})
+            CLIENT_SOCKET.emit('process-frame',{'frame':frame})
         key = cv2.waitKey(10) & 0xFF
 
         if key == ord("q"):
