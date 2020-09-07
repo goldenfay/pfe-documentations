@@ -114,6 +114,6 @@ def display_page(pathname,search):
 
 
 if __name__ == '__main__':
-    config.print_ascii_large('Crowd Countinf App')
+    config.print_ascii_large('Crowd Counting App')
     default_callbacks = app.callback_map
     app.run_server(debug=True)

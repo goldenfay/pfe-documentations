@@ -7,6 +7,8 @@ import imutils
 from imutils.video import VideoStream
 from imutils.video import FPS
 import queue
+import pandas as pd
+import datetime
 
 sys.path.append('utils')
 sys.path.append('utils/YOLO_V3')
@@ -16,9 +18,12 @@ import utils.YOLO_V3.yolo_model as yolo_detector
 import utils.mobilenet_SSD.bbox_counter as ssd_detector
 from utils.detection_model import DetectionModel
 import store.models.equivalence as equivalence
-import pandas as pd
-import datetime
 
+STOP_FLAG=False
+
+def set_stop_flag(value=True):
+    global STOP_FLAG
+    STOP_FLAG=value
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 QUEUE=queue.Queue()
 
@@ -95,6 +100,7 @@ class ModelManager:
 
     @classmethod
     def process_video(cls, video_path, args=None,queue=None):
+        global STOP_FLAG
         output=args.get('output',None) if args is not None else None
         if output is None:
             output=os.path.join(currentdir,'ressources','videos','output')
@@ -131,13 +137,16 @@ class ModelManager:
             fps = FPS().start()
             totalFrame=0
             if show_regions:
-                p1=args['regions_params']['p1']
-                p2=args['regions_params']['p2']
-                # tang=(p1['y']-p2['y'])*H/(p1['x']-p2['x'])/W
-                b=p1['y']*H - p1['x']*W * tang
+                # p1=args['regions_params']['p1']
+                # p2=args['regions_params']['p2']
+                # # tang=(p1['y']-p2['y'])*H/(p1['x']-p2['x'])/W
+                # b=p1['y']*H - p1['x']*W * tang
                 line_eq=lambda x: int(float(tang*x+b))
             while True:
-                # frame = imutils.resize(frame, height=500)
+                if STOP_FLAG:
+                    print('Video processing interrupted.')
+                    break
+                frame = imutils.resize(frame, width=500)
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 (H, W) = frame.shape[:2]
                 if totalFrame%30==0:
@@ -147,6 +156,7 @@ class ModelManager:
                     # if ModelManager.model.__class__.__name__=='CSRNet':
                     #     count=count//4
                     if show_regions:
+                        print('H splitted' if horizontal_splited else 'V splitted')
                         shape=dmap.shape
                         coord_ref=1 if horizontal_splited else 0
                         zoneA=np.zeros(shape)
@@ -158,7 +168,7 @@ class ModelManager:
                         for row in range(shape[0]):
                             for col in range(shape[1]):
                                 couple=(row,col)
-                                if couple[coord_ref]<line_eq(couple[coord_ref]):
+                                if couple[coord_ref]<line_eq(col):
                                     l1.append(couple)
                                 else:
                                     l2.append(couple)
@@ -262,6 +272,9 @@ class ModelManager:
                 args['queue']=QUEUE    
 
             for x in cls.model.forward_video(args):
+                if STOP_FLAG:
+                    print('Video processing interrupted .')
+                    break
                 # queue.put_nowait(x)
                 # QUEUE.put_nowait(x)
                 yield x

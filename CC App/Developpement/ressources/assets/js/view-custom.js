@@ -202,6 +202,7 @@ const get_model_type=(model_type)=>{
 const instantiate_socket=(url)=>{
   socket = io.connect(url, {
     reconnection: false,
+    timeout: 500000
   });
   socket.on("connect", function () {
     console.log("Socket connected.");
@@ -328,6 +329,7 @@ const send_video_to_server=()=>{
     if (url_input.val()) {// If server URL is provided
         // If socket not initialized yet, connect and create handlers.
       if (socket === null || socket.disconnected|| socket.io.uri!==url_input.val()) {
+        
         instantiate_socket(url_input.val())
       }
 

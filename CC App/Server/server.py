@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask,Response
 from engineio.payload import Payload
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import sys,os,glob,inspect,time,traceback,json,base64
@@ -15,6 +15,7 @@ sys.path.append(server_config.BASIC_TOOLS_ROOT_PATH)
 import util.process_functions as process_functions
 from modelmanager import ModelManager
 import config
+import imutils
 
 
 ModelManager.set_base_path(config.FROZEN_MODELS_BASE_PATH)
@@ -58,10 +59,11 @@ def load_model(model_type):
 @app.route('/stream')
 def video_feed():
     global Ready
-
     if not Ready:
+        print('not ready yet')
         return 'Hello'
     else:   
+        print('Ready to stream video')
         return Response(ModelManager.process_video('temp.avi'), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
@@ -124,9 +126,9 @@ def setup(data):
     global model_type,writter
     model_type=data['model_type']
     H,W=data['height'],data['width']
-    print('[process-frame] Loading model ',model_type,' ...',end='\t')
+    print('[init-process-video] Loading model ',model_type,' ...',end='\t')
     load_model(model_type)
-    fourcc = cv2.VideoWriter_fourcc(*"XVID")
+    fourcc = cv2.VideoWriter_fourcc(*"MJPG")
     writter = cv2.VideoWriter('temp.avi', fourcc, 30,
         (W, H), True)
 
@@ -155,10 +157,23 @@ def imageUpload(data):
         
         
         print('\t Done. ')
-        # encoded_img = HTML_IMG_SRC_PARAMETERS+(process_functions.numpy_to_b64(
-        #     res_img, model_type not in ['mobileSSD', 'yolo']))
-        cnt = cv2.imencode('.png',res_img)[1]
-        encoded_img = HTML_IMG_SRC_PARAMETERS+base64.b64encode(cnt).decode('utf-8')
+        if model_type not in ['mobileSSD', 'yolo']:
+            concatenated=process_functions.concat_frame_dmap(frame,res_img)
+            # while True:
+            #     cv2.imshow('hh',frame)
+            #     cv2.imshow('img',concatenated)
+            #     key = cv2.waitKey(10) & 0xFF
+
+            #     if key == ord("q"):
+            #         break
+            # concatenated=cv2.cvtColor(concatenated, cv2.COLOR_BGR2RGB)
+            # encoded_img = HTML_IMG_SRC_PARAMETERS+(process_functions.numpy_to_b64(
+            # concatenated, False))
+            cnt = cv2.imencode('.png',concatenated)[1]
+            encoded_img = HTML_IMG_SRC_PARAMETERS+base64.b64encode(cnt).decode('utf-8')
+        else:
+            cnt = cv2.imencode('.png',res_img)[1]
+            encoded_img = HTML_IMG_SRC_PARAMETERS+base64.b64encode(cnt).decode('utf-8')
         data={
             'data': encoded_img,
             'count': count,
@@ -179,13 +194,19 @@ def imageUpload(data):
 def frameUpload(data):
     global list_frame,writter
     list_frame.append(data['frame'])
-    # writter.write(process_functions.b64_to_numpy(data['frame']))
+    frame=process_functions.b64_to_numpy(data['frame'])
+   
+    writter.write(frame)
+    print('Frame received')
 
 @socketio.on('process-video')
 def startprocessing(data):
     global list_frame,model_type,writter,Ready
-    writer.release()
+    writter.release()
     Ready=True
+    print('Video received.')
+
+
 
 
     

@@ -21,7 +21,7 @@ currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
 sys.path.append(currentdir)
 # User's modules
-from modelmanager import ModelManager
+from modelmanager import ModelManager,set_stop_flag
 
 #from sockets import ClientSocket
 from components.base import Component
@@ -220,9 +220,10 @@ class View(Component):
 
                                         html.Div(
                                             id='show-graphs-control',
+                                            className='d-none',
                                             
                                             children=[
-                                                reusable.toggleswitch_control(Lang['Show graphs:'],'show-graphs-switch','graph-switch-label',True,Lang['Yes'],'#fa4f56'),
+                                                reusable.toggleswitch_control(Lang['Show graphs:'],'show-graphs-switch','graph-switch-label',False,Lang['Yes'],'#fa4f56'),
 
                                                 
                                             ]
@@ -372,16 +373,12 @@ def toggle_display(value,selected_video):
                                        'minHeight': '60px'}
 
                             )
-                        ],
-                        style={
-                            'width': '500px',
-                            'height': '300px',
-                        }
+                        ]
                     ),
                     html.Div([dcc.Loading(
                         type='circle',
                         children=[html.Div(id='output-video-process',
-                                className='container')]
+                                className='container mt-5')]
                     )],className='mt-5')
                 ])
         ]
@@ -605,8 +602,9 @@ def process_frames(button_click, model_type, children):
               [State("dropdown-model-selection", "value"),
                State("dropdown-footage-selection", "value")])
 def process_video(button_click, model_type, video_path):
-    global server, server_thread, get_regions_params,SHOW_GRAPHS, SERVER_URL,CLIENT_SOCKET,ONLINE_MODE,path_video
+    global server, server_thread, get_regions_params,SHOW_GRAPHS, SERVER_URL,CLIENT_SOCKET,ONLINE_MODE,path_video,set_stop_flag
     if button_click > 0:
+        set_stop_flag(False)
         path_video=video_path
         print('Process server state : ',('not None' if server is not None else 'None'))
         if server_thread is not None:
@@ -643,17 +641,19 @@ def process_video(button_click, model_type, video_path):
 
         if ONLINE_MODE:
             if CLIENT_SOCKET is None:
-                CLIENT_SOCKET = ClientSocket(reconnection=True)
+                CLIENT_SOCKET = ClientSocket(reconnection=True,request_timeout =500000)
             if not CLIENT_SOCKET.connected:
                 CLIENT_SOCKET.connect(SERVER_URL)
             vs=cv2.VideoCapture(video_path)    
             frame = vs.read()
                 #VideoStream returns a frame, VideoCapture returns a tuple
             frame = frame[1] if len(frame)>1 else frame
+            frame = imutils.resize(frame, width=500)
             (H, W) = frame.shape[:2]
             CLIENT_SOCKET.emit('init-process-video',{'model_type':model_type,'height':H,'width':W})
             socket_thread=StoppableThread(target=emit_by_frame,args=(video_path,model_type,))
             socket_thread.start()
+            # emit_by_frame(video_path,model_type)
 
         else:pass
             # if server is None:
@@ -711,7 +711,7 @@ def process_video(button_click, model_type, video_path):
                             html.Img(src=(''if not ONLINE_MODE else SERVER_URL)+'/stream?t='+str(datetime.datetime.now()),
                                 # src=('http://localhost:4000'if not ONLINE_MODE else SERVER_URL)+'/stream?t='+str(datetime.datetime.now()),
                                      id='process-video-output-flow',
-                                     className='img-fluid'),
+                                     className='img-fluid',style={"minWidth":"80%"}),
                             # html.Iframe(src='http://localhost:4000/stream')
                         ]
                     )
@@ -802,9 +802,10 @@ def process_video(button_click, model_type, video_path):
     [Input("confirm-draw-btn", "n_clicks")]
 )
 def setup_splitlines(n_clicks):
-    global server, server_thread
+    global server, server_thread,set_stop_flag
     
     if n_clicks is not None and n_clicks > 0:
+        set_stop_flag()
         pass
         # server_thread.shutdown()
         # import requests
@@ -897,12 +898,16 @@ def emit_by_frame(video_path,model_type):
             # frame=frame.encode("utf-8").split(b";base64,")[1]
             cnt = cv2.imencode('.png',frame)[1]
             frame = base64.b64encode(cnt)
-            #CLIENT_SOCKET.emit('frame-upload',{'frame':frame})
+            # CLIENT_SOCKET.emit('frame-upload',{'frame':frame})
             CLIENT_SOCKET.emit('process-frame',{'frame':frame})
+            i+=1
         key = cv2.waitKey(10) & 0xFF
 
         if key == ord("q"):
             break
+
+        # if i==100: break
+    vs.release()
     CLIENT_SOCKET.emit('process-video',{'frame':frame})
     print('[INFO] Reading video completed.')
 
